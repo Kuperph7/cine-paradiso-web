@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Cine Paradiso{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <header class="site-header">
+        <a class="brand" href="{{ url_for('cliente.cartelera') }}">Cine Paradiso</a>
+        <nav>
+            <a href="{{ url_for('cliente.cartelera') }}">Cartelera</a>
+            <a href="{{ url_for('cliente.mis_compras') }}">Mis compras</a>
+            <a href="{{ url_for('cliente.mis_entradas') }}">Mis entradas</a>
+            <a href="{{ url_for('auth.perfil') }}">Perfil</a>
+        </nav>
+    </header>
+    <main class="page-shell">
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>
+
