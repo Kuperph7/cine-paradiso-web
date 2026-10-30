@@ -8,17 +8,40 @@
 </head>
 <body>
     <header class="site-header">
-        <a class="brand" href="{{ url_for('cliente.cartelera') }}">Cine Paradiso</a>
-        <nav>
-            <a href="{{ url_for('cliente.cartelera') }}">Cartelera</a>
-            <a href="{{ url_for('cliente.mis_compras') }}">Mis compras</a>
-            <a href="{{ url_for('cliente.mis_entradas') }}">Mis entradas</a>
-            <a href="{{ url_for('auth.perfil') }}">Perfil</a>
-        </nav>
+        <div class="header-inner">
+            <a class="brand" href="{{ url_for('cliente.cartelera') }}">
+                Cine Paradiso
+                <span>Una historia en cada pantalla</span>
+            </a>
+            <nav class="main-nav" aria-label="Navegación principal">
+                <a class="active" href="{{ url_for('cliente.cartelera') }}">Cartelera</a>
+                <a href="{{ url_for('cliente.seleccionar_servicios') }}">Candy</a>
+                <a href="#sucursales">Sucursales</a>
+                <a href="{{ url_for('cliente.mis_entradas') }}">Mis entradas</a>
+                <a class="profile-link" href="{{ url_for('auth.perfil') }}">Perfil</a>
+            </nav>
+        </div>
     </header>
     <main class="page-shell">
         {% block content %}{% endblock %}
     </main>
+    <footer class="site-footer" id="sucursales">
+        <div>
+            <a class="footer-brand" href="{{ url_for('cliente.cartelera') }}">Cine Paradiso</a>
+            <p>Historias que merecen verse en pantalla grande.</p>
+        </div>
+        <div>
+            <strong>Información</strong>
+            <a href="#">Preguntas frecuentes</a>
+            <a href="#">Términos y condiciones</a>
+        </div>
+        <div>
+            <strong>Contacto</strong>
+            <span>contacto@cineparadiso.com</span>
+            <span>@cineparadiso</span>
+        </div>
+        <p class="copyright">© 2026 Cine Paradiso. Todos los derechos reservados.</p>
+    </footer>
 </body>
 </html>
 

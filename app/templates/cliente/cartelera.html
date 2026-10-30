@@ -1,10 +1,106 @@
 {% extends "base.html" %}
 {% block title %}Cartelera | Cine Paradiso{% endblock %}
 {% block content %}
-<h1>Cartelera</h1>
-<section class="filters panel">Filtros por local y fecha</section>
-<section class="card-grid">
-    <article class="card"><h2>Película</h2><p>La cartelera se cargará desde la API.</p></article>
+<section class="banner-principal" aria-labelledby="banner-principal-title">
+    <div class="banner-principal-content">
+        <p class="eyebrow">Esta semana en Cine Paradiso</p>
+        <h1 id="banner-principal-title">Viví el cine.<br>Sentí cada historia.</h1>
+        <p>Estrenos, clásicos y experiencias para disfrutar en la mejor pantalla.</p>
+        <a class="primary-button" href="#cartelera">Ver cartelera</a>
+    </div>
+    <div class="banner-principal-art" aria-hidden="true">
+        <span class="film-frame frame-one"></span>
+        <span class="film-frame frame-two"></span>
+        <span class="play-symbol">▶</span>
+    </div>
+</section>
+
+<section class="section-heading" id="cartelera">
+    <div>
+        <p class="eyebrow">Ahora en pantalla</p>
+        <h2>Películas en cartelera</h2>
+    </div>
+    <p>Elegí tu película, función y sala favorita.</p>
+</section>
+
+<form class="movie-filters" method="get" aria-label="Filtros de cartelera">
+    <label>
+        <span>Sucursal</span>
+        <select name="sucursal">
+            <option value="">Todas las sucursales</option>
+            <option value="centro">Centro</option>
+            <option value="puerto">Puerto</option>
+            <option value="norte">Norte</option>
+        </select>
+    </label>
+    <label>
+        <span>Fecha</span>
+        <select name="fecha">
+            <option value="">Todas las fechas</option>
+            <option value="hoy">Hoy</option>
+            <option value="mañana">Mañana</option>
+            <option value="fin de semana">Fin de semana</option>
+        </select>
+    </label>
+    <label>
+        <span>Género</span>
+        <select name="genero">
+            <option value="">Todos los géneros</option>
+            {% for genero in generos %}
+            <option value="{{ genero|lower }}">{{ genero }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <button type="submit">Aplicar filtros</button>
+</form>
+
+<section class="movie-grid" id="movie-grid" aria-label="Listado de películas">
+    {% for pelicula in peliculas %}
+    <article class="movie-card">
+        <a class="movie-poster {{ pelicula.estilo }}" href="{{ url_for('cliente.detalle_pelicula', pelicula_id=pelicula.id) }}">
+            <span class="format-badges">
+                {% for formato in pelicula.formatos %}
+                <span>{{ formato }}</span>
+                {% endfor %}
+            </span>
+            <span class="rating">{{ pelicula.clasificacion }}</span>
+            <span class="poster-mark" aria-hidden="true">CP</span>
+            <span class="poster-title">{{ pelicula.titulo }}</span>
+        </a>
+        <div class="movie-info">
+            <p>{{ pelicula.genero }} · {{ pelicula.duracion }}</p>
+            <h3>{{ pelicula.titulo }}</h3>
+            <a href="{{ url_for('cliente.detalle_pelicula', pelicula_id=pelicula.id) }}">Ver funciones <span aria-hidden="true">→</span></a>
+        </div>
+    </article>
+    {% endfor %}
+</section>
+
+<section class="promo-banner">
+    <div>
+        <p class="eyebrow">Experiencia Paradiso</p>
+        <h2>Tu película sabe mejor con un buen combo.</h2>
+        <p>Elegí tus productos antes de llegar y retiralos sin hacer fila.</p>
+    </div>
+    <a class="secondary-button" href="{{ url_for('cliente.seleccionar_servicios') }}">Conocer Candy</a>
+</section>
+
+<section class="section-heading upcoming-heading">
+    <div>
+        <p class="eyebrow">Próximamente</p>
+        <h2>Estrenos que se vienen</h2>
+    </div>
+</section>
+
+<section class="upcoming-grid" aria-label="Próximos estrenos">
+    {% for pelicula in estrenos %}
+    <article class="upcoming-card {{ pelicula.estilo }}">
+        <div>
+            <span>{{ pelicula.genero }}</span>
+            <h3>{{ pelicula.titulo }}</h3>
+            <p>Muy pronto en Cine Paradiso</p>
+        </div>
+    </article>
+    {% endfor %}
 </section>
 {% endblock %}
-
