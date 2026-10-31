@@ -1,0 +1,42 @@
+
+<div class="perfil-overlay" id="perfil-sin-sesion">
+
+    <a href="#" class="perfil-fondo"></a>
+
+    <div class="perfil-panel">
+
+        <a href="#" class="perfil-cerrar">X</a>
+
+        <h1>¡Bienvenido a Cine Paradiso!</h1>
+
+        <div class="perfil-formulario">
+
+            <label for="correo">Correo</label>
+            <input
+                type="email"
+                id="correo"
+                name="correo"
+                placeholder="Correo"
+            >
+
+            <label for="contrasena">Contraseña</label>
+            <input
+                type="password"
+                id="contrasena"
+                name="contrasena"
+                placeholder="Contraseña"
+            >
+
+        </div>
+
+        <a href="{{ url_for('auth.login') }}" class="perfil-boton">
+            Iniciar sesión
+        </a>
+
+        <a href="{{ url_for('auth.registro') }}" class="perfil-boton">
+            Crear cuenta
+        </a>
+
+    </div>
+
+</div>
