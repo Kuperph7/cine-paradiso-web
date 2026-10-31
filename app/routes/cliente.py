@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template
 
 
-cliente_bp = Blueprint("cliente", __name__)
+cliente_bp = Blueprint("cliente", __name__) 
 
 
 @cliente_bp.get("/")
@@ -43,7 +43,88 @@ def seleccionar_butacas(funcion_id):
 
 @cliente_bp.get("/compras/servicios")
 def seleccionar_servicios():
-    return render_template("cliente/seleccionar_servicios.html")
+    # Contenido temporal utilizado únicamente para desarrollar el template.
+    # En el hito de integración, los productos llegarán desde la API backend.
+    categorias = [
+        "Combos",
+        "Pochoclos",
+        "Bebidas",
+        "Snacks",
+        "Golosinas",
+        "Café y helados",
+    ]
+    productos = [
+        {
+            "nombre": "Combo Paradiso",
+            "descripcion": "Pochoclos grandes y dos gaseosas medianas",
+            "precio": 14800,
+            "categoria": "Combos",
+            "marca": "CP",
+            "estilo": "candy-combo",
+        },
+        {
+            "nombre": "Combo Dúo",
+            "descripcion": "Pochoclos medianos y dos gaseosas chicas",
+            "precio": 11200,
+            "categoria": "Combos",
+            "marca": "2×",
+            "estilo": "candy-duo",
+        },
+        {
+            "nombre": "Pochoclos clásicos",
+            "descripcion": "Pochoclos acaramelados tamaño grande",
+            "precio": 6800,
+            "categoria": "Pochoclos",
+            "marca": "POP",
+            "estilo": "candy-popcorn",
+        },
+        {
+            "nombre": "Gaseosa mediana",
+            "descripcion": "Vaso de 500 ml, sabor a elección",
+            "precio": 4200,
+            "categoria": "Bebidas",
+            "marca": "500",
+            "estilo": "candy-drink",
+        },
+        {
+            "nombre": "Nachos con cheddar",
+            "descripcion": "Nachos crocantes con salsa de cheddar",
+            "precio": 5900,
+            "categoria": "Snacks",
+            "marca": "N",
+            "estilo": "candy-nachos",
+        },
+        {
+            "nombre": "Chocolate",
+            "descripcion": "Chocolate con leche de 100 gramos",
+            "precio": 3500,
+            "categoria": "Golosinas",
+            "marca": "CH",
+            "estilo": "candy-chocolate",
+        },
+        {
+            "nombre": "Café con leche",
+            "descripcion": "Café suave con leche espumada",
+            "precio": 3900,
+            "categoria": "Café y helados",
+            "marca": "CAFÉ",
+            "estilo": "candy-coffee",
+        },
+        {
+            "nombre": "Helado individual",
+            "descripcion": "Pote individual, sabor a elección",
+            "precio": 4700,
+            "categoria": "Café y helados",
+            "marca": "ICE",
+            "estilo": "candy-icecream",
+        },
+    ]
+
+    return render_template(
+        "cliente/seleccionar_servicios.html",
+        categorias=categorias,
+        productos=productos,
+    )
 
 
 @cliente_bp.get("/compras/resumen")

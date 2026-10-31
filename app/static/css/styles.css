@@ -37,6 +37,13 @@
     .upcoming-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+    .candy-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .candy-categories {
+      justify-content: flex-start;
+      overflow-x: auto;
+    }
   }
 
   @media (max-width: 720px) {
@@ -111,6 +118,25 @@
     .upcoming-card {
       min-height: 190px;
     }
+    .candy-heading,
+    .candy-products-heading {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+    .candy-promo {
+      min-height: 390px;
+      padding: 2rem 3.2rem;
+    }
+    .candy-promo-copy {
+      width: 62%;
+    }
+    .candy-promo-art {
+      right: -5%;
+      width: 48%;
+    }
+    .candy-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
     .site-footer {
       grid-template-columns: 1fr;
       padding: 2.5rem 1.3rem;
@@ -136,6 +162,28 @@
     }
     .banner-principal h1 {
       font-size: 2.55rem;
+    }
+    .candy-heading h1 {
+      font-size: 2.35rem;
+    }
+    .candy-promo {
+      min-height: 470px;
+      padding: 1.5rem 2.3rem 2rem;
+    }
+    .candy-promo-copy {
+      align-self: end;
+      width: 100%;
+    }
+    .candy-promo-art {
+      top: -10%;
+      right: -12%;
+      bottom: auto;
+      width: 76%;
+      height: 60%;
+      opacity: 0.65;
+    }
+    .candy-grid {
+      grid-template-columns: 1fr;
     }
   }
 
@@ -683,6 +731,346 @@
     font-size: 0.78rem;
   }
   /* ===================== FIN PROMOCIÓN Y PRÓXIMOS ESTRENOS ===================== */
+
+  /* ==================== INICIO CANDY ==================== */
+  .candy-heading,
+  .candy-products-heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 2rem;
+  }
+  .candy-heading {
+    margin: 3.5rem 0 1.6rem;
+  }
+  .candy-heading h1,
+  .candy-products-heading h2 {
+    max-width: 760px;
+    margin: 0;
+    color: #0b1630;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(2.2rem, 4.5vw, 3.7rem);
+    font-weight: 600;
+    letter-spacing: -0.04em;
+    line-height: 1.02;
+  }
+  .candy-heading > p,
+  .candy-products-heading > p {
+    max-width: 350px;
+    margin: 0 0 0.35rem;
+    color: #607086;
+    line-height: 1.6;
+  }
+  .candy-promo {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 430px;
+    overflow: hidden;
+    padding: clamp(2rem, 6vw, 5rem);
+    border-radius: 28px;
+    background:
+      radial-gradient(circle at 72% 30%, rgba(255, 255, 255, 0.28), transparent 24%),
+      linear-gradient(135deg, #551c3a, #a9475f 58%, #efae5d);
+    box-shadow: 0 18px 45px rgba(11, 22, 48, 0.16);
+    color: #ffffff;
+  }
+  .candy-promo::before {
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(circle, rgba(255, 255, 255, 0.12) 2px, transparent 2px);
+    background-size: 28px 28px;
+    content: "";
+    mask-image: linear-gradient(to right, black, transparent 72%);
+  }
+  .candy-promo-copy {
+    position: relative;
+    z-index: 2;
+    width: 54%;
+  }
+  .candy-promo .eyebrow {
+    color: #ffe18a;
+  }
+  .candy-promo h2 {
+    margin: 0;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(3rem, 6vw, 5.2rem);
+    font-weight: 600;
+    letter-spacing: -0.05em;
+    line-height: 0.92;
+  }
+  .candy-promo-copy > p:not(.eyebrow) {
+    max-width: 480px;
+    margin: 1.2rem 0 1.7rem;
+    color: #fdeaf0;
+    line-height: 1.6;
+  }
+  .candy-promo-copy > a {
+    display: inline-flex;
+    min-height: 46px;
+    align-items: center;
+    padding: 0.75rem 1.3rem;
+    border-radius: 999px;
+    background: #f3c84b;
+    color: #0b1630;
+    font-weight: 800;
+  }
+  .candy-promo-art {
+    position: absolute;
+    top: 10%;
+    right: 4%;
+    bottom: 0;
+    width: 42%;
+  }
+  .popcorn-box,
+  .drink-cup {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    border: 8px solid rgba(255, 255, 255, 0.82);
+    color: #ffffff;
+    font-family: Georgia, serif;
+    font-size: 2.5rem;
+    font-style: italic;
+    font-weight: 700;
+    filter: drop-shadow(0 22px 25px rgba(44, 8, 24, 0.25));
+  }
+  .popcorn-box {
+    right: 42%;
+    bottom: -8%;
+    width: 180px;
+    height: 245px;
+    border-radius: 22px 22px 34px 34px;
+    background: repeating-linear-gradient(90deg, #ffffff 0 22px, #c53551 22px 45px);
+    color: #6a1c38;
+    transform: rotate(-8deg);
+  }
+  .drink-cup {
+    right: 2%;
+    bottom: -5%;
+    width: 145px;
+    height: 230px; 
+    border-radius: 18px 18px 45px 45px;
+    background: linear-gradient(155deg, #f3c84b, #ef7653);
+    transform: rotate(9deg);
+  }
+  .candy-promo-arrow {
+    position: absolute;
+    top: 50%;
+    z-index: 3;
+    display: grid;
+    width: 42px;
+    height: 42px;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 50%;
+    background: rgba(11, 22, 48, 0.35);
+    color: #ffffff;
+    font-size: 0;
+    transform: translateY(-50%);
+  }
+  .candy-promo-arrow::before {
+    position: relative;
+    top: 7px;
+    width: 9px;
+    height: 9px;
+    border-top: 2px solid currentColor;
+    border-right: 2px solid currentColor;
+    content: "";
+  }
+  .candy-promo-arrow-left {
+    left: 1rem;
+  }
+  .candy-promo-arrow-left::before {
+    transform: rotate(-135deg);
+  }
+  .candy-promo-arrow-right {
+    right: 1rem;
+  }
+  .candy-promo-arrow-right::before {
+    transform: rotate(45deg);
+  }
+  .candy-categories {
+    display: flex;
+    justify-content: center;
+    gap: 0.55rem;
+    margin: 1.5rem 0 4rem;
+    padding: 0.75rem;
+    border: 1px solid rgba(154, 112, 0, 0.14);
+    border-radius: 16px;
+    background: #ffecb4;
+    scrollbar-width: none;
+  }
+  .candy-categories::-webkit-scrollbar {
+    display: none;
+  }
+  .candy-categories a {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 0.42rem;
+    padding: 0.7rem 0.9rem;
+    border-radius: 999px;
+    color: #283750;
+    font-size: 0.78rem;
+    font-weight: 750;
+    white-space: nowrap;
+  }
+  .candy-categories a.active,
+  .candy-categories a:hover {
+    background: #f3c84b;
+    color: #0b1630;
+  }
+  .candy-products-heading {
+    margin-bottom: 1.5rem;
+  }
+  .candy-products-heading h2 {
+    font-size: clamp(2rem, 4vw, 3rem);
+  }
+  .candy-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: clamp(1rem, 2.2vw, 1.5rem);
+  }
+  .candy-card {
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid rgba(16, 32, 68, 0.12);
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.86);
+    box-shadow: 0 14px 34px rgba(11, 22, 48, 0.09);
+    transition:
+      transform 180ms ease,
+      box-shadow 180ms ease;
+  }
+  .candy-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 42px rgba(11, 22, 48, 0.15);
+  }
+  .candy-product-image {
+    position: relative;
+    display: grid;
+    min-height: 235px;
+    place-items: center;
+    overflow: hidden;
+  }
+  .candy-product-image::before,
+  .candy-product-image::after {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.18);
+    content: "";
+  }
+  .candy-product-image::before {
+    top: -30px;
+    right: -20px;
+    width: 140px;
+    height: 140px;
+  }
+  .candy-product-image::after {
+    bottom: -45px;
+    left: -25px;
+    width: 170px;
+    height: 170px;
+  }
+  .candy-product-image span {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    width: 112px;
+    aspect-ratio: 1;
+    place-items: center;
+    border: 2px solid rgba(255, 255, 255, 0.38);
+    border-radius: 34% 66% 48% 52%;
+    background: rgba(255, 255, 255, 0.16);
+    color: #ffffff;
+    font-family: Georgia, serif;
+    font-size: 1.55rem;
+    font-style: italic;
+    font-weight: 700;
+    transform: rotate(-6deg);
+  }
+  .candy-combo {
+    background: linear-gradient(145deg, #8d294e, #e8835e);
+  }
+  .candy-duo {
+    background: linear-gradient(145deg, #172d58, #4f75b2);
+  }
+  .candy-popcorn {
+    background: linear-gradient(145deg, #b06d16, #f3c84b);
+  }
+  .candy-drink {
+    background: linear-gradient(145deg, #153954, #3b9aaa);
+  }
+  .candy-nachos {
+    background: linear-gradient(145deg, #a84422, #ef9a3c);
+  }
+  .candy-chocolate {
+    background: linear-gradient(145deg, #472820, #9b5a3c);
+  }
+  .candy-coffee {
+    background: linear-gradient(145deg, #3a2b24, #a67855);
+  }
+  .candy-icecream {
+    background: linear-gradient(145deg, #8a4f7d, #e09cc0);
+  }
+  .candy-card-content {
+    padding: 1.1rem;
+  }
+  .candy-product-category {
+    margin: 0 0 0.35rem;
+    color: #a97900;
+    font-size: 0.68rem;
+    font-weight: 850;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .candy-card-content h3 {
+    min-height: 2.35em;
+    margin: 0;
+    color: #0b1630;
+    font-family: Georgia, serif;
+    font-size: 1.2rem;
+    line-height: 1.15;
+  }
+  .candy-card-content > p:not(.candy-product-category) {
+    min-height: 3em;
+    margin: 0.55rem 0 1rem;
+    color: #607086;
+    font-size: 0.82rem;
+    line-height: 1.5;
+  }
+  .candy-card-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid rgba(16, 32, 68, 0.1);
+  }
+  .candy-card-actions strong {
+    color: #0b1630;
+    font-size: 1.05rem;
+  }
+  .candy-card-actions button {
+    display: grid;
+    width: 38px;
+    height: 38px;
+    place-items: center;
+    border: 0;
+    border-radius: 50%;
+    background: #102044;
+    color: #ffffff;
+    font-size: 1.35rem;
+    font-weight: 500;
+    line-height: 1;
+  }
+  .candy-card-actions button:hover {
+    background: #f3c84b;
+    color: #0b1630;
+  }
+  /* ===================== FIN CANDY ===================== */
 
   /* ==================== INICIO FOOTER ==================== */
   .site-footer {

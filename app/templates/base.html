@@ -14,8 +14,8 @@
                 <span>Una historia en cada pantalla</span>
             </a>
             <nav class="main-nav" aria-label="Navegación principal">
-                <a class="active" href="{{ url_for('cliente.cartelera') }}">Cartelera</a>
-                <a href="{{ url_for('cliente.seleccionar_servicios') }}">Candy</a>
+                <a{% if request.endpoint == 'cliente.cartelera' %} class="active"{% endif %} href="{{ url_for('cliente.cartelera') }}">Cartelera</a>
+                <a{% if request.endpoint == 'cliente.seleccionar_servicios' %} class="active"{% endif %} href="{{ url_for('cliente.seleccionar_servicios') }}">Candy</a>
                 <a href="#sucursales">Sucursales</a>
                 <a href="{{ url_for('cliente.mis_entradas') }}">Mis entradas</a>
                 <a class="profile-link" href="{{ url_for('auth.perfil') }}">Perfil</a>

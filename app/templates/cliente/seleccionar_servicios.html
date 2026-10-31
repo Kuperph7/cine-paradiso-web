@@ -1,4 +1,64 @@
 {% extends "base.html" %}
-{% block title %}Servicios | Cine Paradiso{% endblock %}
-{% block content %}<section class="panel"><h1>Agregar servicios</h1><p>Combos y servicios disponibles para la compra.</p></section>{% endblock %}
+{% block title %}Candy | Cine Paradiso{% endblock %}
+{% block content %}
+<section class="candy-heading" aria-labelledby="candy-title"> 
+    <div>
+        <p class="eyebrow">Candy Cine Paradiso</p>
+        <h1 id="candy-title">El mejor acompañamiento para tu película</h1>
+    </div>
+    <p>Elegí tus productos favoritos y retiralos en el cine sin hacer fila.</p>
+</section>
+
+<section class="candy-promo" aria-label="Promoción destacada">
+    <button class="candy-promo-arrow candy-promo-arrow-left" type="button" aria-label="Promoción anterior">‹</button>
+    <div class="candy-promo-copy">
+        <p class="eyebrow">Promo de la semana</p>
+        <h2>Más cine,<br>más sabor.</h2>
+        <p>Disfrutá un combo grande y compartí la experiencia Paradiso.</p>
+        <a href="#productos-candy">Ver productos</a>
+    </div>
+    <div class="candy-promo-art" aria-hidden="true">
+        <span class="popcorn-box">CP</span>
+        <span class="drink-cup">CP</span>
+    </div>
+    <button class="candy-promo-arrow candy-promo-arrow-right" type="button" aria-label="Siguiente promoción">›</button>
+</section>
+
+<nav class="candy-categories" aria-label="Categorías de Candy">
+    {% for categoria in categorias %}
+    <a{% if loop.first %} class="active"{% endif %} href="#productos-candy">
+        <span aria-hidden="true">★</span>{{ categoria }}
+    </a>
+    {% endfor %}
+</nav>
+
+<section class="candy-products" id="productos-candy" aria-labelledby="products-title">
+    <div class="candy-products-heading">
+        <div>
+            <p class="eyebrow">Para disfrutar en tu función</p>
+            <h2 id="products-title">Productos de Candy</h2>
+        </div>
+        <p>{{ productos|length }} opciones disponibles</p>
+    </div>
+
+    <div class="candy-grid">
+        {% for producto in productos %}
+        <article class="candy-card">
+            <div class="candy-product-image {{ producto.estilo }}" aria-hidden="true">
+                <span>{{ producto.marca }}</span>
+            </div>
+            <div class="candy-card-content">
+                <p class="candy-product-category">{{ producto.categoria }}</p>
+                <h3>{{ producto.nombre }}</h3>
+                <p>{{ producto.descripcion }}</p>
+                <div class="candy-card-actions">
+                    <strong>${{ "{:,.0f}".format(producto.precio).replace(",", ".") }}</strong>
+                    <button type="button" aria-label="Agregar {{ producto.nombre }}">+</button>
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
 
