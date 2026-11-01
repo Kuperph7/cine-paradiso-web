@@ -206,6 +206,10 @@ def detalle_pelicula(pelicula_id):
 
 @cliente_bp.get("/funciones/<int:funcion_id>/butacas")
 def seleccionar_butacas(funcion_id):
+    # Esta pantalla recibe el ID de la función elegida en el detalle de la
+    # película. En la integración, Flask consultará mediante api_client
+    # GET /cartelera/funciones/{funcion_id}/butacas para obtener la sala y
+    # distinguir las butacas disponibles de las ocupadas.
     return render_template(
         "cliente/seleccionar_butacas.html", funcion_id=funcion_id
     )
