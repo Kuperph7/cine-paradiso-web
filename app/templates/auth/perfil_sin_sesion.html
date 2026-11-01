@@ -1,42 +1,32 @@
 
-<div class="perfil-overlay" id="perfil-sin-sesion">
+<aside class="perfil-panel" id="perfil-sin-sesion">
 
-    <a href="#" class="perfil-fondo"></a>
+    <h1>¡Bienvenido a Cine Paradiso!</h1>
 
-    <div class="perfil-panel">
+    <a href="{{ request.path }}" class="perfil-cerrar">X</a>
 
-        <a href="#" class="perfil-cerrar">X</a>
+    <div class="perfil-campos">
 
-        <h1>¡Bienvenido a Cine Paradiso!</h1>
+        <input
+            type="email"
+            name="correo"
+            placeholder="Correo"
+        >
 
-        <div class="perfil-formulario">
-
-            <label for="correo">Correo</label>
-            <input
-                type="email"
-                id="correo"
-                name="correo"
-                placeholder="Correo"
-            >
-
-            <label for="contrasena">Contraseña</label>
-            <input
-                type="password"
-                id="contrasena"
-                name="contrasena"
-                placeholder="Contraseña"
-            >
-
-        </div>
-
-        <a href="{{ url_for('auth.login') }}" class="perfil-boton">
-            Iniciar sesión
-        </a>
-
-        <a href="{{ url_for('auth.registro') }}" class="perfil-boton">
-            Crear cuenta
-        </a>
+        <input
+            type="password"
+            name="contrasena"
+            placeholder="Contraseña"
+        >
 
     </div>
 
-</div>
+    <a href="{{ url_for('auth.login') }}" class="perfil-boton">
+        Iniciar sesión
+    </a>
+
+    <a href="{{ url_for('auth.registro') }}" class="perfil-boton">
+        Crear cuenta
+    </a>
+
+</aside>

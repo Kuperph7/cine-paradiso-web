@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="es">
 <head>
@@ -8,23 +9,36 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/perfil.css') }}">
 </head>
 <body>
-    <header class="site-header">
-        <a class="brand" href="{{ url_for('cliente.cartelera') }}">Cine Paradiso</a>
-        <nav>
-            <a href="{{ url_for('cliente.cartelera') }}">Cartelera</a>
-            <a href="{{ url_for('cliente.mis_compras') }}">Mis compras</a>
-            <a href="{{ url_for('cliente.mis_entradas') }}">Mis entradas</a>
-            <a href="#perfil-sin-sesion">Perfil</a>
-        </nav>
-    </header>
-    <main class="page-shell">
-        {% block content %}{% endblock %}
-    </main>
 
-    {% include "auth/perfil_sin_sesion.html" %}
-    
-    {% include "auth/perfil_con_sesion.html" %}
-    
+    <div class="layout-principal">
+
+        <div class="contenido-principal">
+
+            <header class="site-header">
+                <a class="brand" href="{{ url_for('cliente.cartelera') }}">
+                    Cine Paradiso
+                </a>
+
+                <nav>
+                    <a href="{{ url_for('cliente.cartelera') }}">Cartelera</a>
+                    <a href="{{ url_for('cliente.mis_compras') }}">Mis compras</a>
+                    <a href="{{ url_for('cliente.mis_entradas') }}">Mis entradas</a>
+
+                    <a href="#perfil-sin-sesion" class="perfil-link">
+                        👤
+                    </a>
+                </nav>
+            </header>
+
+            <main class="page-shell">
+                {% block content %}{% endblock %}
+            </main>
+
+        </div>
+
+        {% include "auth/perfil_sin_sesion.html" %}
+
+    </div>
+
 </body>
 </html>
-

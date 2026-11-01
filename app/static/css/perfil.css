@@ -1,107 +1,132 @@
 
-.perfil-overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1000;
-}
-
-.perfil-overlay:target {
-    display: block;
-}
-
-.perfil-fondo {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.2);
-}
-
-.perfil-panel {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 360px;
-    max-width: 100%;
-    height: 100%;
-    box-sizing: border-box;
-    padding: 40px 25px;
+.layout-principal {
+    display: flex;
+    min-height: 100vh;
     background: #A3B7C6;
-    color: #1D2A44;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
-.perfil-cerrar {
-    position: absolute;
-    top: 15px;
-    right: 20px;
-    color: #1D2A44;
-    font-size: 24px;
+.contenido-principal {
+    flex: 1;
+    min-width: 0;
+}
+
+.perfil-link {
+    display: flex;
+    width: 36px;
+    height: 36px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #FFFFFF;
+    font-size: 20px;
     text-decoration: none;
 }
 
+.perfil-panel {
+    display: none;
+    width: 31%;
+    min-width: 215px;
+    max-width: 360px;
+    height: 100vh;
+    box-sizing: border-box;
+    padding: 30px 24px;
+    background: #A3B7C6;
+    color: #1D2A44;
+    border-left: 1px solid rgba(29, 42, 68, 0.15);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.perfil-panel:target {
+    display: block;
+}
+
 .perfil-panel h1 {
-    margin-top: 30px;
-    margin-bottom: 35px;
+    margin-top: 10px;
+    margin-bottom: 70px;
     color: #1D2A44;
-    font-size: 30px;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 26px;
     font-weight: normal;
-    text-align: center;
+    line-height: 1.1;
 }
 
-.perfil-formulario {
-    display: flex;
-    flex-direction: column;
-}
-
-.perfil-formulario label {
-    margin-bottom: 8px;
+.perfil-cerrar {
+    display: block;
+    margin-bottom: 15px;
     color: #1D2A44;
+    text-align: right;
+    text-decoration: none;
+    font-size: 18px;
 }
 
-.perfil-formulario input {
+.perfil-campos input {
     width: 100%;
     height: 50px;
     box-sizing: border-box;
-    margin-bottom: 20px;
+    margin-bottom: 22px;
     padding: 10px;
-    border: 1px solid #1D2A44;
-    border-radius: 5px;
-    background: transparent;
+    border: 1px solid #777777;
+    border-radius: 2px;
+    background: #FFFFFF;
     color: #1D2A44;
     text-align: center;
 }
 
-.perfil-formulario input::placeholder {
+.perfil-campos input::placeholder {
     color: #1D2A44;
 }
 
 .perfil-boton {
     display: block;
-    width: 140px;
-    margin: 15px auto;
-    padding: 12px;
+    width: 116px;
+    margin: 16px auto;
+    padding: 12px 8px;
     border-radius: 25px;
     background: #F4D068;
     color: #1D2A44;
     text-align: center;
     text-decoration: none;
+    font-size: 12px;
 }
 
-.perfil-boton:hover {
-    background: #FBE9B5;
-}
+@media (max-width: 720px) {
+    .layout-principal {
+        flex-direction: column;
+    }
 
-@media (max-width: 480px) {
     .perfil-panel {
         width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        height: auto;
     }
 }
+
+
+@media (max-width: 720px) {
+    .layout-principal {
+        flex-direction: column;
+    }
+
+    .perfil-panel {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        height: auto;
+        padding: 30px 24px;
+        border-left: none;
+        border-top: 1px solid rgba(29, 42, 68, 0.15);
+    }
+
+    .perfil-panel h1 {
+        margin-bottom: 35px;
+    }
+
+    .perfil-campos {
+        max-width: 400px;
+    }
+}
+
 
 
 .perfil-sesion-overlay {
