@@ -29,8 +29,178 @@ def cartelera():
 
 @cliente_bp.get("/peliculas/<int:pelicula_id>")
 def detalle_pelicula(pelicula_id):
+    # Datos temporales utilizados para maquetar el detalle de cada película.
+    # En la integración, esta información llegará desde la API backend mediante
+    # api_client, usando el identificador recibido en la URL.
+    peliculas_temporales = {
+        1: {
+            "id": 1,
+            "titulo": "Horizonte final",
+            "genero": "Ciencia ficción",
+            "duracion": "2 h 08 min",
+            "clasificacion": "+13",
+            "formatos": ["2D", "Subtitulada"],
+            "estreno": "14 de noviembre de 2026",
+            "estilo": "poster-space",
+            "sinopsis": (
+                "Una tripulación emprende el último viaje hacia una estación "
+                "perdida. Al cruzar el límite conocido, deberá decidir cuánto "
+                "está dispuesta a arriesgar para regresar a casa."
+            ),
+        },
+        2: {
+            "id": 2,
+            "titulo": "La última función",
+            "genero": "Drama",
+            "duracion": "1 h 52 min",
+            "clasificacion": "ATP",
+            "formatos": ["2D"],
+            "estreno": "7 de noviembre de 2026",
+            "estilo": "poster-stage",
+            "sinopsis": (
+                "El cierre de un antiguo cine reúne a sus trabajadores y "
+                "espectadores para una despedida capaz de cambiar sus historias."
+            ),
+        },
+        3: {
+            "id": 3,
+            "titulo": "Código nocturno",
+            "genero": "Suspenso",
+            "duracion": "1 h 46 min",
+            "clasificacion": "+16",
+            "formatos": ["3D", "Subtitulada"],
+            "estreno": "20 de noviembre de 2026",
+            "estilo": "poster-night",
+            "sinopsis": (
+                "Una analista descubre un mensaje oculto que conecta una serie "
+                "de desapariciones y la obliga a recorrer la ciudad antes del amanecer."
+            ),
+        },
+        4: {
+            "id": 4,
+            "titulo": "Un verano contigo",
+            "genero": "Romance",
+            "duracion": "1 h 39 min",
+            "clasificacion": "ATP",
+            "formatos": ["2D"],
+            "estreno": "12 de noviembre de 2026",
+            "estilo": "poster-summer",
+            "sinopsis": (
+                "Dos amigos vuelven al pueblo donde crecieron y descubren que "
+                "algunas promesas pueden esperar, pero no para siempre."
+            ),
+        },
+        5: {
+            "id": 5,
+            "titulo": "Planeta salvaje",
+            "genero": "Aventura",
+            "duracion": "2 h 14 min",
+            "clasificacion": "+13",
+            "formatos": ["3D"],
+            "estreno": "28 de noviembre de 2026",
+            "estilo": "poster-jungle",
+            "sinopsis": (
+                "Una expedición científica queda aislada en un mundo desconocido "
+                "donde cada forma de vida protege un secreto extraordinario."
+            ),
+        },
+        6: {
+            "id": 6,
+            "titulo": "Risas en familia",
+            "genero": "Comedia",
+            "duracion": "1 h 31 min",
+            "clasificacion": "ATP",
+            "formatos": ["2D", "Subtitulada"],
+            "estreno": "5 de noviembre de 2026",
+            "estilo": "poster-comedy",
+            "sinopsis": (
+                "Un festejo familiar perfectamente organizado se convierte en "
+                "una sucesión de enredos que nadie olvidará."
+            ),
+        },
+        7: {
+            "id": 7,
+            "titulo": "El guardián del tiempo",
+            "genero": "Fantasía",
+            "duracion": "2 h 02 min",
+            "clasificacion": "+13",
+            "formatos": ["3D"],
+            "estreno": "26 de noviembre de 2026",
+            "estilo": "poster-time",
+            "sinopsis": (
+                "Un aprendiz recibe la misión de custodiar el reloj que mantiene "
+                "en equilibrio el pasado y el futuro."
+            ),
+        },
+        8: {
+            "id": 8,
+            "titulo": "Velocidad límite",
+            "genero": "Acción",
+            "duracion": "1 h 58 min",
+            "clasificacion": "+16",
+            "formatos": ["2D", "Subtitulada"],
+            "estreno": "19 de noviembre de 2026",
+            "estilo": "poster-speed",
+            "sinopsis": (
+                "Una piloto retirada vuelve a competir para descubrir quién está "
+                "detrás de una peligrosa red de carreras clandestinas."
+            ),
+        },
+    }
+
+    pelicula = peliculas_temporales.get(
+        pelicula_id, peliculas_temporales[1]
+    )
+
+    # Funciones temporales para visualizar la selección de disponibilidad.
+    # Luego serán reemplazadas por las funciones disponibles devueltas por la API.
+    funciones_por_sucursal = [
+        {
+            "nombre": "Cine Paradiso Centro",
+            "direccion": "Av. Corrientes 1234, CABA",
+            "funciones": [
+                {
+                    "id": 101,
+                    "fecha": "Hoy",
+                    "hora": "18:30",
+                    "formato": "2D",
+                    "idioma": "Castellano",
+                },
+                {
+                    "id": 102,
+                    "fecha": "Hoy",
+                    "hora": "21:15",
+                    "formato": "3D",
+                    "idioma": "Subtitulada",
+                },
+            ],
+        },
+        {
+            "nombre": "Cine Paradiso Norte",
+            "direccion": "Av. Cabildo 2345, CABA",
+            "funciones": [
+                {
+                    "id": 103,
+                    "fecha": "Mañana",
+                    "hora": "17:45",
+                    "formato": "2D",
+                    "idioma": "Castellano",
+                },
+                {
+                    "id": 104,
+                    "fecha": "Mañana",
+                    "hora": "20:30",
+                    "formato": "2D",
+                    "idioma": "Subtitulada",
+                },
+            ],
+        },
+    ]
+
     return render_template(
-        "cliente/detalle_pelicula.html", pelicula_id=pelicula_id
+        "cliente/detalle_pelicula.html",
+        pelicula=pelicula,
+        funciones_por_sucursal=funciones_por_sucursal,
     )
 
 
