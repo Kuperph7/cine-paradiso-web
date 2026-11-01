@@ -53,6 +53,24 @@ def resumen_compra():
 
 @cliente_bp.get("/mis-compras")
 def mis_compras():
+    compras_usuario = [
+        {
+            "id": 10293,
+            "pelicula": "Zootopia 3D",
+            "fecha": "22/05/2026",
+            "monto": "12.500",
+            "estado": "Confirmada",
+            "cancelable": True
+        },
+        {
+            "id": 10182,
+            "pelicula": "Horizonte Final",
+            "fecha": "10/04/2026",
+            "monto": "8.000",
+            "estado": "Finalizada",
+            "cancelable": False
+        }
+    ]
     return render_template("cliente/mis_compras.html")
 
 
@@ -63,7 +81,43 @@ def mis_entradas():
 
 @cliente_bp.get("/entradas/<int:entrada_id>")
 def detalle_entrada(entrada_id):
+    compra_data = {
+        "fecha": "22/5/26",
+        "detalle_entradas": "Entrada Zootopia 3D Inglés VIP x2",
+        "detalle_combos": "Combo palomitas con bebidas x1",
+        "monto_total": "12.500",
+        "qr_url": "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=CINEPARADISO-COMPRA-10293",
+        "cancelable": True,
+        "fecha_limite_cancelacion": "20/05/2026"
+    }
     return render_template(
-        "cliente/detalle_entrada.html", entrada_id=entrada_id
+        "cliente/detalle_entrada.html", entrada_id=entrada_id, compra=compra_data
     )
 
+
+@cliente_bp.get("/sucursales")
+def sucursales():
+    lista_sucursales = [
+        {
+            "nombre": "Sede Central",
+            "direccion": "Av. Corrientes 1234, CABA",
+            "descripcion": "Salas 3D/4D, estacionamiento propio y acceso accesible.",
+            "imagen": "sucursal_central.jpg",
+            "mapa_url": "https://maps.google.com"
+        },
+        {
+            "nombre": "Sede Belgrano",
+            "direccion": "Av. Cabildo 2345, CABA",
+            "descripcion": "Sonido Dolby Atmos, candy bar extendido y zona VIP.",
+            "imagen": "sucursal_belgrano.jpg",
+            "mapa_url": "https://maps.google.com"
+        },
+        {
+            "nombre": "Sede Palermo",
+            "direccion": "Av. Santa Fe 3456, CABA",
+            "descripcion": "Proyección IMAX, patio gastronómico y estacionamiento.",
+            "imagen": "sucursal_palermo.jpg",
+            "mapa_url": "https://maps.google.com"
+        }
+    ]
+    return render_template("cliente/sucursales.html", sucursales=lista_sucursales)

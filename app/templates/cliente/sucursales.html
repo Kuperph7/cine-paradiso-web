@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Sucursales | Cine Paradiso{% endblock %}
+
+{% block content %}
+<section class="sucursales-container">
+    <h1 class="page-title">Sucursales</h1>
+
+    <div class="sucursales-grid">
+        {% for sucursal in sucursales %}
+        <article class="sucursal-card">
+            <div class="sucursal-image-wrapper">
+                <img src="{{ url_for('static', filename='Imagenes/' + sucursal.imagen) }}" alt="Foto de {{ sucursal.nombre }}" class="sucursal-image">
+            </div>
+            <div class="sucursal-info">
+                <div class="sucursal-text">
+                    <h2 class="sucursal-nombre">{{ sucursal.nombre }}</h2>
+                    <p class="sucursal-direccion">{{ sucursal.direccion }}</p>
+                    <p class="sucursal-descripcion">{{ sucursal.descripcion }}</p>
+                </div>
+                <div class="sucursal-action">
+                    {% if sucursal.mapa_url %}
+                    <a href="{{ sucursal.mapa_url }}" target="_blank" class="btn-mapa" aria-label="Ver mapa de {{ sucursal.nombre }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"></path>
+                            <circle cx="12" cy="10" r="3"></circle>
+                        </svg>
+                        <span>Mapa</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </article>
+        {% else %}
+        <p>No hay sucursales disponibles en este momento.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

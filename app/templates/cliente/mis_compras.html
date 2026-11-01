@@ -1,4 +1,29 @@
 {% extends "base.html" %}
-{% block title %}Mis compras | Cine Paradiso{% endblock %}
-{% block content %}<section class="panel"><h1>Mis compras</h1><p>Historial de compras y cancelaciones.</p></section>{% endblock %}
 
+{% block title %}Mis Compras | Cine Paradiso{% endblock %}
+
+{% block content %}
+<section class="compras-container">
+    <h1 class="page-title">Historial de Consumos</h1>
+
+    <div class="compras-lista">
+        {% for compra in compras %}
+        <article class="compra-card">
+            <div class="compra-info">
+                <h2 class="compra-pelicula">{{ compra.pelicula }}</h2>
+                <p class="compra-fecha">Fecha: {{ compra.fecha }}</p>
+                <p class="compra-monto">Monto total: ${{ compra.monto }}</p>
+                <span class="compra-estado estado-{{ compra.estado | lower }}">{{ compra.estado }}</span>
+            </div>
+            <div class="compra-acciones">
+                <a href="{{ url_for('cliente.detalle_entrada', entrada_id=compra.id) }}" class="btn-ver-ticket">
+                    Ver Ticket / QR
+                </a>
+            </div>
+        </article>
+        {% else %}
+        <p>No tienes compras registradas en el sistema.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
