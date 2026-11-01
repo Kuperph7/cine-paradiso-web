@@ -7,6 +7,7 @@
     <title>{% block title %}Cine Paradiso{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/perfil.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/preguntas_frecuentes.css') }}">
 </head>
 <body>
 
@@ -33,6 +34,37 @@
             <main class="page-shell">
                 {% block content %}{% endblock %}
             </main>
+            <footer class="preguntas-footer">
+
+                <div class="preguntas-footer-col">
+
+                    <h2>Contacto</h2>
+
+                    <p>cineparadiso@gmail.com</p>
+
+                    <p>XX-XXX-XXXX</p>
+
+                    <a href="{{ url_for('cliente.preguntas_frecuentes') }}">
+                        Preguntas frecuentes
+                    </a>
+
+                </div>
+
+                <div class="preguntas-footer-col">
+
+                    <h2>Red social</h2>
+
+                    <p>@cineparadiso</p>
+
+                    <p>Instagram · X · Facebook</p>
+
+                </div>
+
+                <p class="preguntas-copyright">
+                    © 2026 Cine Paradiso. Todos los derechos reservados.
+                </p>
+
+            </footer>
 
         </div>
 

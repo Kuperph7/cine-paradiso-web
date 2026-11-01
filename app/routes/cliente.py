@@ -49,3 +49,6 @@ def detalle_entrada(entrada_id):
         "cliente/detalle_entrada.html", entrada_id=entrada_id
     )
 
+@cliente_bp.get("/preguntas-frecuentes")
+def preguntas_frecuentes():
+    return render_template("cliente/preguntas_frecuentes.html")
