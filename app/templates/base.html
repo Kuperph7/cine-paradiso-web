@@ -10,6 +10,7 @@
     <header class="site-header">
         <a class="brand" href="{{ url_for('cliente.cartelera') }}">Cine Paradiso</a>
         <nav>
+            <a href="{{ url_con_filtros('cliente.configurar_categoria') }}">Categoría</a>
             <a href="{{ url_for('cliente.cartelera') }}">Cartelera</a>
             <a href="{{ url_for('cliente.mis_compras') }}">Mis compras</a>
             <a href="{{ url_for('cliente.mis_entradas') }}">Mis entradas</a>

@@ -1,0 +1,39 @@
+.watched-page {
+    padding: 24px;
+    background: #a4b9c6;
+    color: #203047;
+}
+
+.watched-page h1 {
+    margin: 0 0 48px;
+    font-family: Georgia, serif;
+    font-size: 38px;
+    font-weight: normal;
+}
+
+.watched-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 56px 24px;
+}
+
+.watched-poster {
+    aspect-ratio: 3 / 4;
+    border-radius: 28px;
+    background: #ede7f1;
+}
+
+@media (max-width: 720px) {
+    .watched-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 24px 16px;
+    }
+
+    .watched-page {
+        padding: 16px;
+    }
+
+    .watched-page h1 {
+        font-size: 28px;
+    }
+}
