@@ -299,7 +299,57 @@ def seleccionar_servicios():
 
 @cliente_bp.get("/compras/resumen")
 def resumen_compra():
-    return render_template("cliente/resumen_compra.html")
+    # Compra temporal utilizada únicamente para desarrollar el template.
+    # En la integración, la selección llegará desde los pasos anteriores:
+    # detalle de película -> función -> butacas -> productos de Candy.
+    # Flask deberá conservar estos datos en la sesión o recuperarlos del
+    # backend antes de renderizar este resumen.
+    compra = {
+        "pelicula": "Horizonte final",
+        "clasificacion": "+13",
+        "estilo": "poster-space",
+        "funcion": {
+            "id": 101,
+            "fecha": "Sábado 14 de noviembre",
+            "hora": "18:30",
+            "sucursal": "Cine Paradiso Centro",
+            "sala": "Sala 3",
+            "formato": "2D",
+            "idioma": "Castellano",
+        },
+        "butacas": [
+            {"id": 12, "codigo": "F6", "precio": 6500},
+            {"id": 13, "codigo": "F7", "precio": 6500},
+        ],
+        "servicios": [
+            {
+                "nombre": "Combo Paradiso",
+                "cantidad": 1,
+                "precio_unitario": 14800,
+            },
+        ],
+    }
+
+    total_entradas = sum(
+        butaca["precio"] for butaca in compra["butacas"]
+    )
+    total_servicios = sum(
+        servicio["cantidad"] * servicio["precio_unitario"]
+        for servicio in compra["servicios"]
+    )
+
+    # Este GET solamente muestra el resumen. Más adelante se agregará una ruta
+    # POST del frontend para recibir la confirmación, llamar mediante api_client
+    # a POST /compras y procesar la respuesta 201 del backend. Esa respuesta
+    # contendrá las entradas y sus QR; luego Flask deberá redirigir al template
+    # de confirmación/QR, nunca generar el QR desde este resumen.
+    return render_template(
+        "cliente/resumen_compra.html",
+        compra=compra,
+        total_entradas=total_entradas,
+        total_servicios=total_servicios,
+        total=total_entradas + total_servicios,
+    )
 
 
 @cliente_bp.get("/mis-compras")
