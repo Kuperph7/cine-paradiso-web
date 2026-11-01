@@ -8,6 +8,8 @@ cliente_bp = Blueprint("cliente", __name__)
 def cartelera():
     # Películas temporales utilizadas únicamente para visualizar el mockup.
     # Más adelante estos datos serán reemplazados por la respuesta de la API.
+    # Flask deberá leer los filtros enviados por query params y consultar
+    # GET /cartelera mediante api_client antes de renderizar el template.
     peliculas = [
         {"id": 1, "titulo": "Horizonte final", "genero": "Ciencia ficción", "duracion": "2 h 08 min", "clasificacion": "+13", "formatos": ["2D", "Subt."], "sucursales": ["Centro", "Norte"], "fechas": ["Hoy", "Fin de semana"], "estilo": "poster-space"},
         {"id": 2, "titulo": "La última función", "genero": "Drama", "duracion": "1 h 52 min", "clasificacion": "ATP", "formatos": ["2D"], "sucursales": ["Centro", "Puerto"], "fechas": ["Hoy", "Mañana"], "estilo": "poster-stage"},
@@ -53,6 +55,9 @@ def resumen_compra():
 
 @cliente_bp.get("/mis-compras")
 def mis_compras():
+    # Datos temporales del historial. En la integración, Flask consultará
+    # GET /mis-compras mediante api_client y entregará la respuesta al template
+    # usando la variable "compras".
     compras_usuario = [
         {
             "id": 10293,
@@ -81,6 +86,10 @@ def mis_entradas():
 
 @cliente_bp.get("/entradas/<int:entrada_id>")
 def detalle_entrada(entrada_id):
+    # Confirmación temporal posterior a la compra. Luego de POST /compras, el
+    # backend devuelve la compra confirmada, sus entradas y los QR. Flask deberá
+    # utilizar esa respuesta —o consultar GET /compras/{compra_id}— y recién
+    # entonces renderizar esta pantalla; el frontend no debe generar los QR.
     compra_data = {
         "fecha": "22/5/26",
         "detalle_entradas": "Entrada Zootopia 3D Inglés VIP x2",
@@ -97,6 +106,10 @@ def detalle_entrada(entrada_id):
 
 @cliente_bp.get("/sucursales")
 def sucursales():
+    # Datos temporales utilizados para maquetar la vista de sucursales.
+    # El contrato actual no define un endpoint público de sucursales; antes de
+    # integrar esta pantalla, el equipo deberá confirmar su origen sin inventar
+    # una ruta que no exista en Swagger.
     lista_sucursales = [
         {
             "nombre": "Sede Central",

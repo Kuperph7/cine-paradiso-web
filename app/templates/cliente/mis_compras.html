@@ -3,6 +3,11 @@
 {% block title %}Mis Compras | Cine Paradiso{% endblock %}
 
 {% block content %}
+{#
+    La colección "compras" deberá provenir de GET /mis-compras a través de una
+    ruta Flask. Cada compra dirige a su confirmación y a los QR generados por
+    el backend; el navegador no debe consultar la API directamente.
+#}
 <section class="compras-container">
     <h1 class="page-title">Historial de Consumos</h1>
 
