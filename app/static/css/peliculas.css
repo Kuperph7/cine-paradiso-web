@@ -1,0 +1,319 @@
+.peliculas-page {
+    box-sizing: border-box;
+    min-height: 100%;
+    padding: 12px 5% 36px;
+    background: #a7bac8;
+    color: #17212b;
+}
+
+.peliculas-page *,
+.peliculas-page *::before,
+.peliculas-page *::after {
+    box-sizing: inherit;
+}
+
+.peliculas-page h1 {
+    margin: 0 0 24px;
+    color: #101820;
+    font-size: 1.7rem;
+    font-weight: 400;
+    text-align: center;
+}
+
+.peliculas-lista {
+    width: min(100%, 785px);
+    margin: 0 auto 46px;
+    overflow: hidden;
+    border-radius: 5px;
+    background: #edf2f6;
+    box-shadow: 0 2px 6px rgb(30 44 70 / 16%);
+}
+
+.peliculas-lista h2 {
+    min-height: 23px;
+    margin: 0;
+    padding: 6px 9px;
+    background: #607f91;
+    color: #fff;
+    font-size: 0.58rem;
+    font-weight: 700;
+}
+
+.peliculas-busqueda {
+    display: flex;
+    min-height: 27px;
+    align-items: center;
+    gap: 7px;
+    padding: 4px 9px;
+    border-bottom: 1px solid #cbd3d8;
+    background: #f5f8fa;
+    color: #60717d;
+}
+
+.peliculas-busqueda span {
+    font-size: 1rem;
+}
+
+.peliculas-busqueda input {
+    width: 100%;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: #17212b;
+    font: inherit;
+    font-size: 0.58rem;
+}
+
+.peliculas-busqueda input::placeholder {
+    color: #60717d;
+    opacity: 1;
+}
+
+.pelicula-row {
+    display: flex;
+    min-height: 25px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 4px 8px;
+    border-bottom: 1px solid #cbd3d8;
+    font-size: 0.57rem;
+}
+
+.pelicula-nombre {
+    min-width: 0;
+}
+
+.pelicula-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.pelicula-button {
+    min-width: 32px;
+    padding: 2px 6px;
+    border: 0;
+    border-radius: 2px;
+    background: #e8c45c;
+    color: #171717;
+    font: inherit;
+    font-size: 0.55rem;
+    cursor: pointer;
+}
+
+.pelicula-button:hover {
+    background: #f5d36b;
+}
+
+.pelicula-button:focus-visible,
+.peliculas-pagination button:focus-visible {
+    outline: 2px solid #1e2c46;
+    outline-offset: 2px;
+}
+
+.peliculas-footer {
+    display: flex;
+    min-height: 17px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 3px 8px;
+    background: #607f91;
+    color: #fff;
+    font-size: 0.45rem;
+}
+
+.peliculas-pagination {
+    display: flex;
+    gap: 3px;
+}
+
+.peliculas-pagination button {
+    width: 17px;
+    height: 14px;
+    padding: 0;
+    border: 1px solid rgb(255 255 255 / 20%);
+    background: transparent;
+    color: inherit;
+    font-size: 0.48rem;
+}
+
+.peliculas-pagination button[aria-current="page"] {
+    background: rgb(255 255 255 / 15%);
+}
+
+.peliculas-pagination button:disabled {
+    opacity: 0.5;
+}
+
+.pelicula-dialog {
+    width: min(90vw, 420px);
+    max-height: 90vh;
+    padding: 0;
+    border: 1px solid #344454;
+    background: #a7bac8;
+    color: #17212b;
+}
+
+.pelicula-dialog::backdrop {
+    background: rgb(18 28 42 / 65%);
+}
+
+.pelicula-dialog form {
+    display: grid;
+    gap: 14px;
+    padding: 14px;
+}
+
+.dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.dialog-header h2 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 400;
+}
+
+.dialog-close,
+.dialog-cancel {
+    border: 1px solid #60717d;
+    background: #edf2f6;
+    color: #17212b;
+    cursor: pointer;
+}
+
+.dialog-close {
+    width: 28px;
+    height: 28px;
+    font-size: 1.2rem;
+}
+
+.imagen-upload {
+    display: grid;
+    min-height: 130px;
+    place-items: center;
+    border: 1px solid #60717d;
+    background:
+        linear-gradient(rgb(120 100 100 / 10%) 1px, transparent 1px),
+        linear-gradient(90deg, rgb(120 100 100 / 10%) 1px, transparent 1px),
+        #e5e1df;
+    background-size: 8px 8px;
+    cursor: pointer;
+}
+
+.imagen-upload span {
+    text-decoration: underline;
+}
+
+.imagen-upload input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+}
+
+.pelicula-field {
+    display: grid;
+    gap: 6px;
+    font-size: 0.9rem;
+}
+
+.pelicula-field textarea {
+    width: 100%;
+    min-height: 82px;
+    resize: vertical;
+    border: 0;
+    border-radius: 5px;
+    padding: 8px;
+    background: #edf2f6;
+    font: inherit;
+}
+
+.dialog-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dialog-cancel {
+    padding: 5px 9px;
+}
+
+
+/* Vista mobile */
+@media (max-width: 600px) {
+    .peliculas-page {
+        padding: 18px 22px 28px;
+    }
+
+    .peliculas-page h1 {
+        margin: 0 0 14px;
+        font-size: 1.35rem;
+        text-align: left;
+    }
+
+    .peliculas-lista {
+        margin-bottom: 16px;
+    }
+
+    .peliculas-lista h2 {
+        min-height: 30px;
+        padding: 9px 10px;
+        font-size: 0.72rem;
+    }
+
+    .peliculas-busqueda {
+        min-height: 34px;
+        padding: 5px 10px;
+    }
+
+    .peliculas-busqueda input {
+        font-size: 0.78rem;
+    }
+
+    .pelicula-row {
+        min-height: 41px;
+        padding: 6px 10px;
+        font-size: 0.72rem;
+    }
+
+    .pelicula-button {
+        min-width: 51px;
+        padding: 4px 8px;
+        font-size: 0.72rem;
+    }
+
+    .peliculas-footer {
+        min-height: 27px;
+        padding: 5px 10px;
+        font-size: 0.58rem;
+    }
+
+    .peliculas-pagination button {
+        width: 19px;
+        height: 17px;
+        font-size: 0.58rem;
+    }
+
+    
+        .pelicula-dialog {
+        width: calc(100vw - 32px);
+    }
+
+    .pelicula-dialog form {
+        gap: 12px;
+        padding: 12px;
+    }
+
+    .imagen-upload {
+        min-height: 115px;
+    }
+
+}
+
+
