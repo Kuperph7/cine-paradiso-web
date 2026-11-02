@@ -20,6 +20,7 @@
             </a>
             <nav class="main-nav" aria-label="Navegación principal">
                 <a{% if request.endpoint == 'cliente.cartelera' %} class="active"{% endif %} href="{{ url_for('cliente.cartelera') }}">Cartelera</a>
+                <a{% if request.endpoint == 'cliente.configurar_categoria' %} class="active"{% endif %} href="{{ url_con_filtros('cliente.configurar_categoria') }}">Categorías</a>
                 <a{% if request.endpoint == 'cliente.seleccionar_servicios' %} class="active"{% endif %} href="{{ url_for('cliente.seleccionar_servicios') }}">Candy</a>
                 <a{% if request.endpoint == 'cliente.sucursales' %} class="active"{% endif %} href="{{ url_for('cliente.sucursales') }}">Sucursales</a>
                 <a href="{{ url_for('cliente.mis_entradas') }}">Mis entradas</a>

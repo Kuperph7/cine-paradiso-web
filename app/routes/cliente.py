@@ -4,6 +4,39 @@ from flask import Blueprint, render_template, request, url_for
 cliente_bp = Blueprint("cliente", __name__) 
 
 
+def obtener_filtros():
+    # Conserva los filtros elegidos al navegar entre la cartelera y las
+    # pantallas de preferencias. Más adelante Flask enviará estos valores al
+    # backend mediante api_client; el navegador no consultará la API con fetch.
+    nombres_filtros = (
+        "sucursal",
+        "fecha",
+        "genero",
+        "idioma",
+        "formato",
+        "categoria",
+    )
+    return {
+        nombre: request.args.get(nombre, "")
+        for nombre in nombres_filtros
+    }
+
+
+@cliente_bp.app_context_processor
+def contexto_filtros():
+    def url_con_filtros(endpoint, **cambios):
+        filtros = obtener_filtros()
+        filtros.update(cambios)
+        parametros = {
+            clave: valor
+            for clave, valor in filtros.items()
+            if valor
+        }
+        return url_for(endpoint, **parametros)
+
+    return {"url_con_filtros": url_con_filtros}
+
+
 @cliente_bp.get("/")
 def cartelera():
     # Películas temporales utilizadas únicamente para visualizar el mockup.
@@ -521,3 +554,23 @@ def sucursales():
 @cliente_bp.get("/preguntas-frecuentes")
 def preguntas_frecuentes():
     return render_template("cliente/preguntas_frecuentes.html")
+
+
+@cliente_bp.get("/peliculas-vistas")
+def peliculas_vistas():
+    return render_template("cliente/peliculas_vistas.html")
+
+
+@cliente_bp.get("/configuracion/idioma")
+def configurar_idioma():
+    return render_template("cliente/idioma.html")
+
+
+@cliente_bp.get("/configuracion/formato")
+def configurar_formato():
+    return render_template("cliente/formato.html")
+
+
+@cliente_bp.get("/configuracion/categoria")
+def configurar_categoria():
+    return render_template("cliente/categoria.html")

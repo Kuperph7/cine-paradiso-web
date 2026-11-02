@@ -1,5 +1,8 @@
 {% extends "base.html" %}
 {% block title %}Cartelera | Cine Paradiso{% endblock %}
+{% block extra_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/configuracion.css') }}">
+{% endblock %}
 {% block content %}
 <section class="banner-principal" aria-labelledby="banner-principal-title">
     <div class="banner-principal-content">
@@ -22,6 +25,18 @@
     </div>
     <p>Elegí tu película, función y sala favorita.</p>
 </section>
+
+<nav class="config-options" aria-label="Preferencias de cartelera">
+    <a class="config-trigger" href="{{ url_con_filtros('cliente.configurar_formato') }}">
+        Formato <span aria-hidden="true">›</span>
+    </a>
+    <a class="config-trigger" href="{{ url_con_filtros('cliente.configurar_idioma') }}">
+        Idioma <span aria-hidden="true">›</span>
+    </a>
+    <a class="config-trigger" href="{{ url_con_filtros('cliente.configurar_categoria') }}">
+        Categoría <span aria-hidden="true">›</span>
+    </a>
+</nav>
 
 {#
     El formulario envía los filtros como query params a esta misma ruta.
