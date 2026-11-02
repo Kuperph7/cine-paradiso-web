@@ -23,6 +23,11 @@
     <p>Elegí tu película, función y sala favorita.</p>
 </section>
 
+{#
+    El formulario envía los filtros como query params a esta misma ruta.
+    Flask deberá leerlos y consultar GET /cartelera mediante api_client;
+    el navegador no debe consumir la API directamente con fetch.
+#}
 <form class="movie-filters" method="get" aria-label="Filtros de cartelera">
     <label>
         <span>Sucursal</span>
@@ -57,6 +62,10 @@
 <section class="movie-grid" id="movie-grid" aria-label="Listado de películas">
     {% for pelicula in peliculas %}
     <article class="movie-card">
+        {#
+            El ID identifica la película elegida. La ruta de detalle deberá
+            utilizarlo para consultar GET /cartelera/{pelicula_id}.
+        #}
         <a class="movie-poster {{ pelicula.estilo }}" href="{{ url_for('cliente.detalle_pelicula', pelicula_id=pelicula.id) }}">
             <span class="format-badges">
                 {% for formato in pelicula.formatos %}

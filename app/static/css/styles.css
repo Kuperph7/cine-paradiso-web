@@ -1720,3 +1720,202 @@
   }
   /* ==================== FIN COMPONENTES GENERALES ==================== */
 }
+
+/* ==================== VISTA SUCURSALES ==================== */
+.sucursales-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 1.5rem 1rem;
+}
+
+.page-title {
+    font-family: Georgia, serif;
+    font-size: 2.2rem;
+    color: #102044;
+    margin-bottom: 2rem;
+}
+
+.sucursales-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+}
+
+.sucursal-card {
+    border-radius: 24px;
+    overflow: hidden;
+    background-color: #f7d369; /* Fondo amarillo cálido de la captura */
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+.sucursal-image-wrapper {
+    width: 100%;
+    height: 320px;
+    overflow: hidden;
+}
+
+.sucursal-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.sucursal-info {
+    padding: 1.8rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    color: #2b2b2b;
+}
+
+.sucursal-nombre {
+    font-family: Georgia, serif;
+    font-size: 1.6rem;
+    margin: 0 0 0.4rem 0;
+    color: #1a1a1a;
+}
+
+.sucursal-direccion {
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+    color: #333333;
+}
+
+.sucursal-descripcion {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #555555;
+    line-height: 1.4;
+}
+
+.btn-mapa {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background-color: rgba(255, 255, 255, 0.85);
+    color: #102044;
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    transition: background-color 0.2s ease;
+}
+
+.btn-mapa:hover {
+    background-color: #ffffff;
+}
+
+/* Responsivo para celulares */
+@media (max-width: 600px) {
+    .sucursal-image-wrapper {
+        height: 220px;
+    }
+    .sucursal-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    .sucursal-action {
+        align-self: flex-end;
+    }
+}
+/* ==================== FIN VISTA SUCURSALES ==================== */
+
+/* ==================== VISTA EMAIL CONFIRMACIÓN / QR ==================== */
+.email-confirmacion-container {
+    max-width: 580px;
+    margin: 2rem auto;
+    text-align: center;
+    padding: 1rem;
+}
+
+.email-titulo {
+    font-family: Georgia, serif;
+    font-size: 2rem;
+    color: #102044;
+    margin-bottom: 2rem;
+}
+
+.ticket-card {
+    background-color: #f7d369; /* Fondo amarillo característico */
+    border-radius: 28px;
+    padding: 2.5rem 2rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 1.8rem;
+}
+
+.ticket-header {
+    text-align: left;
+    width: 100%;
+    max-width: 380px;
+    color: #1a1a1a;
+}
+
+.ticket-fecha {
+    font-weight: 800;
+    font-size: 1.1rem;
+    display: block;
+    margin-bottom: 0.6rem;
+}
+
+.ticket-detalle {
+    margin: 0.2rem 0;
+    font-size: 0.92rem;
+    color: #2c2c2c;
+}
+
+.ticket-monto {
+    display: block;
+    font-weight: 800;
+    font-size: 1.1rem;
+    margin-top: 0.8rem;
+}
+
+.qr-container {
+    background-color: #ffffff;
+    padding: 1.2rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    display: inline-block;
+}
+
+.qr-code {
+    width: 210px;
+    height: 210px;
+    object-fit: contain;
+    display: block;
+}
+
+.btn-cancelar {
+    background-color: #f7d369;
+    color: #102044;
+    border: 2px solid #102044;
+    padding: 0.75rem 2.5rem;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-cancelar:hover {
+    background-color: #102044;
+    color: #ffffff;
+}
+
+.aclaracion-cancelacion {
+    font-size: 0.88rem;
+    color: #4a5568;
+    max-width: 380px;
+    margin: 1.8rem auto 0;
+    line-height: 1.5;
+}
+/* ==================== FINAL VISTA EMAIL CONFIRMACIÓN / QR ==================== */
