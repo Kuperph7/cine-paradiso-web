@@ -69,6 +69,11 @@
 
             <div class="showtime-list" aria-label="Funciones en {{ sucursal.nombre }}">
                 {% for funcion in sucursal.funciones %}
+                {#
+                    Cada función entrega su ID al siguiente paso del flujo.
+                    Ese ID permitirá consultar las butacas de la función
+                    seleccionada sin volver a elegir película ni sucursal.
+                #}
                 <a class="showtime-card" href="{{ url_for('cliente.seleccionar_butacas', funcion_id=funcion.id) }}">
                     <span class="showtime-date">{{ funcion.fecha }}</span>
                     <strong>{{ funcion.hora }}</strong>
