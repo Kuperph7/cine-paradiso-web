@@ -215,6 +215,9 @@ def seleccionar_butacas(funcion_id):
 def seleccionar_servicios():
     # Contenido temporal utilizado únicamente para desarrollar el template.
     # En el hito de integración, los productos llegarán desde la API backend.
+    # El contrato actual solo expone la gestión administrativa de servicios;
+    # antes de integrar esta vista, el equipo deberá confirmar de qué endpoint
+    # cliente se obtendrán los productos sin inventar una ruta nueva.
     categorias = [
         "Combos",
         "Pochoclos",

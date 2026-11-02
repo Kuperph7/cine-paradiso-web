@@ -10,6 +10,11 @@
 </section>
 
 <section class="candy-promo" aria-label="Promoción destacada">
+    {#
+        Estas flechas son controles visuales del mockup. Si se implementa el
+        carrusel, podrá utilizar JavaScript local para cambiar promociones,
+        pero no fetch ni consumo directo de la API desde el navegador.
+    #}
     <button class="candy-promo-arrow candy-promo-arrow-left" type="button" aria-label="Promoción anterior">‹</button>
     <div class="candy-promo-copy">
         <p class="eyebrow">Promo de la semana</p>
@@ -24,6 +29,10 @@
     <button class="candy-promo-arrow candy-promo-arrow-right" type="button" aria-label="Siguiente promoción">›</button>
 </section>
 
+{#
+    Las categorías deberán filtrar los productos ya entregados por Flask.
+    El navegador no debe consultar el backend directamente para filtrarlos.
+#}
 <nav class="candy-categories" aria-label="Categorías de Candy">
     {% for categoria in categorias %}
     <a{% if loop.first %} class="active"{% endif %} href="#productos-candy">
@@ -53,6 +62,11 @@
                 <p>{{ producto.descripcion }}</p>
                 <div class="candy-card-actions">
                     <strong>${{ "{:,.0f}".format(producto.precio).replace(",", ".") }}</strong>
+                    {#
+                        Este botón deberá agregar el producto y su cantidad al
+                        estado temporal de la compra. No confirma ni registra
+                        una compra por sí mismo.
+                    #}
                     <button type="button" aria-label="Agregar {{ producto.nombre }}">+</button>
                 </div>
             </div>
@@ -60,5 +74,9 @@
         {% endfor %}
     </div>
 </section>
+{#
+    Cuando se implemente el flujo, un control para continuar deberá conservar
+    los productos elegidos y dirigir al usuario a cliente.resumen_compra.
+#}
 {% endblock %}
 
