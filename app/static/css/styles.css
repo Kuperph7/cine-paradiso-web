@@ -1955,36 +1955,6 @@
   .checkout-total-final dd {
     font-size: 1.35rem;
   }
-  .simulated-payment {
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-    padding: 0.9rem;
-    border: 1px solid rgba(169, 121, 0, 0.2);
-    border-radius: 12px;
-    background: #fff8dc;
-  }
-  .simulated-payment-icon {
-    display: grid;
-    width: 34px;
-    height: 34px;
-    flex: 0 0 auto;
-    place-items: center;
-    border-radius: 50%;
-    background: #f3c84b;
-    color: #0b1630;
-    font-weight: 900;
-  }
-  .simulated-payment strong {
-    color: #0b1630;
-    font-size: 0.82rem;
-  }
-  .simulated-payment p {
-    margin: 0.2rem 0 0;
-    color: #6f633d;
-    font-size: 0.72rem;
-    line-height: 1.35;
-  }
   .checkout-confirm-button {
     display: grid;
     width: 100%;
