@@ -121,8 +121,8 @@
         {#
             DESTINO FUTURO DEL BOTÓN CONFIRMAR:
 
-            1. Será type="submit" dentro de un formulario dirigido a una ruta
-               POST del frontend Flask, no directamente al backend.
+            1. En la integración será type="submit" dentro de un formulario
+               dirigido a una ruta POST de Flask, no directamente al backend.
             2. La ruta Flask llamará mediante api_client a POST /compras con
                funcion_id y butaca_ids, respetando el contrato Swagger.
             3. El backend volverá a validar las butacas, registrará la compra y
@@ -132,12 +132,12 @@
             5. Si el backend devuelve un error, Flask volverá a este resumen y
                mostrará el mensaje correspondiente sin perder la selección.
 
-            Por ahora el botón es visual para no ejecutar una operación que
-            todavía no está integrada ni generar QR falsos desde el frontend.
+            Por ahora el enlace permite recorrer el mockup hasta la pantalla de
+            QR. No registra una compra real ni llama directamente al backend.
         #}
-        <button class="checkout-confirm-button" type="button">
+        <a class="checkout-confirm-button" href="{{ url_for('cliente.detalle_entrada', entrada_id=1) }}">
             Confirmar compra
-        </button>
+        </a>
         <p class="checkout-legal">
             Al confirmar, se volverá a validar la disponibilidad de las butacas.
         </p>

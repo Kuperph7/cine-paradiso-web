@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request, url_for
 
 
 cliente_bp = Blueprint("cliente", __name__) 
@@ -212,8 +212,55 @@ def seleccionar_butacas(funcion_id):
     # película. En la integración, Flask consultará mediante api_client
     # GET /cartelera/funciones/{funcion_id}/butacas para obtener la sala y
     # distinguir las butacas disponibles de las ocupadas.
+    # Datos temporales para completar el template mientras el frontend todavía
+    # no está conectado al backend. La forma de cada butaca respeta la respuesta
+    # pública definida en Swagger: id, fila, columna y ocupada.
+    funcion = {
+        "id": funcion_id,
+        "pelicula_id": 1,
+        "pelicula": "Horizonte final",
+        "fecha": "Sábado 14 de noviembre",
+        "hora": "18:30",
+        "sucursal": "Cine Paradiso Centro",
+        "sala": "Sala 3",
+        "formato": "2D",
+        "idioma": "Castellano",
+        "precio": 6500,
+    }
+
+    # Estos IDs simulan las butacas que el backend devolverá con ocupada=True.
+    # Se usan únicamente para distinguir los estados dentro del mockup.
+    butacas_ocupadas = {3, 4, 11, 18, 29, 30, 38, 45}
+    butacas = []
+
+    # Construye una sala temporal de seis filas y ocho butacas por fila. Jinja
+    # recibe esta estructura y genera un checkbox HTML por cada butaca.
+    for numero_fila, fila in enumerate("ABCDEF"):
+        butacas.append(
+            [
+                {
+                    "id": numero_fila * 8 + columna,
+                    "fila": fila,
+                    "columna": columna,
+                    "ocupada": numero_fila * 8 + columna in butacas_ocupadas,
+                }
+                for columna in range(1, 9)
+            ]
+        )
+
+    total_butacas = sum(len(fila) for fila in butacas)
+    butacas_libres = sum(
+        not butaca["ocupada"]
+        for fila in butacas
+        for butaca in fila
+    )
+
     return render_template(
-        "cliente/seleccionar_butacas.html", funcion_id=funcion_id
+        "cliente/seleccionar_butacas.html",
+        funcion=funcion,
+        butacas=butacas,
+        total_butacas=total_butacas,
+        butacas_libres=butacas_libres,
     )
 
 
@@ -299,10 +346,19 @@ def seleccionar_servicios():
         },
     ]
 
+    funcion_id = request.args.get("funcion_id", type=int)
+    butaca_ids = request.args.getlist("butaca_ids", type=int)
+    resumen_url = url_for(
+        "cliente.resumen_compra",
+        funcion_id=funcion_id,
+        butaca_ids=butaca_ids,
+    )
+
     return render_template(
         "cliente/seleccionar_servicios.html",
         categorias=categorias,
         productos=productos,
+        resumen_url=resumen_url,
     )
 
 
@@ -313,12 +369,33 @@ def resumen_compra():
     # detalle de película -> función -> butacas -> productos de Candy.
     # Flask deberá conservar estos datos en la sesión o recuperarlos del
     # backend antes de renderizar este resumen.
+    # Durante el mockup, el formulario de butacas envía estos valores mediante
+    # query params. En la integración deberán conservarse en la sesión de Flask
+    # o en el mecanismo acordado, y nunca confiarse sin validar con el backend.
+    funcion_id = request.args.get("funcion_id", default=101, type=int)
+    butaca_ids = request.args.getlist("butaca_ids", type=int)
+
+    if not butaca_ids:
+        butaca_ids = [46, 47]
+
+    butacas_seleccionadas = []
+
+    # Traduce temporalmente cada ID a un código visible (por ejemplo, 1 -> A1).
+    # Los datos definitivos de fila y columna deberán provenir de la API.
+    for butaca_id in butaca_ids:
+        numero_fila = (butaca_id - 1) // 8
+        numero_columna = (butaca_id - 1) % 8 + 1
+        codigo = f"{chr(65 + numero_fila)}{numero_columna}"
+        butacas_seleccionadas.append(
+            {"id": butaca_id, "codigo": codigo, "precio": 6500}
+        )
+
     compra = {
         "pelicula": "Horizonte final",
         "clasificacion": "+13",
         "estilo": "poster-space",
         "funcion": {
-            "id": 101,
+            "id": funcion_id,
             "fecha": "Sábado 14 de noviembre",
             "hora": "18:30",
             "sucursal": "Cine Paradiso Centro",
@@ -326,10 +403,7 @@ def resumen_compra():
             "formato": "2D",
             "idioma": "Castellano",
         },
-        "butacas": [
-            {"id": 12, "codigo": "F6", "precio": 6500},
-            {"id": 13, "codigo": "F7", "precio": 6500},
-        ],
+        "butacas": butacas_seleccionadas,
         "servicios": [
             {
                 "nombre": "Combo Paradiso",

@@ -75,8 +75,13 @@
     </div>
 </section>
 {#
-    Cuando se implemente el flujo, un control para continuar deberá conservar
-    los productos elegidos y dirigir al usuario a cliente.resumen_compra.
+    Estos controles permiten recorrer el mockup completo. En la integración,
+    deberán conservar la función, las butacas y los productos elegidos antes
+    de dirigir al usuario a cliente.resumen_compra.
 #}
+<div class="candy-flow-actions">
+    <a class="candy-secondary-action" href="{{ resumen_url }}">Continuar sin productos</a>
+    <a class="candy-primary-action" href="{{ resumen_url }}">Revisar compra</a>
+</div>
 {% endblock %}
 
