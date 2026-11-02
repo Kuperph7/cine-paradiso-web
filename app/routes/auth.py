@@ -18,3 +18,6 @@ def registro():
 def perfil():
     return render_template("auth/perfil.html")
 
+@auth_bp.get("/perfil/configuracion")
+def configuracion_perfil():
+    return render_template("auth/configuracion_perfil.html")
