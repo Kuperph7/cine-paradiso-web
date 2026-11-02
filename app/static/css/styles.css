@@ -15,7 +15,7 @@
       overflow-x: auto;
     }
     .banner-principal {
-      grid-template-columns: 1fr;
+      flex-direction: column;
     }
     .banner-principal-art {
       position: absolute;
@@ -25,40 +25,72 @@
     .banner-principal-content {
       max-width: 720px;
     }
-    .movie-grid {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+    .movie-list {
+      gap: 1.4rem;
+    }
+    .movie-card {
+      width: calc((100% - 2.8rem) / 3);
+      flex-basis: calc((100% - 2.8rem) / 3);
     }
     .movie-filters {
-      grid-template-columns: repeat(3, 1fr);
+      flex-wrap: wrap;
+    }
+    .movie-filters label {
+      width: calc((100% - 1.6rem) / 3);
+      flex-basis: calc((100% - 1.6rem) / 3);
     }
     .movie-filters button {
-      grid-column: 1 / -1;
+      width: 100%;
+      flex-basis: 100%;
     }
-    .upcoming-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+    .upcoming-list {
+      flex-wrap: wrap;
     }
-    .candy-grid {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+    .upcoming-card {
+      width: calc((100% - 1rem) / 2);
+      flex-basis: calc((100% - 1rem) / 2);
+    }
+    .candy-list {
+      gap: 1.4rem;
+    }
+    .candy-card {
+      width: calc((100% - 2.8rem) / 3);
+      flex-basis: calc((100% - 2.8rem) / 3);
     }
     .candy-categories {
       justify-content: flex-start;
       overflow-x: auto;
     }
     .movie-detail-hero {
-      grid-template-columns: minmax(220px, 0.72fr) 1.28fr;
+      gap: 2rem;
     }
     .cinema-showtimes {
       align-items: flex-start;
-      grid-template-columns: 1fr;
+      flex-direction: column;
+    }
+    .cinema-info,
+    .showtime-list {
+      width: 100%;
+      flex-basis: auto;
     }
     .checkout-layout {
-      grid-template-columns: 1fr;
+      flex-direction: column;
+    }
+    .checkout-details,
+    .checkout-summary {
+      width: 100%;
+      flex-basis: auto;
     }
     .checkout-summary {
       position: static;
     }
     .seats-layout {
-      grid-template-columns: 1fr;
+      flex-direction: column;
+    }
+    .seats-room,
+    .seats-summary {
+      width: 100%;
+      flex-basis: auto;
     }
     .seats-summary {
       position: static;
@@ -105,15 +137,20 @@
       margin-top: 3.3rem;
     }
     .movie-filters {
-      grid-template-columns: 1fr;
+      flex-direction: column;
       padding: 0.85rem;
     }
+    .movie-filters label,
     .movie-filters button {
-      grid-column: auto;
+      width: 100%;
+      flex-basis: auto;
     }
-    .movie-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+    .movie-list {
       gap: 1.3rem 0.8rem;
+    }
+    .movie-card {
+      width: calc((100% - 0.8rem) / 2);
+      flex-basis: calc((100% - 0.8rem) / 2);
     }
     .movie-poster {
       border-radius: 14px;
@@ -131,10 +168,12 @@
     .secondary-button {
       width: 100%;
     }
-    .upcoming-grid {
-      grid-template-columns: 1fr;
+    .upcoming-list {
+      flex-direction: column;
     }
     .upcoming-card {
+      width: 100%;
+      flex-basis: auto;
       min-height: 190px;
     }
     .candy-heading,
@@ -153,18 +192,25 @@
       right: -5%;
       width: 48%;
     }
-    .candy-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+    .candy-list {
+      gap: 1rem;
+    }
+    .candy-card {
+      width: calc((100% - 1rem) / 2);
+      flex-basis: calc((100% - 1rem) / 2);
     }
     .movie-detail-hero {
-      grid-template-columns: 1fr;
+      flex-direction: column;
       padding: 1rem;
     }
     .movie-detail-poster {
       width: min(100%, 320px);
+      flex-basis: auto;
       margin-inline: auto;
     }
     .movie-detail-copy {
+      width: 100%;
+      flex-basis: auto;
       padding: 1rem 0.35rem 0.4rem;
     }
     .movie-showtimes-heading {
@@ -175,22 +221,27 @@
       padding: 1.25rem;
     }
     .showtime-list {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
       width: 100%;
+    }
+    .showtime-card {
+      width: calc((100% - 0.75rem) / 2);
+      flex-basis: calc((100% - 0.75rem) / 2);
     }
     .checkout-heading {
       align-items: flex-start;
       flex-direction: column;
     }
     .checkout-movie {
-      grid-template-columns: 120px 1fr;
+      gap: 1rem;
+    }
+    .checkout-mini-poster {
+      flex-basis: 120px;
     }
     .seats-heading {
       align-items: flex-start;
       flex-direction: column;
     }
     .seat-row {
-      grid-template-columns: 20px minmax(0, 1fr) 20px;
       gap: 0.35rem;
     }
     .seat-row-items {
@@ -202,11 +253,19 @@
       font-size: 0.65rem;
     }
     .site-footer {
-      grid-template-columns: 1fr;
+      flex-direction: column;
       padding: 2.5rem 1.3rem;
     }
+    .site-footer > div,
+    .copyright {
+      width: 100%;
+      flex: none;
+    }
     .admin-layout {
-      grid-template-columns: 1fr;
+      flex-direction: column;
+    }
+    .admin-layout > .admin-nav {
+      flex-basis: auto;
     }
   }
 
@@ -217,10 +276,12 @@
     .main-nav a {
       font-size: 0.72rem;
     }
-    .movie-grid {
-      grid-template-columns: 1fr;
+    .movie-list {
+      flex-direction: column;
     }
     .movie-card {
+      width: 100%;
+      flex-basis: auto;
       max-width: 310px;
       margin-inline: auto;
     }
@@ -246,8 +307,12 @@
       height: 60%;
       opacity: 0.65;
     }
-    .candy-grid {
-      grid-template-columns: 1fr;
+    .candy-list {
+      flex-direction: column;
+    }
+    .candy-card {
+      width: 100%;
+      flex-basis: auto;
     }
     .movie-detail-copy h1 {
       font-size: 2.35rem;
@@ -256,27 +321,40 @@
       gap: 0.5rem;
     }
     .movie-detail-facts {
-      grid-template-columns: 1fr;
+      flex-direction: column;
+    }
+    .movie-detail-facts div {
+      width: 100%;
+      flex-basis: auto;
     }
     .showtime-list {
-      grid-template-columns: 1fr;
+      flex-direction: column;
+    }
+    .showtime-card {
+      width: 100%;
+      flex-basis: auto;
     }
     .checkout-details,
     .checkout-summary {
       padding: 1.2rem;
     }
     .checkout-movie {
-      grid-template-columns: 1fr;
+      flex-direction: column;
     }
     .checkout-mini-poster {
       width: min(100%, 220px);
+      flex-basis: auto;
     }
     .checkout-group-heading {
       align-items: flex-start;
       flex-direction: column;
     }
     .purchase-steps {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      flex-wrap: wrap;
+    }
+    .purchase-steps span {
+      width: calc((100% - 0.45rem) / 2);
+      flex-basis: calc((100% - 0.45rem) / 2);
     }
     .seats-room,
     .seats-summary {
@@ -424,8 +502,7 @@
   /* ==================== INICIO BANNER PRINCIPAL ==================== */
   .banner-principal {
     position: relative;
-    display: grid;
-    grid-template-columns: 1.15fr 0.85fr;
+    display: flex;
     min-height: 440px;
     overflow: hidden;
     border-radius: 28px;
@@ -453,6 +530,7 @@
     position: relative;
     z-index: 2;
     align-self: center;
+    flex: 1.15 1 0;
     padding: clamp(2rem, 6vw, 5rem);
   }
   .eyebrow {
@@ -502,6 +580,7 @@
   }
   .banner-principal-art {
     position: relative;
+    flex: 0.85 1 0;
     min-height: 360px;
   }
   .film-frame {
@@ -531,10 +610,11 @@
     position: absolute;
     top: 42%;
     right: 34%;
-    display: grid;
+    display: flex;
     width: 88px;
     height: 88px;
-    place-items: center;
+    align-items: center;
+    justify-content: center;
     border: 1px solid rgba(255, 255, 255, 0.35);
     border-radius: 50%;
     background: rgba(243, 200, 75, 0.92);
@@ -568,8 +648,7 @@
     line-height: 1.6;
   }
   .movie-filters {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr) auto;
+    display: flex;
     gap: 0.8rem;
     margin-bottom: 2rem;
     padding: 1rem;
@@ -579,7 +658,9 @@
     box-shadow: 0 8px 30px rgba(11, 22, 48, 0.06);
   }
   .movie-filters label {
-    display: grid;
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
     gap: 0.35rem;
     color: #607086;
     font-size: 0.72rem;
@@ -601,6 +682,7 @@
     color: #14213d;
   }
   .movie-filters button {
+    flex: 0 0 auto;
     align-self: end;
     min-height: 44px;
     padding: 0 1.15rem;
@@ -613,12 +695,14 @@
   /* ===================== FIN ENCABEZADO Y FILTROS DE CARTELERA ===================== */
 
   /* ==================== INICIO TARJETAS DE PELÍCULAS ==================== */
-  .movie-grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+  .movie-list {
+    display: flex;
+    flex-wrap: wrap;
     gap: clamp(1rem, 2.4vw, 1.7rem);
   }
   .movie-card {
+    width: calc(25% - 1.3rem);
+    flex: 0 1 calc(25% - 1.3rem);
     min-width: 0;
   }
   .movie-poster {
@@ -791,13 +875,15 @@
   .upcoming-heading {
     margin-top: 0;
   }
-  .upcoming-grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+  .upcoming-list {
+    display: flex;
+    flex-wrap: wrap;
     gap: 1rem;
   }
   .upcoming-card {
     position: relative;
+    width: calc((100% - 3rem) / 4);
+    flex: 0 0 calc((100% - 3rem) / 4);
     min-height: 240px;
     overflow: hidden;
     border-radius: 18px;
@@ -934,8 +1020,9 @@
   .popcorn-box,
   .drink-cup {
     position: absolute;
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border: 8px solid rgba(255, 255, 255, 0.82);
     color: #ffffff;
     font-family: Georgia, serif;
@@ -967,10 +1054,11 @@
     position: absolute;
     top: 50%;
     z-index: 3;
-    display: grid;
+    display: flex;
     width: 42px;
     height: 42px;
-    place-items: center;
+    align-items: center;
+    justify-content: center;
     border: 1px solid rgba(255, 255, 255, 0.35);
     border-radius: 50%;
     background: rgba(11, 22, 48, 0.35);
@@ -1036,12 +1124,14 @@
   .candy-products-heading h2 {
     font-size: clamp(2rem, 4vw, 3rem);
   }
-  .candy-grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+  .candy-list {
+    display: flex;
+    flex-wrap: wrap;
     gap: clamp(1rem, 2.2vw, 1.5rem);
   }
   .candy-card {
+    width: calc(25% - 1.15rem);
+    flex: 0 1 calc(25% - 1.15rem);
     min-width: 0;
     overflow: hidden;
     border: 1px solid rgba(16, 32, 68, 0.12);
@@ -1058,9 +1148,10 @@
   }
   .candy-product-image {
     position: relative;
-    display: grid;
+    display: flex;
     min-height: 235px;
-    place-items: center;
+    align-items: center;
+    justify-content: center;
     overflow: hidden;
   }
   .candy-product-image::before,
@@ -1085,10 +1176,11 @@
   .candy-product-image span {
     position: relative;
     z-index: 2;
-    display: grid;
+    display: flex;
     width: 112px;
     aspect-ratio: 1;
-    place-items: center;
+    align-items: center;
+    justify-content: center;
     border: 2px solid rgba(255, 255, 255, 0.38);
     border-radius: 34% 66% 48% 52%;
     background: rgba(255, 255, 255, 0.16);
@@ -1162,10 +1254,11 @@
     font-size: 1.05rem;
   }
   .candy-card-actions button {
-    display: grid;
+    display: flex;
     width: 38px;
     height: 38px;
-    place-items: center;
+    align-items: center;
+    justify-content: center;
     border: 0;
     border-radius: 50%;
     background: #102044;
@@ -1186,10 +1279,11 @@
     margin: 2rem 0 4rem;
   }
   .candy-flow-actions a {
-    display: grid;
+    display: flex;
     min-height: 48px;
     padding: 0.8rem 1.3rem;
-    place-items: center;
+    align-items: center;
+    justify-content: center;
     border-radius: 999px;
     font-size: 0.82rem;
     font-weight: 800;
@@ -1224,8 +1318,7 @@
     font-size: 1.1rem;
   }
   .movie-detail-hero {
-    display: grid;
-    grid-template-columns: minmax(240px, 0.78fr) 1.22fr;
+    display: flex;
     gap: clamp(1.5rem, 4vw, 4rem);
     padding: clamp(1rem, 3vw, 2.2rem);
     border: 1px solid rgba(16, 32, 68, 0.12);
@@ -1236,6 +1329,8 @@
   .movie-detail-poster {
     position: relative;
     display: flex;
+    min-width: 240px;
+    flex: 0.78 1 0;
     aspect-ratio: 2 / 3;
     flex-direction: column;
     justify-content: flex-end;
@@ -1283,6 +1378,8 @@
   }
   .movie-detail-copy {
     align-self: center;
+    min-width: 0;
+    flex: 1.22 1 0;
     padding: 1rem 0;
   }
   .movie-detail-copy h1 {
@@ -1322,15 +1419,18 @@
     line-height: 1.75;
   }
   .movie-detail-facts {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: flex;
+    flex-wrap: wrap;
     gap: 1rem;
     margin: 2rem 0 0;
     padding-top: 1.5rem;
     border-top: 1px solid rgba(16, 32, 68, 0.1);
   }
   .movie-detail-facts div {
-    display: grid;
+    display: flex;
+    width: calc((100% - 1rem) / 2);
+    flex: 0 0 calc((100% - 1rem) / 2);
+    flex-direction: column;
     gap: 0.3rem;
   }
   .movie-detail-facts dt {
@@ -1370,17 +1470,21 @@
     line-height: 1.6;
   }
   .cinema-list {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     gap: 1rem;
   }
   .cinema-showtimes {
-    display: grid;
-    grid-template-columns: minmax(220px, 0.72fr) 1.28fr;
+    display: flex;
     gap: 1.5rem;
     padding: 1.5rem;
     border: 1px solid rgba(16, 32, 68, 0.12);
     border-radius: 18px;
     background: rgba(255, 255, 255, 0.76);
+  }
+  .cinema-info {
+    min-width: 220px;
+    flex: 0.72 1 0;
   }
   .cinema-info h3 {
     margin: 0;
@@ -1395,13 +1499,16 @@
     line-height: 1.45;
   }
   .showtime-list {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(150px, 1fr));
+    display: flex;
+    flex: 1.28 1 0;
+    flex-wrap: wrap;
     gap: 0.75rem;
   }
   .showtime-card {
-    display: grid;
-    grid-template-columns: auto 1fr;
+    display: flex;
+    width: calc((100% - 0.75rem) / 2);
+    flex: 0 0 calc((100% - 0.75rem) / 2);
+    flex-wrap: wrap;
     align-items: center;
     gap: 0.25rem 0.8rem;
     padding: 0.85rem 1rem;
@@ -1418,9 +1525,14 @@
     transform: translateY(-2px);
   }
   .showtime-card strong {
-    grid-row: 1 / 3;
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
     color: #0b1630;
     font-size: 1.25rem;
+  }
+  .showtime-card > span {
+    flex: 1 1 calc(100% - 4rem);
   }
   .showtime-card > span:not(.showtime-date) {
     color: #607086;
@@ -1455,12 +1567,14 @@
     border: 0;
   }
   .purchase-steps {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    display: flex;
+    flex-wrap: wrap;
     gap: 0.45rem;
     margin: 1.5rem 0 2.6rem;
   }
   .purchase-steps span {
+    width: calc((100% - 1.35rem) / 4);
+    flex: 0 0 calc((100% - 1.35rem) / 4);
     padding: 0.7rem 0.85rem;
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.68);
@@ -1500,8 +1614,7 @@
     line-height: 1.6;
   }
   .seats-layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.6fr);
+    display: flex;
     align-items: start;
     gap: 1.5rem;
   }
@@ -1514,6 +1627,14 @@
     border-radius: 22px;
     background: rgba(255, 255, 255, 0.82);
     box-shadow: 0 14px 38px rgba(11, 22, 48, 0.08);
+  }
+  .seats-room {
+    min-width: 0;
+    flex: 1.4 1 0;
+  }
+  .seats-summary {
+    min-width: 280px;
+    flex: 0.6 1 0;
   }
   .seats-room {
     padding: clamp(1.2rem, 3vw, 2rem);
@@ -1532,7 +1653,8 @@
     font-size: 1.65rem;
   }
   .seats-function-meta {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     gap: 0.18rem;
     color: #607086;
     font-size: 0.75rem;
@@ -1571,24 +1693,27 @@
     left: 0;
   }
   .seat-map {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     gap: 0.65rem;
     max-width: 650px;
     margin: 0 auto;
   }
   .seat-row {
-    display: grid;
-    grid-template-columns: 24px minmax(0, 1fr) 24px;
+    display: flex;
     align-items: center;
     gap: 0.65rem;
   }
   .seat-row-items {
-    display: grid;
-    grid-template-columns: repeat(8, minmax(30px, 1fr));
-    justify-items: center;
+    display: flex;
+    min-width: 0;
+    flex: 1 1 auto;
+    justify-content: space-around;
     gap: 0.55rem;
   }
   .seat-row-letter {
+    width: 24px;
+    flex: 0 0 24px;
     color: #78869a;
     font-size: 0.72rem;
     font-weight: 850;
@@ -1604,10 +1729,11 @@
   }
   .seat {
     position: relative;
-    display: grid;
+    display: flex;
     width: 38px;
     height: 38px;
-    place-items: center;
+    align-items: center;
+    justify-content: center;
     border: 1px solid rgba(16, 32, 68, 0.22);
     border-radius: 10px 10px 7px 7px;
     background: #ffffff;
@@ -1690,7 +1816,8 @@
     padding: 1.7rem;
   }
   .seats-details {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     gap: 0.85rem;
     margin: 1.5rem 0;
   }
@@ -1725,10 +1852,11 @@
   }
   .seats-continue,
   .seats-skip-candy {
-    display: grid;
+    display: flex;
     width: 100%;
     min-height: 48px;
-    place-items: center;
+    align-items: center;
+    justify-content: center;
     border-radius: 999px;
     font-size: 0.82rem;
     font-weight: 800;
@@ -1780,8 +1908,7 @@
     line-height: 1.6;
   }
   .checkout-layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.65fr);
+    display: flex;
     align-items: start;
     gap: 1.5rem;
   }
@@ -1791,6 +1918,14 @@
     border-radius: 22px;
     background: rgba(255, 255, 255, 0.8);
     box-shadow: 0 14px 38px rgba(11, 22, 48, 0.08);
+  }
+  .checkout-details {
+    min-width: 0;
+    flex: 1.35 1 0;
+  }
+  .checkout-summary {
+    min-width: 300px;
+    flex: 0.65 1 0;
   }
   .checkout-details {
     padding: clamp(1.2rem, 3vw, 2rem);
@@ -1803,8 +1938,7 @@
     font-size: 1.65rem;
   }
   .checkout-movie {
-    display: grid;
-    grid-template-columns: 145px 1fr;
+    display: flex;
     gap: 1.4rem;
     margin-top: 1.4rem;
     padding-bottom: 1.6rem;
@@ -1812,9 +1946,11 @@
   }
   .checkout-mini-poster {
     position: relative;
-    display: grid;
+    display: flex;
+    flex: 0 0 145px;
     aspect-ratio: 2 / 3;
-    place-items: center;
+    align-items: center;
+    justify-content: center;
     overflow: hidden;
     border-radius: 14px;
     box-shadow: 0 12px 28px rgba(11, 22, 48, 0.2);
@@ -1901,7 +2037,8 @@
     text-underline-offset: 0.25rem;
   }
   .checkout-line-list {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     gap: 0.75rem;
     margin: 1rem 0 0;
     padding: 0;
@@ -1928,7 +2065,8 @@
     padding: 1.7rem;
   }
   .checkout-totals {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     gap: 0.9rem;
     margin: 1.5rem 0;
   }
@@ -1956,11 +2094,12 @@
     font-size: 1.35rem;
   }
   .checkout-confirm-button {
-    display: grid;
+    display: flex;
     width: 100%;
     min-height: 50px;
     margin-top: 1.2rem;
-    place-items: center;
+    align-items: center;
+    justify-content: center;
     border: 0;
     border-radius: 999px;
     background: #102044;
@@ -1983,8 +2122,8 @@
 
   /* ==================== INICIO FOOTER ==================== */
   .site-footer {
-    display: grid;
-    grid-template-columns: 1.5fr 1fr 1fr;
+    display: flex;
+    flex-wrap: wrap;
     gap: 2rem;
     padding: 3rem max(4%, calc((100% - 1180px) / 2));
     background: #0b1630;
@@ -1995,6 +2134,12 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 0.55rem;
+  }
+  .site-footer > div:first-child {
+    flex: 1.5 1 0;
+  }
+  .site-footer > div:not(:first-child) {
+    flex: 1 1 0;
   }
   .footer-brand {
     color: #ffffff;
@@ -2012,7 +2157,8 @@
     font-size: 0.87rem;
   }
   .copyright {
-    grid-column: 1 / -1;
+    width: 100%;
+    flex: 0 0 100%;
     padding-top: 1.5rem;
     border-top: 1px solid rgba(255, 255, 255, 0.12);
     font-size: 0.78rem;
@@ -2032,12 +2178,14 @@
     margin: auto;
   }
   .form-stack {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     gap: 1rem;
     margin-bottom: 1rem;
   }
   .form-stack label {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     gap: 0.4rem;
   }
   input {
@@ -2064,14 +2212,21 @@
     text-align: center;
   }
   .admin-layout {
-    display: grid;
-    grid-template-columns: 220px 1fr;
+    display: flex;
     gap: 1.5rem;
   }
   .admin-nav {
     display: flex;
     flex-direction: column;
     gap: 0.8rem;
+  }
+  .admin-layout > .admin-nav {
+    flex: 0 0 220px;
+  }
+  .admin-layout > main,
+  .admin-layout > section {
+    min-width: 0;
+    flex: 1 1 auto;
   }
   /* ==================== FIN COMPONENTES GENERALES ==================== */
 }
@@ -2090,7 +2245,7 @@
     margin-bottom: 2rem;
 }
 
-.sucursales-grid {
+.sucursales-list {
     display: flex;
     flex-direction: column;
     gap: 2.5rem;

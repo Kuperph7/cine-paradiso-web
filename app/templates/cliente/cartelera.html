@@ -74,7 +74,7 @@
     <button type="submit">Aplicar filtros</button>
 </form>
 
-<section class="movie-grid" id="movie-grid" aria-label="Listado de películas">
+<section class="movie-list" id="movie-list" aria-label="Listado de películas">
     {% for pelicula in peliculas %}
     <article class="movie-card">
         {#
@@ -116,7 +116,7 @@
     </div>
 </section>
 
-<section class="upcoming-grid" aria-label="Próximos estrenos">
+<section class="upcoming-list" aria-label="Próximos estrenos">
     {% for pelicula in estrenos %}
     <article class="upcoming-card {{ pelicula.estilo }}">
         <div>

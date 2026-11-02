@@ -39,9 +39,9 @@
 }
 
 .servicio-row {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 16px;
     min-height: 39px;
     padding: 7px 9px;
@@ -49,6 +49,7 @@
 }
 
 .servicio-name {
+    flex: 1 1 auto;
     margin: 0;
     font-size: 0.75rem;
     font-weight: 400;

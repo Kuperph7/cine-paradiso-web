@@ -20,14 +20,16 @@
     text-align: center;
 }
 
-.estadisticas-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+.estadisticas-list {
+    display: flex;
+    flex-wrap: wrap;
     align-items: start;
     gap: 18px 14px;
 }
 
 .stat-panel {
+    width: calc((100% - 14px) / 2);
+    flex: 0 0 calc((100% - 14px) / 2);
     min-width: 0;
 }
 
@@ -38,8 +40,8 @@
 }
 
 .stat-genero {
-    grid-column: 1 / -1;
     width: 48%;
+    flex-basis: 48%;
     margin: 0 auto 0;
 }
 
@@ -50,9 +52,15 @@
 
 .stat-table-head,
 .stat-row {
-    display: grid;
+    display: flex;
     align-items: center;
     gap: 8px;
+}
+
+.stat-table-head > *,
+.stat-row > * {
+    min-width: 0;
+    flex: 1 1 0;
 }
 
 .stat-table-head {
@@ -114,19 +122,29 @@
     opacity: 0.9;
 }
 
-.movie-head,
-.movie-row {
-    grid-template-columns: minmax(0, 1fr) 0.42fr 0.42fr;
+.movie-head > :first-child,
+.movie-row > :first-child {
+    flex-grow: 1;
 }
 
-.function-head,
-.function-row {
-    grid-template-columns: minmax(0, 1fr) 0.5fr;
+.movie-head > :not(:first-child),
+.movie-row > :not(:first-child) {
+    flex-grow: 0.42;
 }
 
-.cancellation-head,
-.cancellation-row {
-    grid-template-columns: 0.8fr 1fr 1fr;
+.function-head > :first-child,
+.function-row > :first-child {
+    flex-grow: 1;
+}
+
+.function-head > :last-child,
+.function-row > :last-child {
+    flex-grow: 0.5;
+}
+
+.cancellation-head > :first-child,
+.cancellation-row > :first-child {
+    flex-grow: 0.8;
 }
 
 .schedule-card {
@@ -134,17 +152,30 @@
 }
 
 .schedule-list {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     gap: 12px;
     padding: 15px 12px 7px;
 }
 
 .schedule-row {
-    display: grid;
-    grid-template-columns: 70px minmax(40px, 1fr) 80px;
+    display: flex;
     align-items: center;
     gap: 8px;
     font-size: 0.48rem;
+}
+
+.schedule-time {
+    flex: 0 0 70px;
+}
+
+.schedule-bar {
+    min-width: 40px;
+    flex: 1 1 auto;
+}
+
+.schedule-value {
+    flex: 0 0 80px;
 }
 
 .schedule-bar {
@@ -178,13 +209,17 @@
         text-align: left;
     }
 
-    .estadisticas-grid {
-        grid-template-columns: 1fr;
+    .estadisticas-list {
+        flex-direction: column;
         gap: 20px;
     }
 
+    .stat-panel {
+        width: 100%;
+        flex-basis: auto;
+    }
+
     .stat-genero {
-        grid-column: auto;
         width: 100%;
     }
 
@@ -224,9 +259,16 @@
     }
 
     .schedule-row {
-        grid-template-columns: 76px minmax(35px, 1fr) 92px;
         gap: 7px;
         font-size: 0.55rem;
+    }
+
+    .schedule-time {
+        flex-basis: 76px;
+    }
+
+    .schedule-value {
+        flex-basis: 92px;
     }
 }
 
@@ -237,8 +279,15 @@
     }
 
     .schedule-row {
-        grid-template-columns: 68px minmax(30px, 1fr) 84px;
         gap: 5px;
         font-size: 0.48rem;
+    }
+
+    .schedule-time {
+        flex-basis: 68px;
+    }
+
+    .schedule-value {
+        flex-basis: 84px;
     }
 }

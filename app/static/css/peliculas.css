@@ -161,7 +161,8 @@
 }
 
 .pelicula-dialog form {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     gap: 14px;
     padding: 14px;
 }
@@ -193,9 +194,10 @@
 }
 
 .imagen-upload {
-    display: grid;
+    display: flex;
     min-height: 130px;
-    place-items: center;
+    align-items: center;
+    justify-content: center;
     border: 1px solid #60717d;
     background:
         linear-gradient(rgb(120 100 100 / 10%) 1px, transparent 1px),
@@ -218,7 +220,8 @@
 }
 
 .pelicula-field {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     gap: 6px;
     font-size: 0.9rem;
 }

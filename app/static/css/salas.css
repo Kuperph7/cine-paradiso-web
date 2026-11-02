@@ -32,14 +32,18 @@
 }
 
 .salas-form {
-    display: grid;
-    grid-template-columns: 1fr 1fr auto;
+    display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 18px;
     min-height: 56px;
     padding: 12px 20px;
     border: 1px solid #344454;
     background: #eef3f7;
+}
+
+.salas-form label {
+    flex: 1 1 0;
 }
 
 .salas-form label {
@@ -198,9 +202,13 @@
     }
 
     .salas-form {
-        grid-template-columns: 1fr 1fr;
         gap: 26px 12px;
         padding: 11px;
+    }
+
+    .salas-form label {
+        width: calc((100% - 12px) / 2);
+        flex: 0 0 calc((100% - 12px) / 2);
     }
 
     .salas-form label {
@@ -218,7 +226,8 @@
     }
 
     .salas-form button {
-        grid-column: 1 / -1;
+        width: 100%;
+        flex: 0 0 100%;
         min-height: 43px;
         font-size: 1.1rem;
     }

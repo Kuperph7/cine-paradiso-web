@@ -43,9 +43,14 @@
 }
 
 .configuracion-perfil .form-stack {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: flex;
+    flex-wrap: wrap;
     gap: 20px;
+}
+
+.configuracion-perfil .form-stack > * {
+    width: calc((100% - 20px) / 2);
+    flex: 1 1 calc((100% - 20px) / 2);
 }
 
 .configuracion-perfil label {
@@ -69,6 +74,11 @@
     }
 
     .configuracion-perfil .form-stack {
-        grid-template-columns: 1fr;
+        flex-direction: column;
+    }
+
+    .configuracion-perfil .form-stack > * {
+        width: 100%;
+        flex-basis: auto;
     }
 }
