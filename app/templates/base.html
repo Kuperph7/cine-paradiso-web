@@ -5,8 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Cine Paradiso{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/perfil.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/preguntas_frecuentes.css') }}">
 </head>
 <body>
+    <div class="layout-principal">
+    <div class="contenido-principal">
     <header class="site-header">
         <div class="header-inner">
             <a class="brand" href="{{ url_for('cliente.cartelera') }}">
@@ -18,7 +22,7 @@
                 <a{% if request.endpoint == 'cliente.seleccionar_servicios' %} class="active"{% endif %} href="{{ url_for('cliente.seleccionar_servicios') }}">Candy</a>
                 <a{% if request.endpoint == 'cliente.sucursales' %} class="active"{% endif %} href="{{ url_for('cliente.sucursales') }}">Sucursales</a>
                 <a href="{{ url_for('cliente.mis_entradas') }}">Mis entradas</a>
-                <a class="profile-link" href="{{ url_for('auth.perfil') }}">Perfil</a>
+                <a class="profile-link" href="#perfil-sin-sesion">Perfil</a>
             </nav>
         </div>
     </header>
@@ -32,7 +36,7 @@
         </div>
         <div>
             <strong>Información</strong>
-            <a href="#">Preguntas frecuentes</a>
+            <a href="{{ url_for('cliente.preguntas_frecuentes') }}">Preguntas frecuentes</a>
             <a href="#">Términos y condiciones</a>
         </div>
         <div>
@@ -42,6 +46,9 @@
         </div>
         <p class="copyright">© 2026 Cine Paradiso. Todos los derechos reservados.</p>
     </footer>
+    </div>
+    {% include "auth/perfil_sin_sesion.html" %}
+    </div>
 </body>
 </html>
 

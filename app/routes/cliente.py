@@ -516,3 +516,8 @@ def sucursales():
         }
     ]
     return render_template("cliente/sucursales.html", sucursales=lista_sucursales)
+
+
+@cliente_bp.get("/preguntas-frecuentes")
+def preguntas_frecuentes():
+    return render_template("cliente/preguntas_frecuentes.html")
