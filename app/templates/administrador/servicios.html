@@ -1,4 +1,52 @@
 {% extends "administrador/base_admin.html" %}
-{% block title %}Servicios | Administración{% endblock %}
-{% block admin_content %}<h1>Gestión de servicios</h1><p>Listado, creación, modificación y baja de servicios.</p>{% endblock %}
 
+{% block title %}Servicios | Administración{% endblock %}
+
+{% block admin_content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/servicios.css') }}">
+
+<section class="servicios-page" aria-labelledby="servicios-title">
+    <h1 id="servicios-title" class="servicios-title">Servicios</h1>
+
+    <div class="servicios-list">
+        <div class="servicios-list-heading">Lista de servicios</div>
+
+        <div class="servicios-list-body">
+            {% for servicio in servicios|default([]) %}
+            <article class="servicio-row">
+                <h2 class="servicio-name">
+                    {{ servicio.nombre|default("Servicio " ~ loop.index) }}
+                </h2>
+
+                <div class="servicio-actions" aria-label="Acciones para {{ servicio.nombre|default('el servicio') }}">
+                    <button class="servicio-button" type="button">Editar</button>
+                    <button class="servicio-button" type="button">Dar de Baja</button>
+                    <button class="servicio-button" type="button">Habilitar</button>
+                </div>
+            </article>
+            {% else %}
+            <article class="servicio-row">
+                <h2 class="servicio-name">Servicio de ejemplo</h2>
+
+                <div class="servicio-actions" aria-label="Acciones para el servicio de ejemplo">
+                    <button class="servicio-button" type="button">Editar</button>
+                    <button class="servicio-button" type="button">Dar de Baja</button>
+                    <button class="servicio-button" type="button">Habilitar</button>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+
+        <footer class="servicios-list-footer">
+            <span>{{ servicios|default([])|length }} Servicios listados</span>
+
+            <nav class="servicios-pagination" aria-label="Paginación">
+                <button type="button" aria-label="Página anterior" disabled>‹</button>
+                <button type="button" aria-current="page">1</button>
+                <button type="button">2</button>
+                <button type="button" aria-label="Página siguiente">›</button>
+            </nav>
+        </footer>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,187 @@
+.servicios-page {
+    box-sizing: border-box;
+    min-height: 100%;
+    padding: 18px 24px 44px;
+    background: #a7bac8;
+    color: #101820;
+}
+
+.servicios-page *,
+.servicios-page *::before,
+.servicios-page *::after {
+    box-sizing: inherit;
+}
+
+.servicios-title {
+    margin: 0 0 20px;
+    color: #1e2c46;
+    font-size: clamp(2rem, 3vw, 2.6rem);
+    font-weight: 400;
+    text-align: center;
+}
+
+.servicios-list {
+    width: min(100%, 585px);
+    margin: 0 auto;
+    overflow: hidden;
+    border-radius: 4px;
+    background: #edf2f6;
+    box-shadow: 0 2px 6px rgb(30 44 70 / 18%);
+}
+
+.servicios-list-heading {
+    min-height: 26px;
+    padding: 7px 9px;
+    background: #607f91;
+    color: #fff;
+    font-size: 0.6rem;
+    font-weight: 700;
+}
+
+.servicio-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 16px;
+    min-height: 39px;
+    padding: 7px 9px;
+    border-bottom: 1px solid #cbd3d8;
+}
+
+.servicio-name {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 400;
+}
+
+.servicio-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.servicio-button {
+    min-width: 56px;
+    padding: 2px 8px;
+    border: 0;
+    border-radius: 2px;
+    background: #e8c45c;
+    color: #171717;
+    font: inherit;
+    font-size: 0.62rem;
+    cursor: pointer;
+}
+
+.servicio-button:hover {
+    background: #f5d36b;
+}
+
+.servicio-button:focus-visible,
+.servicios-pagination button:focus-visible {
+    outline: 2px solid #1e2c46;
+    outline-offset: 2px;
+}
+
+.servicios-empty {
+    margin: 0;
+    padding: 24px 12px;
+    color: #344454;
+    font-size: 0.8rem;
+}
+
+.servicios-list-footer {
+    display: flex;
+    min-height: 17px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 3px 8px;
+    background: #607f91;
+    color: #fff;
+    font-size: 0.48rem;
+}
+
+.servicios-pagination {
+    display: flex;
+    gap: 3px;
+}
+
+.servicios-pagination button {
+    width: 17px;
+    height: 14px;
+    padding: 0;
+    border: 1px solid rgb(255 255 255 / 20%);
+    background: transparent;
+    color: inherit;
+    font-size: 0.48rem;
+}
+
+.servicios-pagination button[aria-current="page"] {
+    background: rgb(255 255 255 / 15%);
+}
+
+.servicios-pagination button:disabled {
+    opacity: 0.5;
+}
+
+/* Vista mobile */
+@media (max-width: 600px) {
+    .servicios-page {
+        padding: 18px 22px 28px;
+    }
+
+    .servicios-title {
+        margin: 0 0 36px;
+        text-align: left;
+        font-size: 2rem;
+    }
+
+    .servicios-list {
+        width: 100%;
+    }
+
+    .servicios-list-heading {
+        min-height: 37px;
+        padding: 11px 10px;
+        font-size: 0.75rem;
+    }
+
+    .servicio-row {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+        min-height: 93px;
+        padding: 10px;
+    }
+
+    .servicio-name {
+        font-size: 1rem;
+    }
+
+    .servicio-actions {
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .servicio-button {
+        min-width: 0;
+        padding: 4px 10px;
+        font-size: 0.9rem;
+    }
+
+    .servicios-empty {
+        font-size: 0.9rem;
+    }
+
+    .servicios-list-footer {
+        min-height: 38px;
+        padding: 6px 10px;
+        font-size: 0.65rem;
+    }
+
+    .servicios-pagination button {
+        width: 20px;
+        height: 19px;
+        font-size: 0.65rem;
+    }
+}
