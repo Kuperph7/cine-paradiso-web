@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}Seleccionar butacas | Cine Paradiso{% endblock %}
+{% block content %}
+{#
+    Los datos de esta pantalla son placeholders enviados por Flask.
+    En la integración, la ruta del frontend consultará mediante api_client:
+    GET /cartelera/funciones/{funcion_id}/butacas
+
+    El backend devolverá las butacas libres y ocupadas. Al continuar, Flask
+    deberá conservar funcion_id y butaca_ids durante Candy y el resumen. La
+    disponibilidad se volverá a validar al confirmar POST /compras.
+#}
+<a class="movie-detail-back" href="{{ url_for('cliente.detalle_pelicula', pelicula_id=funcion.pelicula_id) }}">
+    <span aria-hidden="true">←</span> Cambiar función
+</a>
+
+<nav class="purchase-steps" aria-label="Progreso de la compra">
+    <span class="completed">1. Función</span>
+    <span class="active" aria-current="step">2. Butacas</span>
+    <span>3. Carrito</span>
+    <span>4. QR</span>
+</nav>
+
+<header class="seats-heading">
+    <div>
+        <p class="eyebrow">Elegí tu lugar</p>
+        <h1>Seleccioná tus butacas</h1>
+    </div>
+    <p>Las butacas ocupadas no pueden seleccionarse. La disponibilidad se confirmará al finalizar la compra.</p>
+</header>
+
+<form class="seats-layout" action="{{ url_for('cliente.resumen_compra') }}" method="get">
+    <input type="hidden" name="funcion_id" value="{{ funcion.id }}">
+
+    <section class="seats-room" aria-labelledby="seats-map-title">
+        <div class="seats-function-summary">
+            <div>
+                <p class="checkout-item-label">Tu función</p>
+                <h2 id="seats-map-title">{{ funcion.pelicula }}</h2>
+            </div>
+            <div class="seats-function-meta">
+                <span>{{ funcion.fecha }}</span>
+                <strong>{{ funcion.hora }}</strong>
+                <span>{{ funcion.formato }} · {{ funcion.idioma }}</span>
+            </div>
+        </div>
+
+        <div class="cinema-screen" aria-hidden="true">
+            <span>Pantalla</span>
+        </div>
+
+        <div class="seat-map" aria-label="Mapa de butacas de {{ funcion.sala }}">
+            {% for fila in butacas %}
+            <div class="seat-row">
+                <span class="seat-row-letter">{{ fila[0].fila }}</span>
+                <div class="seat-row-items">
+                    {% for butaca in fila %}
+                    <input
+                        class="seat-input"
+                        id="butaca-{{ butaca.id }}"
+                        name="butaca_ids"
+                        type="checkbox"
+                        value="{{ butaca.id }}"
+                        {% if butaca.ocupada %}disabled{% endif %}
+                    >
+                    <label
+                        class="seat{% if butaca.ocupada %} occupied{% endif %}"
+                        for="butaca-{{ butaca.id }}"
+                        title="Butaca {{ butaca.fila }}{{ butaca.columna }}{% if butaca.ocupada %} ocupada{% endif %}"
+                    >
+                        <span>{{ butaca.columna }}</span>
+                        <span class="visually-hidden">Butaca {{ butaca.fila }}{{ butaca.columna }}{% if butaca.ocupada %}, ocupada{% else %}, disponible{% endif %}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+                <span class="seat-row-letter" aria-hidden="true">{{ fila[0].fila }}</span>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="seat-legend" aria-label="Referencias del mapa">
+            <span><i class="available" aria-hidden="true"></i>Disponible</span>
+            <span><i class="selected" aria-hidden="true"></i>Seleccionada</span>
+            <span><i class="occupied" aria-hidden="true"></i>Ocupada</span>
+        </div>
+    </section>
+
+    <aside class="seats-summary" aria-labelledby="seats-summary-title">
+        <p class="eyebrow">Tu selección</p>
+        <h2 id="seats-summary-title">Resumen de la función</h2>
+
+        <dl class="seats-details">
+            <div>
+                <dt>Sucursal</dt>
+                <dd>{{ funcion.sucursal }}</dd>
+            </div>
+            <div>
+                <dt>Sala</dt>
+                <dd>{{ funcion.sala }}</dd>
+            </div>
+            <div>
+                <dt>Disponibilidad</dt>
+                <dd>{{ butacas_libres }} de {{ total_butacas }}</dd>
+            </div>
+            <div>
+                <dt>Precio por entrada</dt>
+                <dd>${{ "{:,.0f}".format(funcion.precio).replace(",", ".") }}</dd>
+            </div>
+        </dl>
+
+        <p class="seats-selection-help">Marcá una o más butacas disponibles para continuar.</p>
+
+        {#
+            Estos submits solo permiten recorrer el mockup. Más adelante, las
+            rutas deberán conservar los butaca_ids seleccionados en el carrito
+            tanto si el usuario continúa directamente como si pasa por Candy.
+        #}
+        <button class="seats-continue" type="submit">Continuar al carrito</button>
+        <button
+            class="seats-skip-candy"
+            type="submit"
+            formaction="{{ url_for('cliente.seleccionar_servicios') }}"
+        >Agregar productos de Candy</button>
+    </aside>
+</form>
+{% endblock %}
+

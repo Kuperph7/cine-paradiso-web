@@ -1,0 +1,130 @@
+{% extends "administrador/base_admin.html" %}
+
+{% block title %}Estadísticas | Administración{% endblock %}
+
+{% block admin_content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/estadisticas.css') }}">
+
+<section class="estadisticas-page" aria-labelledby="estadisticas-title">
+    <h1 id="estadisticas-title">Estadísticas</h1>
+
+    <div class="estadisticas-list">
+        <section class="stat-panel stat-genero">
+            <h2>Ventas por género</h2>
+            <div class="stat-card">
+                <div class="stat-table-head">
+                    <span>Género</span>
+                    <span>Número de ventas</span>
+                </div>
+                <label class="stat-search">
+                    <span aria-hidden="true">⌕</span>
+                    <input type="search" placeholder="Buscar por género" aria-label="Buscar por género">
+                </label>
+                {% for i in range(1, 6) %}
+                <div class="stat-row">
+                    <span>Género {{ i }}</span>
+                    <span>Número de ventas</span>
+                </div>
+                {% endfor %}
+                <div class="stat-footer">
+                    <span>5 géneros listados</span>
+                    <span class="stat-pages">‹ &nbsp; 1 &nbsp; ›</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="stat-panel">
+            <h2>Ocupación por película</h2>
+            <div class="stat-card">
+                <div class="stat-table-head movie-head">
+                    <span>Película</span><span>Funciones</span><span>Ocupación</span>
+                </div>
+                <label class="stat-search">
+                    <span aria-hidden="true">⌕</span>
+                    <input type="search" placeholder="Buscar por película" aria-label="Buscar por película">
+                </label>
+                {% for i in range(1, 6) %}
+                <div class="stat-row movie-row">
+                    <span>Película {{ i }}</span>
+                    <span>Número de funciones</span>
+                    <span>Número de ocupación</span>
+                </div>
+                {% endfor %}
+                <div class="stat-footer">
+                    <span>5 películas listadas</span>
+                    <span class="stat-pages">‹ &nbsp; 1 &nbsp; ›</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="stat-panel">
+            <h2>Ocupación por función</h2>
+            <div class="stat-card">
+                <div class="stat-table-head function-head">
+                    <span>Función</span><span>Ocupación</span>
+                </div>
+                <label class="stat-search">
+                    <span aria-hidden="true">⌕</span>
+                    <input type="search" placeholder="Buscar por función" aria-label="Buscar por función">
+                </label>
+                {% for i in range(1, 6) %}
+                <div class="stat-row function-row">
+                    <span>Función {{ i }}</span><span>Número de ocupación</span>
+                </div>
+                {% endfor %}
+                <div class="stat-footer">
+                    <span>5 funciones listadas</span>
+                    <span class="stat-pages">‹ &nbsp; 1 &nbsp; ›</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="stat-panel">
+            <h2>Distribución por franja horaria</h2>
+            <div class="stat-card schedule-card">
+                <div class="stat-table-head">Ventas por franja · Últimos 7 días</div>
+                <div class="schedule-list">
+                    {% for hora, porcentaje, entradas in [
+                        ("18:00–20:00", 75, 320),
+                        ("20:00–22:00", 69, 210),
+                        ("10:00–18:00", 54, 170),
+                        ("14:00–16:00", 16, 180),
+                        ("12:00–14:00", 16, 160),
+                        ("10:00–12:00", 42, 150),
+                        ("08:00–10:00", 12, 125),
+                        ("06:00–11:00", 10, 100)
+                    ] %}
+                    <div class="schedule-row">
+                        <span class="schedule-time">{{ hora }}</span>
+                        <span class="schedule-bar">
+                            <span style="width: {{ porcentaje }}%"></span>
+                        </span>
+                        <span class="schedule-value">{{ porcentaje }}% · {{ entradas }} entradas</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <section class="stat-panel">
+            <h2>Lista de cancelaciones</h2>
+            <div class="stat-card">
+                <div class="stat-table-head cancellation-head">
+                    <span>Función</span><span>Fecha de cancelación</span><span>Motivo</span>
+                </div>
+                {% for i in range(1, 5) %}
+                <div class="stat-row cancellation-row">
+                    <span>Función {{ i }}</span>
+                    <span>Fecha de cancelación</span>
+                    <span>Motivo de cancelación</span>
+                </div>
+                {% endfor %}
+                <div class="stat-footer">
+                    <span>4 cancelaciones listadas</span>
+                    <span class="stat-pages">‹ &nbsp; 1 &nbsp; ›</span>
+                </div>
+            </div>
+        </section>
+    </div>
+</section>
+{% endblock %}

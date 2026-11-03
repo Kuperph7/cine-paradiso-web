@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}Carrito de compra | Cine Paradiso{% endblock %}
+{% block content %}
+{#
+    Los datos del carrito son temporales y llegan desde la ruta de Flask.
+    Durante la integración, Flask conservará esta renderización con Jinja y
+    enviará la confirmación al backend mediante api_client, sin usar fetch.
+
+    Flujo esperado:
+    selección de función -> butacas -> Candy -> este resumen -> POST /compras
+    -> respuesta 201 con entradas y QR -> confirmación de compra con QR.
+#}
+<header class="checkout-heading">
+    <div>
+        <p class="eyebrow">Último paso</p>
+        <h1>Revisá tu compra</h1>
+    </div>
+    <p>Comprobá la función, las butacas y los productos antes de confirmar.</p>
+</header>
+
+<div class="checkout-layout">
+    <section class="checkout-details" aria-labelledby="checkout-details-title">
+        <h2 id="checkout-details-title">Tu selección</h2>
+
+        <article class="checkout-movie">
+            <div class="checkout-mini-poster {{ compra.estilo }}">
+                <span>{{ compra.clasificacion }}</span>
+                <strong aria-hidden="true">CP</strong>
+            </div>
+            <div>
+                <p class="checkout-item-label">Película y función</p>
+                <h3>{{ compra.pelicula }}</h3>
+                <p>{{ compra.funcion.fecha }} · {{ compra.funcion.hora }}</p>
+                <p>{{ compra.funcion.sucursal }} · {{ compra.funcion.sala }}</p>
+                <div class="checkout-tags">
+                    <span>{{ compra.funcion.formato }}</span>
+                    <span>{{ compra.funcion.idioma }}</span>
+                </div>
+            </div>
+        </article>
+
+        <div class="checkout-group">
+            <div class="checkout-group-heading">
+                <div>
+                    <p class="checkout-item-label">Entradas</p>
+                    <h3>Butacas seleccionadas</h3>
+                </div>
+                {#
+                    Debe regresar a la selección de butacas de esta función.
+                    En la integración, las selecciones actuales deberán
+                    conservarse para que el usuario pueda modificarlas.
+                #}
+                <a href="{{ url_for('cliente.seleccionar_butacas', funcion_id=compra.funcion.id) }}">Modificar</a>
+            </div>
+
+            <ul class="checkout-line-list">
+                {% for butaca in compra.butacas %}
+                <li>
+                    <span>Butaca {{ butaca.codigo }}</span>
+                    <strong>${{ "{:,.0f}".format(butaca.precio).replace(",", ".") }}</strong>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="checkout-group">
+            <div class="checkout-group-heading">
+                <div>
+                    <p class="checkout-item-label">Candy</p>
+                    <h3>Productos agregados</h3>
+                </div>
+                {#
+                    Debe regresar al catálogo de Candy conservando película,
+                    función y butacas, además de los productos ya seleccionados.
+                #}
+                <a href="{{ url_for('cliente.seleccionar_servicios') }}">Modificar</a>
+            </div>
+
+            {% if compra.servicios %}
+            <ul class="checkout-line-list">
+                {% for servicio in compra.servicios %}
+                <li>
+                    <span>{{ servicio.cantidad }} × {{ servicio.nombre }}</span>
+                    <strong>${{ "{:,.0f}".format(servicio.cantidad * servicio.precio_unitario).replace(",", ".") }}</strong>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="checkout-empty">No agregaste productos de Candy.</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <aside class="checkout-summary" aria-labelledby="checkout-summary-title">
+        <p class="eyebrow">Resumen</p>
+        <h2 id="checkout-summary-title">Total de la compra</h2>
+
+        <dl class="checkout-totals">
+            <div>
+                <dt>Entradas</dt>
+                <dd>${{ "{:,.0f}".format(total_entradas).replace(",", ".") }}</dd>
+            </div>
+            <div>
+                <dt>Productos</dt>
+                <dd>${{ "{:,.0f}".format(total_servicios).replace(",", ".") }}</dd>
+            </div>
+            <div class="checkout-total-final">
+                <dt>Total</dt>
+                <dd>${{ "{:,.0f}".format(total).replace(",", ".") }}</dd>
+            </div>
+        </dl>
+
+        {#
+            DESTINO FUTURO DEL BOTÓN CONFIRMAR:
+
+            1. En la integración será type="submit" dentro de un formulario
+               dirigido a una ruta POST de Flask, no directamente al backend.
+            2. La ruta Flask llamará mediante api_client a POST /compras con
+               funcion_id y butaca_ids, respetando el contrato Swagger.
+            3. El backend volverá a validar las butacas, registrará la compra y
+               responderá 201 con las entradas y un QR único por cada butaca.
+            4. Si la compra fue confirmada, Flask redirigirá a la pantalla de
+               confirmación/QR (detalle_entrada.html o su ruta definitiva).
+            5. Si el backend devuelve un error, Flask volverá a este resumen y
+               mostrará el mensaje correspondiente sin perder la selección.
+
+            Por ahora el enlace permite recorrer el mockup hasta la pantalla de
+            QR. No registra una compra real ni llama directamente al backend.
+        #}
+        <a class="checkout-confirm-button" href="{{ url_for('cliente.detalle_entrada', entrada_id=1) }}">
+            Confirmar compra
+        </a>
+        <p class="checkout-legal">
+            Al confirmar, se volverá a validar la disponibilidad de las butacas.
+        </p>
+    </aside>
+</div>
+{% endblock %}
+

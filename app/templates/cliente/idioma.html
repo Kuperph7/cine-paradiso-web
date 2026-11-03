@@ -1,0 +1,17 @@
+{% extends "cliente/cartelera.html" %}
+{% block title %}Idioma | Cine Paradiso{% endblock %}
+
+{% block filter_sidebar %}
+<a class="config-dismiss"
+    href="{{ url_con_filtros('cliente.cartelera') }}"
+    aria-label="Cerrar filtro de idioma">
+</a>
+
+<aside class="config-sidebar" aria-labelledby="idioma-title">
+    <h2 id="idioma-title">Idioma</h2>
+    <nav aria-label="Seleccionar idioma">
+        <a href="{{ url_con_filtros('cliente.cartelera', idioma='Castellano') }}">Castellano</a>
+        <a href="{{ url_con_filtros('cliente.cartelera', idioma='Subtitulada') }}">Subtitulada</a>
+    </nav>
+</aside>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Registro | Cine Paradiso{% endblock %}
+{% block content %}
+<section class="panel narrow">
+    <h1>Crear cuenta</h1>
+    <form class="form-stack">
+        <label>Nombre <input type="text" name="nombre" required></label>
+        <label>Email <input type="email" name="email" required></label>
+        <label>Contraseña <input type="password" name="password" required></label>
+        <button type="submit">Registrarme</button>
+    </form>
+</section>
+{% endblock %}
+

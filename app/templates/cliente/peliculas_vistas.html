@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Películas vistas | Cine Paradiso{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/peliculas_vistas.css') }}">
+<section class="watched-page">
+    <h1>Películas vistas</h1>
+    <div class="watched-list">
+        {% for numero in range(8) %}
+        <div class="watched-poster" aria-hidden="true"></div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
