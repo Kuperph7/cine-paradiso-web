@@ -1,8 +1,9 @@
 from flask import Blueprint, render_template
-
+import requests
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
+Backend_url = ""
 
 @admin_bp.get("/peliculas")
 def peliculas():
@@ -16,7 +17,10 @@ def funciones():
 
 @admin_bp.get("/salas")
 def salas():
-    return render_template("administrador/salas.html")
+    respuesta = requests.get(f"{Backend_url}/salas", timeout=5)
+    #No estoy seguro si la url del backend es admin/salas o /salas a secas
+    salas = respuesta.json()["salas"]
+    return render_template("administrador/salas.html", salas = salas)
 
 
 @admin_bp.get("/servicios")

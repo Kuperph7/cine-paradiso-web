@@ -53,39 +53,8 @@
                             {{ sala.capacidad|default("—") }}
                         </td>
                         <td data-label="Local">
-                            {{ sala.local|default("—") }}
+                            {{ sala.local_id|default("—") }}
                         </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td data-label="Lista de Funciones">Sala 1</td>
-                        <td data-label="Capacidad">Número / Número</td>
-                        <td data-label="Local">Local 1</td>
-                    </tr>
-                    <tr>
-                        <td data-label="Lista de Funciones">Sala 2</td>
-                        <td data-label="Capacidad">Número / Número</td>
-                        <td data-label="Local">Local 1</td>
-                    </tr>
-                    <tr>
-                        <td data-label="Lista de Funciones">Sala 3</td>
-                        <td data-label="Capacidad">Número / Número</td>
-                        <td data-label="Local">Local 1</td>
-                    </tr>
-                    <tr>
-                        <td data-label="Lista de Funciones">Sala 4</td>
-                        <td data-label="Capacidad">Número / Número</td>
-                        <td data-label="Local">Local 1</td>
-                    </tr>
-                    <tr>
-                        <td data-label="Lista de Funciones">Sala 5</td>
-                        <td data-label="Capacidad">Número / Número</td>
-                        <td data-label="Local">Local 1</td>
-                    </tr>
-                    <tr>
-                        <td data-label="Lista de Funciones">Sala 6</td>
-                        <td data-label="Capacidad">Número / Número</td>
-                        <td data-label="Local">Local 1</td>
                     </tr>
                     {% endfor %}
                 </tbody>
