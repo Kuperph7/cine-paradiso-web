@@ -11,7 +11,7 @@
     <section class="salas-form-section" aria-labelledby="cargar-sala-title">
         <h2 id="cargar-sala-title">Cargar Sala</h2>
 
-        <form class="salas-form" method="post">
+        <form class="salas-form" method="post" action="{{ url_for('admin.salas') }}">
             <label class="field-local" for="local">
                 <span>Local</span>
                 <select id="local" name="local">
@@ -44,19 +44,31 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for sala in salas|default([]) %}
+                    {% if error_salas|default(false) %}
                     <tr>
-                        <td data-label="Lista de Funciones">
-                            {{ sala.nombre|default("Sala " ~ loop.index) }}
-                        </td>
-                        <td data-label="Capacidad">
-                            {{ sala.capacidad|default("—") }}
-                        </td>
-                        <td data-label="Local">
-                            {{ sala.local_id|default("—") }}
+                        <td class="salas-error" colspan="3" role="alert">
+                            Error cargando las salas
                         </td>
                     </tr>
-                    {% endfor %}
+                    {% elif salas %}
+                        {% for sala in salas %}
+                        <tr>
+                            <td data-label="Lista de Funciones">
+                                {{ sala.nombre|default("Sala " ~ loop.index) }}
+                            </td>
+                            <td data-label="Capacidad">
+                                {{ sala.capacidad|default("—") }}
+                            </td>
+                            <td data-label="Local">
+                                {{ sala.local_id|default("—") }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="3">No hay salas para mostrar.</td>
+                    </tr>
+                    {% endif %}
                 </tbody>
             </table>
 

@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request
 import requests
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
@@ -15,12 +15,35 @@ def funciones():
     return render_template("administrador/funciones.html")
 
 
-@admin_bp.get("/salas")
+@admin_bp.route("/salas", methods=["GET", "POST"])
 def salas():
-    respuesta = requests.get(f"{Backend_url}/salas", timeout=5)
-    #No estoy seguro si la url del backend es admin/salas o /salas a secas
-    salas = respuesta.json()["salas"]
-    return render_template("administrador/salas.html", salas = salas)
+
+    if request.method == "POST":
+            datos = {
+            "local_id": request.form.get("local"),
+            "capacidad": request.form.get("capacidad"),
+            }
+            try:
+                respuesta = requests.post(
+                    f"{Backend_url}/salas",
+                    json=datos,
+                    timeout=5,
+                )
+                respuesta.raise_for_status()
+                print("Sala creada correctamente")
+            except requests.RequestException:
+                print(datos)
+        
+
+    salas = []
+    try:
+        respuesta = requests.get(f"{Backend_url}/salas", timeout=5)
+        #No estoy seguro si la url del backend es admin/salas o /salas a secas
+        salas = respuesta.json()["salas"]
+        error_salas = False
+    except requests.RequestException:
+        error_salas = True
+    return render_template("administrador/salas.html", salas = salas, error_salas = error_salas)
 
 
 @admin_bp.get("/servicios")
