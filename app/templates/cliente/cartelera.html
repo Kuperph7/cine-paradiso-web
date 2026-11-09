@@ -75,29 +75,37 @@
 </form>
 
 <section class="movie-list" id="movie-list" aria-label="Listado de películas">
-    {% for pelicula in peliculas %}
-    <article class="movie-card">
-        {#
-            El ID identifica la película elegida. La ruta de detalle deberá
-            utilizarlo para consultar GET /cartelera/{pelicula_id}.
-        #}
-        <a class="movie-poster {{ pelicula.estilo }}" href="{{ url_for('cliente.detalle_pelicula', pelicula_id=pelicula.id) }}">
-            <span class="format-badges">
-                {% for formato in pelicula.formatos %}
-                <span>{{ formato }}</span>
-                {% endfor %}
-            </span>
-            <span class="rating">{{ pelicula.clasificacion }}</span>
-            <span class="poster-mark" aria-hidden="true">CP</span>
-            <span class="poster-title">{{ pelicula.titulo }}</span>
-        </a>
-        <div class="movie-info">
-            <p>{{ pelicula.genero }} · {{ pelicula.duracion }}</p>
-            <h3>{{ pelicula.titulo }}</h3>
-            <a href="{{ url_for('cliente.detalle_pelicula', pelicula_id=pelicula.id) }}">Ver funciones <span aria-hidden="true">→</span></a>
-        </div>
-    </article>
-    {% endfor %}
+    {% if error %}
+    <p role="alert">{{ error }}</p>
+    {% elif peliculas %}
+        {% for pelicula in peliculas %}
+        <article class="movie-card">
+            <a class="movie-poster poster-space"
+               {% if pelicula.poster_url %}
+               style="background-image: url('{{ pelicula.poster_url }}');"
+               {% endif %}
+               href="{{ url_for('cliente.detalle_pelicula', pelicula_id=pelicula.id) }}">
+                <span class="rating">{{ pelicula.clasificacion }}</span>
+                <span class="poster-mark" aria-hidden="true">CP</span>
+                <span class="poster-title">{{ pelicula.titulo }}</span>
+            </a>
+            <div class="movie-info">
+                <p>
+                    {% for genero in pelicula.generos %}
+                        {{ genero }}{% if not loop.last %} · {% endif %}
+                    {% endfor %}
+                    · {{ pelicula.duracion_minutos }} min
+                </p>
+                <h3>{{ pelicula.titulo }}</h3>
+                <a href="{{ url_for('cliente.detalle_pelicula', pelicula_id=pelicula.id) }}">
+                    Ver funciones <span aria-hidden="true">→</span>
+                </a>
+            </div>
+        </article>
+        {% endfor %}
+    {% else %}
+        <p>No hay películas disponibles en cartelera.</p>
+    {% endif %}
 </section>
 
 <section class="promo-banner">
