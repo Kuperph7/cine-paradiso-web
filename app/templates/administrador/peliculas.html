@@ -72,7 +72,15 @@
 
     <section class="peliculas-lista" aria-labelledby="sistema-title">
         <h2 id="sistema-title">Listado de películas Sistema</h2>
-
+        {% if errores %}
+        <div role="alert">
+            <ul>
+                {% for error in errores %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
         <label class="peliculas-busqueda">
             <span aria-hidden="true">⌕</span>
             <input
@@ -81,72 +89,30 @@
                 aria-label="Buscar película del sistema"
             >
         </label>
-
         <div class="peliculas-rows">
-            {% for pelicula in peliculas|default([]) %}
+            {% for pelicula in peliculas %}
             <div class="pelicula-row">
-                <span class="pelicula-nombre">
-                    {{ pelicula.titulo|default("PELÍCULA " ~ loop.index) }}
-                </span>
-
+                <span class="pelicula-nombre">{{ pelicula.titulo }}</span>
                 <div class="pelicula-actions">
                     <button
                         type="button"
                         class="pelicula-button"
                         data-pelicula-open="editar"
-                        data-id="{{ pelicula.id|default('') }}"
+                        data-id="{{ pelicula.id }}"
                         data-sinopsis="{{ pelicula.sinopsis|default('') }}"
                         data-disponibilidad="{{ pelicula.disponibilidad|default('') }}"
-                    >
-                        Editar
-                    </button>
-
-                    <button type="button" class="pelicula-button">
-                        Borrar
-                    </button>
+                    >Editar</button>
+                    <button type="button" class="pelicula-button">Borrar</button>
                 </div>
             </div>
             {% else %}
-            {% for i in range(1, 7) %}
-            <div class="pelicula-row">
-                <span class="pelicula-nombre">PELÍCULA {{ i }}</span>
-
-                <div class="pelicula-actions">
-                    <button
-                        type="button"
-                        class="pelicula-button"
-                        data-pelicula-open="editar"
-                        data-id="{{ i }}"
-                        data-sinopsis=""
-                        data-disponibilidad=""
-                    >
-                        Editar
-                    </button>
-
-                    <button type="button" class="pelicula-button">
-                        Borrar
-                    </button>
-                </div>
-            </div>
-            {% endfor %}
+            {% if not errores %}
+            <p>No hay películas registradas.</p>
+            {% endif %}
             {% endfor %}
         </div>
-
         <footer class="peliculas-footer">
-            <span>
-                {{ peliculas|default([1, 2, 3, 4, 5, 6], true)|length }}
-                películas listadas
-            </span>
-
-            <nav
-                class="peliculas-pagination"
-                aria-label="Paginación de películas del sistema"
-            >
-                <button type="button" aria-label="Página anterior" disabled>‹</button>
-                <button type="button" aria-current="page">1</button>
-                <button type="button">2</button>
-                <button type="button" aria-label="Página siguiente">›</button>
-            </nav>
+            <span>{{ peliculas|length }} películas listadas</span>
         </footer>
     </section>
 </section>
