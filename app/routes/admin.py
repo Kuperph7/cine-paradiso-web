@@ -1,7 +1,7 @@
 import requests
-from flask import Blueprint, redirect, render_template, session, url_for, request
+from flask import Blueprint, redirect, render_template, session, url_for, request, flash
 
-from app.services.api_client import api_get
+from app.services.api_client import api_get, api_post, api_patch
 
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
@@ -36,8 +36,39 @@ def obtener_errores_api(respuesta):
     return ["No fue posible completar la operación."]
 
 
+def preparar_datos_pelicula(formulario):
+    datos = {}
+    errores = []
+    campos_texto = ("titulo", "sinopsis", "poster_url", "clasificacion", "genero")
+
+    for campo in campos_texto:
+        datos[campo] = formulario.get(campo, "").strip()
+
+    duracion = formulario.get("duracion_minutos", "").strip()
+    try:
+        datos["duracion_minutos"] = int(duracion)
+    except ValueError:
+        errores.append("La duración debe ser un número entero positivo.")
+    else:
+        if datos["duracion_minutos"] <= 0:
+            errores.append("La duración debe ser un número entero positivo.")
+
+    id_externo = formulario.get("id_externo", "").strip()
+    if id_externo:
+        try:
+            datos["id_externo"] = int(id_externo)
+        except ValueError:
+            errores.append("El identificador externo debe ser un número entero.")
+
+    return datos, errores
+
+
 @admin_bp.get("/peliculas")
 def peliculas():
+    return renderizar_peliculas()
+
+
+def renderizar_peliculas(formulario=None, errores_formulario=None):
     credencial_acceso = session.get("credencial_acceso")
     if not credencial_acceso:
         return redirect(url_for("auth.login"))
@@ -104,6 +135,120 @@ def peliculas():
         errores_externos=errores_externos,
         titulo=titulo,
         titulo_externo=titulo_externo,
+        formulario=formulario or {},
+        errores_formulario=errores_formulario or [],
+    )
+
+
+@admin_bp.post("/peliculas/crear")
+def crear_pelicula():
+    credencial_acceso = session.get("credencial_acceso")
+    if not credencial_acceso:
+        return redirect(url_for("auth.login"))
+
+    formulario = request.form.to_dict()
+    datos, errores_formulario = preparar_datos_pelicula(formulario)
+
+    if errores_formulario:
+        return renderizar_peliculas(formulario, errores_formulario), 400
+
+    try:
+        respuesta = api_post(
+            "/admin/peliculas",
+            headers={"Authorization": f"Bearer {credencial_acceso}"},
+            json=datos,
+        )
+    except requests.RequestException:
+        errores_formulario = [
+            "No se pudo confirmar la creación. Revisá el listado antes de volver a intentar."
+        ]
+        return renderizar_peliculas(formulario, errores_formulario), 502
+
+    if respuesta.status_code == 201:
+        return redirect(
+            url_for(
+                "admin.peliculas",
+                titulo=request.args.get("titulo", ""),
+                titulo_externo=request.args.get("titulo_externo", ""),
+            ),
+            code=303,
+        )
+
+    errores_formulario = obtener_errores_api(respuesta)
+    return renderizar_peliculas(formulario, errores_formulario), respuesta.status_code
+
+
+@admin_bp.post("/peliculas/<int:pelicula_id>/modificar")
+def modificar_pelicula(pelicula_id):
+    credencial_acceso = session.get("credencial_acceso")
+    if not credencial_acceso:
+        return redirect(url_for("auth.login"))
+
+    formulario = request.form.to_dict()
+    formulario["pelicula_id"] = str(pelicula_id)
+    formulario.pop("id_externo", None)
+    datos, errores_formulario = preparar_datos_pelicula(formulario)
+
+    if errores_formulario:
+        return renderizar_peliculas(formulario, errores_formulario), 400
+
+    try:
+        respuesta = api_patch(
+            f"/admin/peliculas/{pelicula_id}",
+            headers={"Authorization": f"Bearer {credencial_acceso}"},
+            json=datos,
+        )
+    except requests.RequestException:
+        errores_formulario = [
+            "No se pudo confirmar la modificación. Revisá el listado antes de volver a intentar."
+        ]
+        return renderizar_peliculas(formulario, errores_formulario), 502
+
+    if respuesta.status_code == 200:
+        return redirect(
+            url_for(
+                "admin.peliculas",
+                titulo=request.args.get("titulo", ""),
+                titulo_externo=request.args.get("titulo_externo", ""),
+            ),
+            code=303,
+        )
+
+    errores_formulario = obtener_errores_api(respuesta)
+    return renderizar_peliculas(formulario, errores_formulario), respuesta.status_code
+
+
+@admin_bp.post("/peliculas/<int:pelicula_id>/desactivar")
+def desactivar_pelicula(pelicula_id):
+    credencial_acceso = session.get("credencial_acceso")
+    if not credencial_acceso:
+        return redirect(url_for("auth.login"))
+
+    try:
+        respuesta = api_patch(
+            f"/admin/peliculas/{pelicula_id}",
+            headers={"Authorization": f"Bearer {credencial_acceso}"},
+            json={"activa": False},
+        )
+    except requests.RequestException:
+        flash(
+            "No se pudo confirmar la desactivación. Revisá el listado antes de volver a intentar.",
+            "error",
+        )
+    else:
+        if respuesta.status_code == 200:
+            flash("Película desactivada correctamente.", "exito")
+        else:
+            for error in obtener_errores_api(respuesta):
+                flash(error, "error")
+
+    return redirect(
+        url_for(
+            "admin.peliculas",
+            titulo=request.args.get("titulo", ""),
+            titulo_externo=request.args.get("titulo_externo", ""),
+        ),
+        code=303,
     )
 
 
