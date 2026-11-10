@@ -48,7 +48,7 @@ def salas():
     return render_template("administrador/salas.html", salas = salas, error_salas = error_salas)
 
 
-@admin_bp.route("/servicios", methods=["GET", "POST"])
+@admin_bp.route("/servicios", methods=["GET", "POST", "DELETE"])
 def servicios():
     error_servicios = False
 
@@ -56,6 +56,7 @@ def servicios():
         accion = request.form.get("accion", "crear")
         
         try:
+            
             #Cambio de estado
             if accion == "cambiar_estado":
                 servicio_id = int(request.form.get("servicio_id"))
@@ -66,23 +67,48 @@ def servicios():
                     json={"activo": activo},
                     timeout=5,
                 )
-            #Creacion del servicio
-            else:
+
+            #Edicion del servicios
+            elif accion == "editar":
+                servicio_id = int(request.form.get("servicio_id"))
+
                 datos = {
                     "nombre": request.form.get("nombre", "").strip(),
                     "descripcion": request.form.get("descripcion", "").strip(),
                     "precio": request.form.get("precio", type=float),
                 }
 
-                respuesta = requests.post(
-                    f"{Backend_url}/servicios",
+                respuesta = requests.patch(
+                    f"{Backend_url}/servicios/{servicio_id}",
                     json=datos,
                     timeout=5,
                 )
-                print(datos)
+
+            #Eliminacion del servicio
+            elif accion == "borrar":
+                servicio_id = int(request.form.get("servicio_id"))
+
+                respuesta = requests.delete(
+                    f"{Backend_url}/servicios/{servicio_id}",
+                    timeout=5,
+                )
+
+            
+            #Creacion del servicio
+            datos = {
+                "nombre": request.form.get("nombre", "").strip(),
+                "descripcion": request.form.get("descripcion", "").strip(),
+                "precio": request.form.get("precio", type=float),
+            }
+
+            respuesta = requests.post(
+                f"{Backend_url}/servicios",
+                json=datos,
+                timeout=5,
+                )
 
             respuesta.raise_for_status()
-            return print(datos)
+
 
         except (requests.RequestException, TypeError, ValueError):
             error_servicios = True

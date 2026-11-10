@@ -105,5 +105,90 @@
             </nav>
         </footer>
     </div>
+
+    <!-- Editar servicio PATCH -->
+    <dialog class="servicio-dialog" id="servicio-dialog">
+        <form
+            id="servicio-edit-form"
+            class="servicio-dialog-form"
+            method="post"
+            action="{{ url_for('admin.servicios') }}"
+        >
+            <header class="servicio-dialog-header">
+                <h2>Editar servicio</h2>
+                <button
+                    class="servicio-dialog-close"
+                    type="button"
+                    data-close-dialog
+                    aria-label="Cerrar"
+                >
+                    ×
+                </button>
+            </header>
+
+            <input type="hidden" name="servicio_id" id="edit-servicio-id">
+
+            <label for="edit-servicio-nombre">Nombre</label>
+            <input
+                id="edit-servicio-nombre"
+                name="nombre"
+                type="text"
+                maxlength="100"
+                required
+            >
+
+            <label for="edit-servicio-descripcion">Descripción</label>
+            <textarea
+                id="edit-servicio-descripcion"
+                name="descripcion"
+                rows="3"
+                required
+            ></textarea>
+
+            <label for="edit-servicio-precio">Precio</label>
+            <input
+                id="edit-servicio-precio"
+                name="precio"
+                type="number"
+                min="0"
+                step="0.01"
+                required
+            >
+
+            <footer class="servicio-dialog-actions">
+                <button
+                    class="servicio-button"
+                    type="submit"
+                    name="accion"
+                    value="editar"
+                >
+                    Guardar cambios
+                </button>
+
+                <button
+                    class="servicio-button servicio-button-delete"
+                    type="submit"
+                    name="accion"
+                    value="borrar"
+                    formnovalidate
+                    data-delete-service
+                >
+                    Borrar servicio
+                </button>
+
+                <button
+                    class="servicio-dialog-cancel"
+                    type="button"
+                    data-close-dialog
+                >
+                    Cancelar
+                </button>
+            </footer>
+        </form>
+    </dialog>
 </section>
+<script
+    src="{{ url_for('static', filename='js/servicios.js') }}"
+    defer
+></script>
 {% endblock %}
