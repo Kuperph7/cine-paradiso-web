@@ -13,7 +13,7 @@ def obtener_filtros():
     # pantallas de preferencias. Más adelante Flask enviará estos valores al
     # backend mediante api_client; el navegador no consultará la API con fetch.
     nombres_filtros = (
-        "sucursal",
+        "local_id",
         "fecha",
         "genero",
         "idioma",

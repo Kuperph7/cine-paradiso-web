@@ -112,13 +112,13 @@
     <a class="secondary-button" href="{{ url_for('cliente.seleccionar_servicios') }}">Conocer Candy</a>
 </section>
 
+{% if estrenos %}
 <section class="section-heading upcoming-heading">
     <div>
         <p class="eyebrow">Próximamente</p>
         <h2>Estrenos que se vienen</h2>
     </div>
 </section>
-
 <section class="upcoming-list" aria-label="Próximos estrenos">
     {% for pelicula in estrenos %}
     <article class="upcoming-card {{ pelicula.estilo }}">
@@ -130,5 +130,6 @@
     </article>
     {% endfor %}
 </section>
+{% endif %}
 {% block filter_sidebar %}{% endblock %}
 {% endblock %}
