@@ -46,15 +46,28 @@ def cartelera():
     peliculas = []
     error = None
 
+    local_id = request.args.get("local_id", "").strip()
+    fecha = request.args.get("fecha", "").strip()
+
+    parametros = {}
+
+    if local_id:
+        parametros["local_id"] = local_id
+
+    if fecha:
+        parametros["fecha"] = fecha
+
     try:
-        respuesta = api_get("/cartelera")
+        respuesta = api_get("/cartelera", params=parametros)
         respuesta.raise_for_status()
 
         datos = respuesta.json()
         peliculas = datos.get("peliculas", [])
 
     except requests.exceptions.RequestException:
-        current_app.logger.exception("Error al consultar la cartelera")
+        current_app.logger.exception(
+            "Error al consultar la cartelera"
+        )
         error = "No se pudo cargar la cartelera."
 
     generos = []
@@ -70,6 +83,8 @@ def cartelera():
         estrenos=[],
         generos=generos,
         error=error,
+        local_id=local_id,
+        fecha=fecha,
     )
 
 
