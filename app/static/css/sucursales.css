@@ -20,7 +20,7 @@
 .sucursal-card {
     border-radius: 24px;
     overflow: hidden;
-    background-color: #f7d369;
+    background-color: #f7d369; /* Fondo amarillo cálido de la captura */
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
 }
 

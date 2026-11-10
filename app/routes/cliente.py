@@ -1,10 +1,8 @@
-from flask import Blueprint, render_template, request, url_for, redirect, session
-import requests
+from flask import Blueprint, render_template, request, url_for
+
 
 cliente_bp = Blueprint("cliente", __name__) 
 
-# Dirección base de la API REST del Backend VERIFICAR PUERTO
-API_URL = "http://localhost:5001/api"
 
 def obtener_filtros():
     # Conserva los filtros elegidos al navegar entre la cartelera y las
@@ -23,12 +21,6 @@ def obtener_filtros():
         for nombre in nombres_filtros
     }
 
-def obtener_headers():
-    token = session.get("token", "")
-    return {
-        "Authorization": f"Bearer {token}",
-        "Content-Type": "application/json"
-    }
 
 @cliente_bp.app_context_processor
 def contexto_filtros():
@@ -481,28 +473,25 @@ def mis_compras():
     # Datos temporales del historial. En la integración, Flask consultará
     # GET /mis-compras mediante api_client y entregará la respuesta al template
     # usando la variable "compras".
-   
-    headers = obtener_headers()
-    compras_data = []
-
-    try:
-        
-        response = requests.get(f"{API_URL}/compras", headers=headers)
-        
-        if response.status_code == 200:
-            compras_data = response.json()
-        else:
-            print(f"Error al obtener compras: HTTP {response.status_code}")
-            compras_data = []
-            
-    except requests.exceptions.RequestException as err:
-        print(f"Error de conexión con la API del Backend: {err}")
-        
-        compras_data = []
-
-   
-    return render_template("cliente/mis_compras.html", compras=compras_data)
-
+    compras_usuario = [
+        {
+            "id": 10293,
+            "pelicula": "Zootopia 3D",
+            "fecha": "22/05/2026",
+            "monto": "12.500",
+            "estado": "Confirmada",
+            "cancelable": True
+        },
+        {
+            "id": 10182,
+            "pelicula": "Horizonte Final",
+            "fecha": "10/04/2026",
+            "monto": "8.000",
+            "estado": "Finalizada",
+            "cancelable": False
+        }
+    ]
+    return render_template("cliente/mis_compras.html")
 
 
 @cliente_bp.get("/mis-entradas")
@@ -516,63 +505,19 @@ def detalle_entrada(entrada_id):
     # backend devuelve la compra confirmada, sus entradas y los QR. Flask deberá
     # utilizar esa respuesta —o consultar GET /compras/{compra_id}— y recién
     # entonces renderizar esta pantalla; el frontend no debe generar los QR.
-    headers = obtener_headers()
-    compra_data = {}
-
-    try:
-        
-        response = requests.get(f"{API_URL}/entradas/{entrada_id}", headers=headers)
-        
-        if response.status_code == 200:
-            compra_data = response.json()
-        else:
-            print(f"Error al consultar entrada #{entrada_id}: HTTP {response.status_code}")
-            compra_data = {}
-            
-    except requests.exceptions.RequestException as err:
-        print(f"Error de conexión con la API del Backend: {err}")
-        compra_data = {}
-
-    
-    if compra_data:
-        compra_data["qr_url"] = (
-            f"https://api.qrserver.com/v1/create-qr-code/?"
-            f"size=200x200&data=CINEPARADISO-TICKET-{entrada_id}"
-        )
-
+    compra_data = {
+        "fecha": "22/5/26",
+        "detalle_entradas": "Entrada Zootopia 3D Inglés VIP x2",
+        "detalle_combos": "Combo palomitas con bebidas x1",
+        "monto_total": "12.500",
+        "qr_url": "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=CINEPARADISO-COMPRA-10293",
+        "cancelable": True,
+        "fecha_limite_cancelacion": "20/05/2026"
+    }
     return render_template(
-        "cliente/detalle_entrada.html",
-        entrada_id=entrada_id,
-        compra=compra_data
+        "cliente/detalle_entrada.html", entrada_id=entrada_id, compra=compra_data
     )
 
-@cliente_bp.post("/compras/<int:compra_id>/cancelar")
-def cancelar_compra(compra_id):
-    headers = obtener_headers()
-    
-    
-    payload = {
-        "motivo": "Cancelación solicitada por el usuario desde el panel web"
-    }
-
-    try:
-        
-        response = requests.patch(
-            f"{API_URL}/compras/{compra_id}",
-            json=payload,
-            headers=headers
-        )
-        
-        if response.status_code == 200:
-            print(f"Compra #{compra_id} cancelada exitosamente.")
-        else:
-            print(f"No se pudo cancelar la compra #{compra_id}: {response.text}")
-
-    except requests.exceptions.RequestException as err:
-        print(f"Error al conectar con la API Backend: {err}")
-
-    
-    return redirect(url_for("cliente.mis_compras"))
 
 @cliente_bp.get("/sucursales")
 def sucursales():
@@ -629,4 +574,3 @@ def configurar_formato():
 @cliente_bp.get("/configuracion/categoria")
 def configurar_categoria():
     return render_template("cliente/categoria.html")
-
