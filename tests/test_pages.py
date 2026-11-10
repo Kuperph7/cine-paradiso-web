@@ -23,7 +23,6 @@ def test_initial_pages_render():
         "/mis-compras",
         "/mis-entradas",
         "/entradas/1",
-        "/admin/peliculas",
         "/admin/funciones",
         "/admin/salas",
         "/admin/servicios",
@@ -34,3 +33,6 @@ def test_initial_pages_render():
     for path in paths:
         assert client.get(path).status_code == 200
 
+    respuesta = client.get("/admin/peliculas")
+    assert respuesta.status_code == 302
+    assert respuesta.headers["Location"] == "/login"
