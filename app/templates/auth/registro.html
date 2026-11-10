@@ -3,12 +3,25 @@
 {% block content %}
 <section class="panel narrow">
     <h1>Crear cuenta</h1>
-    <form class="form-stack">
-        <label>Nombre <input type="text" name="nombre" required></label>
-        <label>Email <input type="email" name="email" required></label>
-        <label>Contraseña <input type="password" name="password" required></label>
+    <form
+    id="Formulario-registro"
+    class="form-stack"
+    action="{{ url_for('auth.registro') }}"
+    method="POST"
+    >
+        <label>Nombre <input id = "nombre" type="text" name="nombre" required></label>
+        <label>Email <input id = "email" type="email" name="email" required></label>
+        <label>Contraseña <input id = "password" type="password" name="password" required></label>
         <button type="submit">Registrarme</button>
     </form>
+    {% if mensaje %}
+        <p>{{ mensaje }}</p> 
+    {% endif %}
+
+    {% if error %}
+        <p>{{ error }}</p>
+    {% endif %}
 </section>
+<script src="{{ url_for('static', filename='js/registro.js') }}"></script>
 {% endblock %}
 
