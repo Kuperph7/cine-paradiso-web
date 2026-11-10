@@ -1,5 +1,5 @@
 import requests
-from flask import Blueprint, redirect, render_template, session, url_for
+from flask import Blueprint, redirect, render_template, session, url_for, request
 
 from app.services.api_client import api_get
 
@@ -41,13 +41,14 @@ def peliculas():
     credencial_acceso = session.get("credencial_acceso")
     if not credencial_acceso:
         return redirect(url_for("auth.login"))
+    titulo = request.args.get("titulo", "").strip()
     peliculas_sistema = []
     errores = []
     try:
         respuesta = api_get(
             "/admin/peliculas",
             headers={"Authorization": f"Bearer {credencial_acceso}"},
-            params={"incluir_inactivas": "true"},
+            params={"incluir_inactivas": "true", "titulo": titulo},
         )
         if respuesta.status_code == 200:
             datos = respuesta.json()
@@ -68,6 +69,7 @@ def peliculas():
         peliculas=peliculas_sistema,
         peliculas_api=[],
         errores=errores,
+        titulo=titulo,
     )
 
 

@@ -81,14 +81,18 @@
             </ul>
         </div>
         {% endif %}
-        <label class="peliculas-busqueda">
-            <span aria-hidden="true">⌕</span>
-            <input
-                type="search"
-                placeholder="Buscar película por nombre"
-                aria-label="Buscar película del sistema"
-            >
-        </label>
+        <form action="{{ url_for('admin.peliculas') }}" method="get">
+            <label class="peliculas-busqueda">
+                <span aria-hidden="true">⌕</span>
+                <input
+                    type="search"
+                    name="titulo"
+                    value="{{ titulo }}"
+                    placeholder="Buscar película por nombre"
+                    aria-label="Buscar película del sistema"
+                >
+            </label>
+        </form>
         <div class="peliculas-rows">
             {% for pelicula in peliculas %}
             <div class="pelicula-row">
@@ -107,7 +111,11 @@
             </div>
             {% else %}
             {% if not errores %}
+            {% if titulo %}
+            <p>No se encontraron películas con ese título.</p>
+            {% else %}
             <p>No hay películas registradas.</p>
+            {% endif %}
             {% endif %}
             {% endfor %}
         </div>
