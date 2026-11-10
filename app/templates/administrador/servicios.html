@@ -8,34 +8,91 @@
 <section class="servicios-page" aria-labelledby="servicios-title">
     <h1 id="servicios-title" class="servicios-title">Servicios</h1>
 
+    <!-- Formulario POST-->
+    <section class="servicio-form-section" aria-labelledby="crear-servicio-title">
+        <h2 id="crear-servicio-title">Crear servicio</h2>
+
+        <form
+            class="servicio-form"
+            method="post"
+            action="{{ url_for('admin.servicios') }}"
+        >
+            <label for="nombre">Nombre</label>
+            <input
+                id="nombre"
+                name="nombre"
+                type="text"
+                maxlength="100"
+                required
+            >
+
+            <label for="descripcion">Descripción</label>
+            <textarea
+                id="descripcion"
+                name="descripcion"
+                rows="3"
+                required
+            ></textarea>
+
+            <label for="precio">Precio</label>
+            <input
+                id="precio"
+                name="precio"
+                type="number"
+                min="0"
+                step="0.01"
+                required
+            >
+
+            <button class="servicio-button" type="submit">Crear servicio</button>
+        </form>
+    </section>
+    
+    <!-- LISTADO GET -->
     <div class="servicios-list">
         <div class="servicios-list-heading">Lista de servicios</div>
 
-        <div class="servicios-list-body">
-            {% for servicio in servicios|default([]) %}
-            <article class="servicio-row">
-                <h2 class="servicio-name">
-                    {{ servicio.nombre|default("Servicio " ~ loop.index) }}
-                </h2>
+    <div class="servicios-list-body">
+        {% for servicio in servicios|default([]) %}
+        <article class="servicio-row">
+            <div class="servicio-info">
+                <h2 class="servicio-name">{{ servicio.nombre }}</h2>
+                <p class="servicio-description">{{ servicio.descripcion }}</p>
+                <span class="servicio-price">${{ servicio.precio }}</span>
+            </div>
 
-                <div class="servicio-actions" aria-label="Acciones para {{ servicio.nombre|default('el servicio') }}">
-                    <button class="servicio-button" type="button">Editar</button>
-                    <button class="servicio-button" type="button">Dar de Baja</button>
-                    <button class="servicio-button" type="button">Habilitar</button>
-                </div>
-            </article>
-            {% else %}
-            <article class="servicio-row">
-                <h2 class="servicio-name">Servicio de ejemplo</h2>
+            <div class="servicio-actions">
+                <button
+                    class="servicio-button"
+                    type="button"
+                    data-edit-service
+                    data-id="{{ servicio.id }}"
+                    data-nombre="{{ servicio.nombre }}"
+                    data-descripcion="{{ servicio.descripcion }}"
+                    data-precio="{{ servicio.precio }}"
+                >
+                    Editar
+                </button>
 
-                <div class="servicio-actions" aria-label="Acciones para el servicio de ejemplo">
-                    <button class="servicio-button" type="button">Editar</button>
-                    <button class="servicio-button" type="button">Dar de Baja</button>
-                    <button class="servicio-button" type="button">Habilitar</button>
-                </div>
-            </article>
-            {% endfor %}
-        </div>
+                <form method="post" action="{{ url_for('admin.servicios') }}">
+                    <input type="hidden" name="accion" value="cambiar_estado">
+                    <input type="hidden" name="servicio_id" value="{{ servicio.id }}">
+                    <input
+                        type="hidden"
+                        name="activo"
+                        value="{{ 0 if servicio.activo else 1 }}"
+                    >
+
+                    <button class="servicio-button" type="submit">
+                        {{ "Dar de baja" if servicio.activo else "Habilitar" }}
+                    </button>
+                </form>
+            </div>
+        </article>
+        {% else %}
+        <p class="servicios-empty">Todavía no hay servicios para mostrar.</p>
+        {% endfor %}
+    </div>
 
         <footer class="servicios-list-footer">
             <span>{{ servicios|default([])|length }} Servicios listados</span>

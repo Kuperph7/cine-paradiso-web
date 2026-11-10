@@ -48,9 +48,68 @@ def salas():
     return render_template("administrador/salas.html", salas = salas, error_salas = error_salas)
 
 
-@admin_bp.get("/servicios")
+@admin_bp.route("/servicios", methods=["GET", "POST"])
 def servicios():
-    return render_template("administrador/servicios.html")
+    error_servicios = False
+
+    if request.method == "POST":
+        accion = request.form.get("accion", "crear")
+        
+        try:
+            #Cambio de estado
+            if accion == "cambiar_estado":
+                servicio_id = int(request.form.get("servicio_id"))
+                activo = request.form.get("activo") == "1"
+
+                respuesta = requests.patch(
+                    f"{Backend_url}/servicios/{servicio_id}",
+                    json={"activo": activo},
+                    timeout=5,
+                )
+            #Creacion del servicio
+            else:
+                datos = {
+                    "nombre": request.form.get("nombre", "").strip(),
+                    "descripcion": request.form.get("descripcion", "").strip(),
+                    "precio": request.form.get("precio", type=float),
+                }
+
+                respuesta = requests.post(
+                    f"{Backend_url}/servicios",
+                    json=datos,
+                    timeout=5,
+                )
+                print(datos)
+
+            respuesta.raise_for_status()
+            return print(datos)
+
+        except (requests.RequestException, TypeError, ValueError):
+            error_servicios = True
+
+
+    # Renderizado de los servicios
+    servicios = []
+
+    try:
+        respuesta = requests.get(f"{Backend_url}/servicios", timeout=5)
+        respuesta.raise_for_status()
+
+        datos_respuesta = respuesta.json()
+
+        if isinstance(datos_respuesta, dict):
+            servicios = datos_respuesta.get("servicios", [])
+        else:
+            servicios = datos_respuesta
+
+    except (requests.RequestException, ValueError):
+        error_servicios = True
+
+    return render_template(
+        "administrador/servicios.html",
+        servicios=servicios,
+        error_servicios=error_servicios,
+    )
 
 
 @admin_bp.get("/estadisticas")
