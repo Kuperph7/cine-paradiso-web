@@ -3,7 +3,7 @@ import requests
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
-Backend_url = ""
+Backend_url = "http://127.0.0.1:5000"
 
 @admin_bp.get("/peliculas")
 def peliculas():
@@ -20,8 +20,10 @@ def salas():
 
     if request.method == "POST":
             datos = {
-            "local_id": request.form.get("local"),
-            "capacidad": request.form.get("capacidad"),
+                "local_id": request.form.get("local", type=int),
+                "nombre": request.form.get("nombre", "").strip(),
+                "filas": request.form.get("filas", type=int),
+                "butacas_por_fila": request.form.get("butacas_por_fila", type=int),
             }
             try:
                 respuesta = requests.post(
@@ -38,7 +40,7 @@ def salas():
     salas = []
     try:
         respuesta = requests.get(f"{Backend_url}/salas", timeout=5)
-        #No estoy seguro si la url del backend es admin/salas o /salas a secas
+        
         salas = respuesta.json()["salas"]
         error_salas = False
     except requests.RequestException:
