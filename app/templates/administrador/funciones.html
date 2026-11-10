@@ -64,6 +64,7 @@
                             <th scope="col">Función</th>
                             <th scope="col">Sala y horario</th>
                             <th scope="col">Estado</th>
+                            <th scope="col">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -83,10 +84,108 @@
                                 {{ funcion.estado }}
                             </td>
 
+
+                            <td data-label="Acciones">
+                                {% if session.get("token") %}
+
+                                    <!-- Cancelar o publicar una función -->
+                                    <form method="post">
+                                        <input type="hidden" name="funcion_id" value="{{ funcion.id }}">
+
+                                        {% if funcion.estado == "cancelada" %}
+                                            <button type="submit" name="accion" value="publicar">
+                                                Publicar
+                                            </button>
+                                        {% else %}
+                                            <button type="submit" name="accion" value="cancelar">
+                                                Cancelar
+                                            </button>
+                                        {% endif %}
+                                    </form>
+
+                                    <!-- Editar los datos de una función -->
+                                    <details>
+                                        <summary>Editar función</summary>
+
+                                        <form method="post" class="funcion-edicion">
+                                            <input type="hidden" name="accion" value="editar">
+                                            <input type="hidden" name="funcion_id" value="{{ funcion.id }}">
+
+                                            <label>
+                                                Película
+                                                <select name="pelicula_id" required>
+                                                    {% for pelicula in peliculas %}
+                                                        <option
+                                                            value="{{ pelicula.id }}"
+                                                            {% if pelicula.id == funcion.pelicula_id %}selected{% endif %}
+                                                        >
+                                                            {{ pelicula.titulo }}
+                                                        </option>
+                                                    {% endfor %}
+                                                </select>
+                                            </label>
+
+                                            <label>
+                                                Sala
+                                                <select name="sala_id" required>
+                                                    {% for sala in salas %}
+                                                        <option
+                                                            value="{{ sala.id }}"
+                                                            {% if sala.id == funcion.sala_id %}selected{% endif %}
+                                                        >
+                                                            {{ sala.nombre }}
+                                                        </option>
+                                                    {% endfor %}
+                                                </select>
+                                            </label>
+
+                                            <label>
+                                                Fecha
+                                                <input
+                                                    type="date"
+                                                    name="fecha"
+                                                    value="{{ funcion.fecha_hora[:10] }}"
+                                                    required
+                                                >
+                                            </label>
+
+                                            <label>
+                                                Horario
+                                                <input
+                                                    type="time"
+                                                    name="horario"
+                                                    value="{{ funcion.fecha_hora[11:16] }}"
+                                                    required
+                                                >
+                                            </label>
+
+                                            <label>
+                                                Precio
+                                                <input
+                                                    type="number"
+                                                    name="precio"
+                                                    value="{{ funcion.precio }}"
+                                                    min="0"
+                                                    step="1"
+                                                    required
+                                                >
+                                            </label>
+
+                                            <button type="submit">Guardar cambios</button>
+                                        </form>
+                                    </details>
+
+                                {% else %}
+                                    Iniciá sesión como administrador
+                                {% endif %}
+                            </td>
+
+
+
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan="3">
+                            <td colspan="4">
                                 {% if mensaje_error %}
                                     {{ mensaje_error }}
                                 {% else %}

@@ -231,3 +231,98 @@ def test_crear_funcion_con_errores(monkeypatch):
     assert respuesta.status_code == 200
     assert "Revisá los datos ingresados" in respuesta.get_data(as_text=True)
     api_post_simulado.assert_not_called()
+
+
+def test_admin_funciones_patch(monkeypatch):
+    respuesta_get = Mock()
+    respuesta_get.status_code = 200
+    respuesta_get.json.return_value = {
+        "funciones": [],
+        "peliculas": [],
+        "salas": []
+    }
+
+    respuesta_patch = Mock()
+    respuesta_patch.status_code = 200
+
+    patch_simulado = Mock(return_value=respuesta_patch)
+
+    monkeypatch.setattr(
+        "app.routes.admin.api_get",
+        lambda ruta, **kwargs: respuesta_get
+    )
+    monkeypatch.setattr(
+        "app.routes.admin.api_patch",
+        patch_simulado
+    )
+
+    app = create_app(TestConfig)
+    client = app.test_client()
+
+    with client.session_transaction() as sesion:
+        sesion["token"] = "token-prueba"
+
+    casos = [
+        (
+            "cancelar",
+            {},
+            {"estado": "cancelada"}
+        ),
+        (
+            "publicar",
+            {},
+            {"estado": "programada"}
+        ),
+        (
+            "editar",
+            {
+                "pelicula_id": "5",
+                "sala_id": "2",
+                "fecha": "2026-11-20",
+                "horario": "20:00",
+                "precio": "3000"
+            },
+            {
+                "pelicula_id": 5,
+                "sala_id": 2,
+                "fecha_hora": "2026-11-20T20:00:00-03:00",
+                "precio": 3000
+            }
+        )
+    ]
+
+    for accion, datos, json_esperado in casos:
+        respuesta = client.post(
+            "/admin/funciones",
+            data={
+                "accion": accion,
+                "funcion_id": "12",
+                **datos
+            }
+        )
+
+        assert respuesta.status_code == 200
+        assert "Función actualizada correctamente." in respuesta.get_data(
+            as_text=True
+        )
+
+        patch_simulado.assert_called_with(
+            "/funciones/12",
+            json=json_esperado,
+            headers={"Authorization": "Bearer token-prueba"}
+        )
+
+    # Sin autenticación no debe enviarse PATCH
+    patch_simulado.reset_mock()
+
+    cliente_sin_token = app.test_client()
+    respuesta = cliente_sin_token.post(
+        "/admin/funciones",
+        data={
+            "accion": "cancelar",
+            "funcion_id": "12"
+        }
+    )
+
+    assert "Tenés que iniciar sesión" in respuesta.get_data(as_text=True)
+    patch_simulado.assert_not_called()

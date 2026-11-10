@@ -4,7 +4,7 @@ from zoneinfo import ZoneInfo
 from flask import Blueprint, render_template, session, request
 from requests.exceptions import RequestException
 
-from app.services.api_client import api_get,api_post
+from app.services.api_client import api_get,api_post, api_patch
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -25,7 +25,7 @@ def funciones():
 
     token = session.get("token")
 
-    if request.method == "POST":
+    if request.method == "POST" and not request.form.get("accion"):
         if not token:
             mensaje_accion = "Tenés que iniciar sesión como administrador."
         else:
@@ -73,8 +73,82 @@ def funciones():
                 mensaje_accion = "No fue posible conectar con la API."
 
 
+    if request.method == "POST" and request.form.get("accion"):
+        accion = request.form.get("accion")
+
+        if not token:
+            mensaje_accion = "Tenés que iniciar sesión como administrador."
+
+        elif accion not in ("cancelar", "publicar", "editar"):
+            mensaje_accion = "Acción no válida."
+
+        else:
+            try:
+                funcion_id = int(request.form.get("funcion_id", ""))
+
+                if funcion_id <= 0:
+                    raise ValueError("ID inválido")
+
+
+                if accion == "editar":
+                    pelicula_id = int(request.form.get("pelicula_id", ""))
+                    sala_id = int(request.form.get("sala_id", ""))
+                    precio = int(request.form.get("precio", ""))
+
+                    fecha = request.form.get("fecha", "")
+                    horario = request.form.get("horario", "")
+
+                    fecha_hora = datetime.fromisoformat(
+                        f"{fecha}T{horario}"
+                    ).replace(
+                        tzinfo=ZoneInfo("America/Argentina/Buenos_Aires")
+                    )
+
+                    if pelicula_id <= 0 or sala_id <= 0 or precio < 0:
+                        raise ValueError("Datos inválidos")
+
+                    datos_actualizacion = {
+                        "pelicula_id": pelicula_id,
+                        "sala_id": sala_id,
+                        "fecha_hora": fecha_hora.isoformat(timespec="seconds"),
+                        "precio": precio
+                    }
+
+                else:
+                    if accion == "cancelar":
+                        nuevo_estado = "cancelada"
+                    else:
+                        nuevo_estado = "programada"
+
+                    datos_actualizacion = {"estado": nuevo_estado}
+
+                respuesta_actualizacion = api_patch(
+                    f"/funciones/{funcion_id}",
+                    json=datos_actualizacion,
+                    headers={"Authorization": f"Bearer {token}"}
+                )
+
+                if respuesta_actualizacion.status_code == 200:
+                    mensaje_accion = "Función actualizada correctamente."
+
+                elif respuesta_actualizacion.status_code in (401, 403):
+                    mensaje_accion = "No tenés permisos para modificar funciones."
+
+                else:
+                    mensaje_accion = "No se pudo actualizar la función."
+
+            except ValueError:
+                mensaje_accion = "El identificador de la función no es válido."
+
+            except RequestException:
+                mensaje_accion = "No fue posible conectar con la API."
+
+
     try:
-        respuesta = api_get("/funciones")
+        respuesta = api_get(
+            "/funciones",
+            headers={"Authorization": f"Bearer {token}"} if token else {}
+        )
 
         if respuesta.status_code == 200:
             datos = respuesta.json()
