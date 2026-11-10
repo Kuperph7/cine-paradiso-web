@@ -67,27 +67,3 @@
 .btn-ver-ticket:hover {
     background-color: #e5c052;
 }
-
-/* Responsivo para celulares */
-@media (max-width: 600px) {
-    .compras-container {
-        margin: 1rem auto;
-    }
-
-    .compra-card {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
-        padding: 1.2rem;
-    }
-
-    .compra-acciones {
-        width: 100%;
-    }
-
-    .btn-ver-ticket {
-        display: block;
-        text-align: center;
-        width: 100%;
-    }
-}

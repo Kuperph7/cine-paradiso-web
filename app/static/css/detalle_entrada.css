@@ -90,35 +90,3 @@
     margin: 1.8rem auto 0;
     line-height: 1.5;
 }
-
-/* Responsivo para celulares */
-@media (max-width: 600px) {
-    .email-confirmacion-container {
-        margin: 1rem auto;
-        padding: 0.5rem;
-    }
-
-    .email-titulo {
-        font-size: 1.5rem;
-        margin-bottom: 1.2rem;
-    }
-
-    .ticket-card {
-        padding: 1.5rem 1rem;
-        border-radius: 20px;
-    }
-
-    .ticket-header {
-        max-width: 100%;
-    }
-
-    .qr-code {
-        width: 160px;
-        height: 160px;
-    }
-
-    .btn-cancelar {
-        width: 100%;
-        padding: 0.75rem 1.5rem;
-    }
-}
