@@ -14,21 +14,30 @@
 
             <form class="funcion-form">
                 <label for="pelicula">Película</label>
-                <select id="pelicula">
-                    <option value=""></option>
-                    <option>Película 1</option>
-                    <option>Película 2</option>
-                    <option>Película 3</option>
+                <select id="pelicula" name="pelicula_id">
+                    <option value = "">Seleccione una película</option>
+
+                    {% for pelicula in peliculas|default([]) %}
+                        <option value=""{{ pelicula.id }}>
+                            {{ pelicula.titulo }}
+                        </option>
+                    {% endfor %}
                 </select>
 
                 <label for="sala">Sala</label>
-                <select id="sala">
-                    <option value=""></option>
-                    <option>Sala 1</option>
-                    <option>Sala 2</option>
-                    <option>Sala 3</option>
-                </select>
 
+                <select id="sala" name="sala_id">
+                    <option value=""Seleccione una sala</option>>
+
+                    {% for sala in salas|default([]) %}
+                        <option value="{{ sala.id }}">
+                            {{ sala.nombre }}
+                        </option>
+                    {% endfor %}
+                </select>
+                {% if mensaje_salas %}
+                    <p>{{ mensaje_salas }}</p>
+                {% endif %}
                 <label for="horario">Horario</label>
                 <input id="horario" type="time">
 

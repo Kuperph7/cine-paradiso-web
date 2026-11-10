@@ -1,5 +1,6 @@
 from app import create_app
 from unittest.mock import Mock
+from flask import render_template
 
 class TestConfig:
     TESTING = True
@@ -48,9 +49,35 @@ def test_admin_funciones_muestra_datos_api(monkeypatch):
             }
         ]
     }
-    def api_get_simulado(ruta):
-        assert ruta == "/funciones"
-        return respuesta_api
+    respuesta_peliculas_api = Mock()
+    respuesta_peliculas_api.status_code = 200
+    respuesta_peliculas_api.json.return_value = {
+        "peliculas": [
+            {
+                "id": 8,
+                "titulo": "Titanic"
+            }
+        ]
+    }
+    respuesta_salas_api = Mock()
+    respuesta_salas_api.status_code = 200
+    respuesta_salas_api.json.return_value = {
+        "salas": [{"id": 3, "nombre": "Sala Premium"}]
+    }
+
+    def api_get_simulado(ruta, **kwargs):
+        if ruta == "/funciones":
+            return respuesta_api
+
+        if ruta == "/admin/peliculas":
+            return respuesta_peliculas_api
+
+        if ruta == "/salas":
+            assert kwargs["headers"]["Authorization"] == "Bearer token-prueba"
+            return respuesta_salas_api
+
+        raise AssertionError(f"Ruta inesperada: {ruta}")
+
 
     monkeypatch.setattr(
         "app.routes.admin.api_get",
@@ -60,6 +87,9 @@ def test_admin_funciones_muestra_datos_api(monkeypatch):
     app = create_app(TestConfig)
     client = app.test_client()
 
+    with client.session_transaction() as sesion:
+        sesion["token"] = "token-prueba"
+
     respuesta = client.get("/admin/funciones")
     html = respuesta.get_data(as_text=True)
 
@@ -68,4 +98,22 @@ def test_admin_funciones_muestra_datos_api(monkeypatch):
     assert "Pelicula 5" in html
     assert "programada" in html
     assert "1 funciones listadas" in html
+    assert "Titanic" in html
+    assert "Sala Premium" in html
 
+def test_selector_salas_muestra_opciones():
+    app = create_app(TestConfig)
+
+    with app.test_request_context("/admin/funciones"):
+        html = render_template(
+            "administrador/funciones.html",
+            funciones=[],
+            peliculas=[],
+            salas=[
+                {"id": 3, "nombre": "Sala Premium"}
+            ],
+            mensaje_error=None
+        )
+
+    assert 'value="3"' in html
+    assert "Sala Premium" in html
