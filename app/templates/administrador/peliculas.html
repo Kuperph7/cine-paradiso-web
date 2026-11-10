@@ -10,54 +10,50 @@
 
     <section class="peliculas-lista" aria-labelledby="api-title">
         <h2 id="api-title">Listado de películas API</h2>
-
-        <label class="peliculas-busqueda">
-            <span aria-hidden="true">⌕</span>
-            <input
-                type="search"
-                placeholder="Buscar película por nombre"
-                aria-label="Buscar película en la API"
-            >
-        </label>
-
+        {% if errores_externos %}
+        <div role="alert">
+            <ul>
+                {% for error in errores_externos %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        <form action="{{ url_for('admin.peliculas') }}" method="get">
+            <input type="hidden" name="titulo" value="{{ titulo }}">
+            <label class="peliculas-busqueda">
+                <span aria-hidden="true">⌕</span>
+                <input
+                    type="search"
+                    name="titulo_externo"
+                    value="{{ titulo_externo }}"
+                    placeholder="Buscar película por nombre"
+                    aria-label="Buscar película en la API"
+                >
+            </label>
+        </form>
         <div class="peliculas-rows">
-            {% for pelicula in peliculas_api|default([]) %}
+            {% for pelicula in peliculas_api %}
             <div class="pelicula-row">
-                <span class="pelicula-nombre">
-                    {{ pelicula.titulo|default("PELÍCULA " ~ loop.index) }}
-                </span>
-
+                <span class="pelicula-nombre">{{ pelicula.titulo }}</span>
                 <button
                     type="button"
                     class="pelicula-button"
                     data-pelicula-open="agregar"
-                >
-                    Añadir
-                </button>
+                >Añadir</button>
             </div>
             {% else %}
-            {% for i in range(1, 7) %}
-            <div class="pelicula-row">
-                <span class="pelicula-nombre">PELÍCULA {{ i }}</span>
-
-                <button
-                    type="button"
-                    class="pelicula-button"
-                    data-pelicula-open="agregar"
-                >
-                    Añadir
-                </button>
-            </div>
-            {% endfor %}
+            {% if not errores_externos %}
+            {% if titulo_externo %}
+            <p>No se encontraron películas en el catálogo externo.</p>
+            {% else %}
+            <p>Ingresá un título para buscar en el catálogo externo.</p>
+            {% endif %}
+            {% endif %}
             {% endfor %}
         </div>
-
         <footer class="peliculas-footer">
-            <span>
-                {{ peliculas_api|default([1, 2, 3, 4, 5, 6], true)|length }}
-                películas listadas
-            </span>
-
+            <span>{{ peliculas_api|length }} películas listadas</span>
             <nav
                 class="peliculas-pagination"
                 aria-label="Paginación de películas de API"
@@ -82,6 +78,7 @@
         </div>
         {% endif %}
         <form action="{{ url_for('admin.peliculas') }}" method="get">
+            <input type="hidden" name="titulo_externo" value="{{ titulo_externo }}">
             <label class="peliculas-busqueda">
                 <span aria-hidden="true">⌕</span>
                 <input
