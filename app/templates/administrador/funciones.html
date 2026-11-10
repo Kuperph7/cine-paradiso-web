@@ -11,14 +11,17 @@
     <div class="funciones-layout">
         <section class="funcion-form-card" aria-labelledby="generar-title">
             <h2 id="generar-title">Generar Función</h2>
+            {% if mensaje_accion %}
+                <p>{{ mensaje_accion }}</p>
+            {% endif %}
 
-            <form class="funcion-form">
+            <form class="funcion-form" method="post">
                 <label for="pelicula">Película</label>
-                <select id="pelicula" name="pelicula_id">
+                <select id="pelicula" name="pelicula_id" required>
                     <option value = "">Seleccione una película</option>
 
                     {% for pelicula in peliculas|default([]) %}
-                        <option value=""{{ pelicula.id }}>
+                        <option value="{{ pelicula.id }}">
                             {{ pelicula.titulo }}
                         </option>
                     {% endfor %}
@@ -26,9 +29,8 @@
 
                 <label for="sala">Sala</label>
 
-                <select id="sala" name="sala_id">
-                    <option value=""Seleccione una sala</option>>
-
+                <select id="sala" name="sala_id" required>
+                    <option value="">Seleccione una sala</option>
                     {% for sala in salas|default([]) %}
                         <option value="{{ sala.id }}">
                             {{ sala.nombre }}
@@ -38,10 +40,17 @@
                 {% if mensaje_salas %}
                     <p>{{ mensaje_salas }}</p>
                 {% endif %}
-                <label for="horario">Horario</label>
-                <input id="horario" type="time">
 
-                <button type="button">Generar</button>
+                <label for="fecha">Fecha</label>
+                <input id="fecha" name="fecha" type="date" required>
+
+                <label for="horario">Horario</label>
+                <input id="horario" name="horario" type="time" required>
+
+                <label for="precio">Precio</label>
+                <input id="precio" name="precio" type="number" min="0" step="1" required>
+
+                <button type="submit">Generar</button>
             </form>
         </section>
 
@@ -77,7 +86,7 @@
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan=""3>
+                            <td colspan="3">
                                 {% if mensaje_error %}
                                     {{ mensaje_error }}
                                 {% else %}

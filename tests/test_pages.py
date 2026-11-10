@@ -117,3 +117,117 @@ def test_selector_salas_muestra_opciones():
 
     assert 'value="3"' in html
     assert "Sala Premium" in html
+
+def test_crear_funcion_correctamente(monkeypatch):
+    def api_get_simulado(ruta, **kwargs):
+        respuesta = Mock()
+        respuesta.status_code = 200
+
+        if ruta == "/funciones":
+            respuesta.json.return_value = {"funciones": []}
+        elif ruta == "/admin/peliculas":
+            respuesta.json.return_value = {"peliculas": []}
+        elif ruta == "/salas":
+            respuesta.json.return_value = {"salas": []}
+        else:
+            raise AssertionError(f"Ruta inesperada: {ruta}")
+
+        return respuesta
+
+    def api_post_simulado(ruta, **kwargs):
+        assert ruta == "/funciones"
+        assert kwargs["headers"]["Authorization"] == "Bearer token-prueba"
+
+        datos = kwargs["json"]
+        assert datos["pelicula_id"] == 5
+        assert datos["sala_id"] == 2
+        assert datos["precio"] == 3000
+        assert datos["fecha_hora"] == "2026-11-20T20:00:00-03:00"
+
+        respuesta = Mock()
+        respuesta.status_code = 201
+        return respuesta
+
+    monkeypatch.setattr("app.routes.admin.api_get", api_get_simulado)
+    monkeypatch.setattr("app.routes.admin.api_post", api_post_simulado)
+
+    app = create_app(TestConfig)
+    client = app.test_client()
+
+    with client.session_transaction() as sesion:
+        sesion["token"] = "token-prueba"
+
+    respuesta = client.post(
+        "/admin/funciones",
+        data={
+            "pelicula_id": "5",
+            "sala_id": "2",
+            "fecha": "2026-11-20",
+            "horario": "20:00",
+            "precio": "3000"
+        }
+    )
+
+    html = respuesta.get_data(as_text=True)
+
+    assert respuesta.status_code == 200
+    assert "Función creada correctamente." in html
+
+
+def test_crear_funcion_con_errores(monkeypatch):
+    respuesta_api = Mock()
+    respuesta_api.status_code = 200
+    respuesta_api.json.return_value = {
+        "funciones": [],
+        "peliculas": [],
+        "salas": []
+    }
+
+    monkeypatch.setattr(
+        "app.routes.admin.api_get",
+        lambda ruta, **kwargs: respuesta_api
+    )
+
+    api_post_simulado = Mock()
+    monkeypatch.setattr(
+        "app.routes.admin.api_post",
+        api_post_simulado
+    )
+
+    app = create_app(TestConfig)
+    client = app.test_client()
+
+    # Caso 1: usuario sin iniciar sesión
+    respuesta = client.post(
+        "/admin/funciones",
+        data={
+            "pelicula_id": "5",
+            "sala_id": "2",
+            "fecha": "2026-11-20",
+            "horario": "20:00",
+            "precio": "3000"
+        }
+    )
+
+    assert respuesta.status_code == 200
+    assert "Tenés que iniciar sesión" in respuesta.get_data(as_text=True)
+    api_post_simulado.assert_not_called()
+
+    # Caso 2: administrador con precio inválido
+    with client.session_transaction() as sesion:
+        sesion["token"] = "token-prueba"
+
+    respuesta = client.post(
+        "/admin/funciones",
+        data={
+            "pelicula_id": "5",
+            "sala_id": "2",
+            "fecha": "2026-11-20",
+            "horario": "20:00",
+            "precio": "abc"
+        }
+    )
+
+    assert respuesta.status_code == 200
+    assert "Revisá los datos ingresados" in respuesta.get_data(as_text=True)
+    api_post_simulado.assert_not_called()
