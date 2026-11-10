@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template
-
+from requests.exceptions import RequestException
+from app.services.api_client import api_get
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -11,7 +12,26 @@ def peliculas():
 
 @admin_bp.get("/funciones")
 def funciones():
-    return render_template("administrador/funciones.html")
+    funciones = []
+    mensaje_error = None
+
+    try:
+        respuesta = api_get("/funciones")
+
+        if respuesta.status_code == 200:
+            datos = respuesta.json()
+            funciones = datos.get("funciones", [])
+        else:
+            mensaje_error = "No pudieron cargar las funciones"
+
+    except (RequestException, ValueError):
+        mensaje_error = "No fue posible conectar con la API"
+
+    return render_template(
+        "administrador/funciones.html",
+        funciones=funciones,
+        mensaje_error=mensaje_error
+    )
 
 
 @admin_bp.get("/salas")
