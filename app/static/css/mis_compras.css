@@ -1,4 +1,4 @@
-/* ==================== VISTA HISTORIAL DE CONSUMOS ==================== */
+
 .compras-container {
     max-width: 800px;
     margin: 2rem auto;
@@ -13,7 +13,8 @@
 }
 
 .compra-card {
-    background-color: #ffffff;
+    background-color: #f7d369;
+;
     border: 1px solid #e2e8f0;
     border-radius: 12px;
     padding: 1.5rem;
@@ -55,7 +56,7 @@
 }
 
 .btn-ver-ticket {
-    background-color: #f7d369;
+    background-color: rgba(255, 255, 255, 0.85);
     color: #102044;
     padding: 0.6rem 1.2rem;
     border-radius: 8px;
