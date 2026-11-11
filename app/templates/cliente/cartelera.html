@@ -44,60 +44,63 @@
     el navegador no debe consumir la API directamente con fetch.
 #}
 <form class="movie-filters" method="get" aria-label="Filtros de cartelera">
+
     <label>
-        <span>Sucursal</span>
-        <select name="sucursal">
-            <option value="">Todas las sucursales</option>
-            <option value="centro">Centro</option>
-            <option value="puerto">Puerto</option>
-            <option value="norte">Norte</option>
-        </select>
+        <span>ID de sucursal</span>
+        <input
+            type="number"
+            name="local_id"
+            min="1"
+            value="{{ local_id }}"
+            placeholder="ID de sucursal"
+        >
     </label>
+
     <label>
         <span>Fecha</span>
-        <select name="fecha">
-            <option value="">Todas las fechas</option>
-            <option value="hoy">Hoy</option>
-            <option value="mañana">Mañana</option>
-            <option value="fin de semana">Fin de semana</option>
-        </select>
+        <input
+            type="date"
+            name="fecha"
+            value="{{ fecha }}"
+        >
     </label>
-    <label>
-        <span>Género</span>
-        <select name="genero">
-            <option value="">Todos los géneros</option>
-            {% for genero in generos %}
-            <option value="{{ genero|lower }}">{{ genero }}</option>
-            {% endfor %}
-        </select>
-    </label>
+
     <button type="submit">Aplicar filtros</button>
+
 </form>
 
 <section class="movie-list" id="movie-list" aria-label="Listado de películas">
-    {% for pelicula in peliculas %}
-    <article class="movie-card">
-        {#
-            El ID identifica la película elegida. La ruta de detalle deberá
-            utilizarlo para consultar GET /cartelera/{pelicula_id}.
-        #}
-        <a class="movie-poster {{ pelicula.estilo }}" href="{{ url_for('cliente.detalle_pelicula', pelicula_id=pelicula.id) }}">
-            <span class="format-badges">
-                {% for formato in pelicula.formatos %}
-                <span>{{ formato }}</span>
-                {% endfor %}
-            </span>
-            <span class="rating">{{ pelicula.clasificacion }}</span>
-            <span class="poster-mark" aria-hidden="true">CP</span>
-            <span class="poster-title">{{ pelicula.titulo }}</span>
-        </a>
-        <div class="movie-info">
-            <p>{{ pelicula.genero }} · {{ pelicula.duracion }}</p>
-            <h3>{{ pelicula.titulo }}</h3>
-            <a href="{{ url_for('cliente.detalle_pelicula', pelicula_id=pelicula.id) }}">Ver funciones <span aria-hidden="true">→</span></a>
-        </div>
-    </article>
-    {% endfor %}
+    {% if error %}
+    <p role="alert">{{ error }}</p>
+    {% elif peliculas %}
+        {% for pelicula in peliculas %}
+        <article class="movie-card">
+            <a class="movie-poster poster-space"
+               {% if pelicula.poster_url %}
+               style="background-image: url('{{ pelicula.poster_url }}');"
+               {% endif %}
+               href="{{ url_for('cliente.detalle_pelicula', pelicula_id=pelicula.id) }}">
+                <span class="rating">{{ pelicula.clasificacion }}</span>
+                <span class="poster-mark" aria-hidden="true">CP</span>
+                <span class="poster-title">{{ pelicula.titulo }}</span>
+            </a>
+            <div class="movie-info">
+                <p>
+                    {% for genero in pelicula.generos %}
+                        {{ genero }}{% if not loop.last %} · {% endif %}
+                    {% endfor %}
+                    · {{ pelicula.duracion_minutos }} min
+                </p>
+                <h3>{{ pelicula.titulo }}</h3>
+                <a href="{{ url_for('cliente.detalle_pelicula', pelicula_id=pelicula.id) }}">
+                    Ver funciones <span aria-hidden="true">→</span>
+                </a>
+            </div>
+        </article>
+        {% endfor %}
+    {% else %}
+        <p>No hay películas disponibles en cartelera.</p>
+    {% endif %}
 </section>
 
 <section class="promo-banner">
@@ -109,13 +112,13 @@
     <a class="secondary-button" href="{{ url_for('cliente.seleccionar_servicios') }}">Conocer Candy</a>
 </section>
 
+{% if estrenos %}
 <section class="section-heading upcoming-heading">
     <div>
         <p class="eyebrow">Próximamente</p>
         <h2>Estrenos que se vienen</h2>
     </div>
 </section>
-
 <section class="upcoming-list" aria-label="Próximos estrenos">
     {% for pelicula in estrenos %}
     <article class="upcoming-card {{ pelicula.estilo }}">
@@ -127,5 +130,6 @@
     </article>
     {% endfor %}
 </section>
+{% endif %}
 {% block filter_sidebar %}{% endblock %}
 {% endblock %}
