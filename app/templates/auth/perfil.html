@@ -6,17 +6,39 @@
     el backend propio mediante GET /auth/perfil. Este endpoint no corresponde
     a la API externa utilizada para importar información de películas.
 #}
-<section class="panel">
-    <h1>Mi perfil</h1>
-    <p>Consultá la información de tu cuenta y administrá tus preferencias.</p>
+<section class="panel perfil-page">
+    <header class="perfil-page-header">
+        <p class="perfil-page-eyebrow">Tu cuenta</p>
+        <h1>Mi Perfil</h1>
+        <p>Consultá la información de tu cuenta y administrá tus preferencias.</p>
+    </header>
 
-    <a href="{{ url_for('auth.configuracion_perfil') }}">
-        Configurar mi perfil
-    </a>
+    <nav class="perfil-page-options" aria-label="Opciones del perfil">
+        <a href="{{ url_for('auth.configuracion_perfil') }}">
+            <span>Configurar mi perfil</span>
+            <span aria-hidden="true">→</span>
+        </a>
 
-    <a href="{{ url_for('cliente.peliculas_vistas') }}">
-        Películas vistas
-    </a>
+        <a href="{{ url_for('cliente.peliculas_vistas') }}">
+            <span>Películas vistas</span>
+            <span aria-hidden="true">→</span>
+        </a>
+    </nav>
+
+    {% if session.get('usuario') %}
+    <footer class="perfil-page-session">
+        <div>
+            <strong>Sesión activa</strong>
+            <span>{{ session['usuario'].get('email', session['usuario'].get('nombre', '')) }}</span>
+        </div>
+        <form action="{{ url_for('auth.logout') }}" method="post">
+            <button class="perfil-logout-button" type="submit">
+                <span aria-hidden="true">↗</span>
+                Cerrar sesión
+            </button>
+        </form>
+    </footer>
+    {% endif %}
 </section>
 {% endblock %}
 
