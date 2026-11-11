@@ -89,6 +89,144 @@
     font-size: 12px;
 }
 
+.perfil-page {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: clamp(1.5rem, 4vw, 2.75rem);
+    overflow: hidden;
+    border-radius: 24px;
+    box-shadow: 0 20px 50px rgba(16, 32, 68, 0.1);
+}
+
+.perfil-page-header {
+    max-width: 580px;
+    margin-bottom: 2rem;
+}
+
+.perfil-page-eyebrow {
+    margin: 0 0 0.45rem;
+    color: #a97900;
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.perfil-page-header h1 {
+    margin: 0;
+    color: #102044;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(2.25rem, 7vw, 4rem);
+    font-weight: 600;
+    letter-spacing: -0.04em;
+    line-height: 1;
+}
+
+.perfil-page-header > p:last-child {
+    margin: 1rem 0 0;
+    color: #52627a;
+    line-height: 1.65;
+}
+
+.perfil-page-options {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.perfil-page-options a {
+    display: flex;
+    min-height: 58px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.9rem 1.1rem;
+    border: 1px solid rgba(16, 32, 68, 0.12);
+    border-radius: 14px;
+    background: rgba(238, 245, 248, 0.65);
+    color: #102044;
+    font-weight: 750;
+    transition:
+        border-color 180ms ease,
+        background 180ms ease,
+        transform 180ms ease;
+}
+
+.perfil-page-options a:hover {
+    border-color: rgba(16, 32, 68, 0.25);
+    background: #ffffff;
+    transform: translateY(-2px);
+}
+
+.perfil-page-session {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(16, 32, 68, 0.12);
+}
+
+.perfil-page-session > div {
+    display: grid;
+    gap: 0.25rem;
+}
+
+.perfil-page-session strong {
+    color: #102044;
+    font-size: 0.9rem;
+}
+
+.perfil-page-session > div span {
+    color: #66758a;
+    font-size: 0.82rem;
+}
+
+.perfil-page-session form {
+    margin: 0;
+}
+
+.perfil-logout-button {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    padding: 0.7rem 1.05rem;
+    border: 1px solid rgba(156, 45, 45, 0.28);
+    border-radius: 999px;
+    background: #fff7f4;
+    color: #8b2929;
+    font-weight: 800;
+    transition:
+        border-color 180ms ease,
+        background 180ms ease,
+        color 180ms ease;
+}
+
+.perfil-logout-button:hover {
+    border-color: #8b2929;
+    background: #8b2929;
+    color: #ffffff;
+}
+
+.perfil-page-options a:focus-visible,
+.perfil-logout-button:focus-visible {
+    outline: 3px solid rgba(243, 200, 75, 0.75);
+    outline-offset: 3px;
+}
+
+@media (max-width: 560px) {
+    .perfil-page-session {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .perfil-logout-button {
+        width: 100%;
+    }
+}
+
 @media (max-width: 720px) {
     .layout-principal {
         flex-direction: column;

@@ -14,17 +14,45 @@ from app.services.api_client import api_post
 auth_bp = Blueprint("auth", __name__)
 
 
+def _mensaje_error_api(respuesta):
+    """Obtiene el mensaje más útil del contrato uniforme de errores de la API."""
+    try:
+        datos = respuesta.json()
+    except (requests.exceptions.JSONDecodeError, ValueError):
+        return None
+
+    if not isinstance(datos, dict):
+        return None
+
+    detalles = datos.get("detalles")
+    if isinstance(detalles, list):
+        for detalle in detalles:
+            if not isinstance(detalle, dict):
+                continue
+            mensaje = detalle.get("mensaje")
+            if isinstance(mensaje, str) and mensaje.strip():
+                return mensaje.strip()
+
+    mensaje = datos.get("mensaje")
+    if isinstance(mensaje, str) and mensaje.strip():
+        return mensaje.strip()
+
+    return None
+
+
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     error = None
+    error_titulo = None
     destino = request.values.get("next", "")
+    email = request.form.get("email", "") if request.method == "POST" else ""
 
     if request.method == "POST":
         try:
             respuesta = api_post(
                 "/auth/login",
                 json={
-                    "email": request.form.get("email", ""),
+                    "email": email,
                     "password": request.form.get("password", ""),
                 },
             )
@@ -37,14 +65,38 @@ def login():
                     return redirect(destino)
                 return redirect(url_for("cliente.cartelera"))
 
-            if respuesta.status_code == 401:
-                error = "El email o la contraseña son incorrectos."
+            mensaje_api = _mensaje_error_api(respuesta)
+            if respuesta.status_code >= 500:
+                error_titulo = "El servidor tuvo un problema"
+                error = mensaje_api or (
+                    "No fue posible procesar el inicio de sesión. "
+                    "Intentá nuevamente en unos minutos."
+                )
             else:
-                error = "No fue posible iniciar sesión. Intentá nuevamente."
-        except (requests.exceptions.RequestException, KeyError, ValueError):
-            error = "No se pudo conectar con el servidor de autenticación."
+                error_titulo = "No pudimos iniciar sesión"
+                error = mensaje_api or (
+                    "Revisá tus datos e intentá nuevamente."
+                )
+        except requests.exceptions.RequestException:
+            error_titulo = "No pudimos conectar"
+            error = (
+                "El servidor de autenticación no está disponible. "
+                "Intentá nuevamente en unos minutos."
+            )
+        except (KeyError, ValueError):
+            error_titulo = "Respuesta inesperada"
+            error = (
+                "El servidor devolvió una respuesta inválida. "
+                "Intentá nuevamente."
+            )
 
-    return render_template("auth/login.html", error=error, next=destino)
+    return render_template(
+        "auth/login.html",
+        error=error,
+        error_titulo=error_titulo,
+        next=destino,
+        email=email,
+    )
 
 
 @auth_bp.post("/logout")
@@ -100,7 +152,7 @@ def perfil():
     )
 
 @auth_bp.get("/logout")
-def logout():
+def logout_get():
     session.clear()
     return redirect(url_for("cliente.cartelera"))
 

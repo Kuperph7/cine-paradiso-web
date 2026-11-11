@@ -511,6 +511,148 @@ def test_login_guarda_token_y_usuario_en_la_sesion(monkeypatch):
     api_post.assert_called_once()
 
 
+def test_login_muestra_toast_con_error_de_credenciales(monkeypatch):
+    respuesta_api = Mock()
+    respuesta_api.status_code = 401
+    respuesta_api.json.return_value = {
+        "codigo": "CREDENCIALES_INVALIDAS",
+        "mensaje": "Error de autenticación",
+        "detalles": [
+            {
+                "campo": "general",
+                "mensaje": "Email o contraseña incorrectos.",
+            }
+        ],
+    }
+    monkeypatch.setattr(
+        "app.routes.auth.api_post",
+        Mock(return_value=respuesta_api),
+    )
+    app = create_app(TestConfig)
+
+    respuesta = app.test_client().post(
+        "/login",
+        data={
+            "email": "cliente@cineparadiso.local",
+            "password": "incorrecta",
+        },
+    )
+
+    html = respuesta.get_data(as_text=True)
+    assert respuesta.status_code == 200
+    assert 'class="login-toast"' in html
+    assert 'role="alert"' in html
+    assert "No pudimos iniciar sesión" in html
+    assert "Email o contraseña incorrectos." in html
+    assert 'value="cliente@cineparadiso.local"' in html
+
+
+def test_login_muestra_toast_con_mensaje_del_servidor(monkeypatch):
+    respuesta_api = Mock()
+    respuesta_api.status_code = 500
+    respuesta_api.json.return_value = {
+        "codigo": "ERROR_INTERNO",
+        "mensaje": "Error interno del servidor",
+        "detalles": [
+            {
+                "campo": "general",
+                "mensaje": "No fue posible procesar la solicitud.",
+            }
+        ],
+    }
+    monkeypatch.setattr(
+        "app.routes.auth.api_post",
+        Mock(return_value=respuesta_api),
+    )
+    app = create_app(TestConfig)
+
+    respuesta = app.test_client().post(
+        "/login",
+        data={"email": "cliente@example.com", "password": "secreto"},
+    )
+
+    html = respuesta.get_data(as_text=True)
+    assert respuesta.status_code == 200
+    assert "El servidor tuvo un problema" in html
+    assert "No fue posible procesar la solicitud." in html
+
+
+def test_login_muestra_toast_si_no_hay_conexion(monkeypatch):
+    monkeypatch.setattr(
+        "app.routes.auth.api_post",
+        Mock(side_effect=requests.exceptions.ConnectionError),
+    )
+    app = create_app(TestConfig)
+
+    respuesta = app.test_client().post(
+        "/login",
+        data={"email": "cliente@example.com", "password": "secreto"},
+    )
+
+    html = respuesta.get_data(as_text=True)
+    assert respuesta.status_code == 200
+    assert "No pudimos conectar" in html
+    assert "El servidor de autenticación no está disponible." in html
+
+
+def test_navbar_distingue_ingreso_y_usuario_autenticado():
+    app = create_app(TestConfig)
+
+    with app.test_client() as client:
+        login_html = client.get("/login").get_data(as_text=True)
+        assert "profile-link-login active" in login_html
+        assert "Ingresar" in login_html
+
+        with client.session_transaction() as sesion:
+            sesion["access_token"] = "jwt-de-prueba"
+            sesion["usuario"] = {"id": 1, "nombre": "Cliente Demo"}
+
+        usuario_html = client.get("/login").get_data(as_text=True)
+        assert "profile-link-user" in usuario_html
+        assert 'class="profile-link-avatar"' in usuario_html
+        assert ">C</span>" in usuario_html
+        assert "Cliente Demo" in usuario_html
+
+
+def test_perfil_muestra_boton_para_cerrar_sesion():
+    app = create_app(TestConfig)
+
+    with app.test_client() as client:
+        with client.session_transaction() as sesion:
+            sesion["access_token"] = "jwt-de-prueba"
+            sesion["usuario"] = {
+                "id": 1,
+                "nombre": "Cliente Demo",
+                "email": "cliente@cineparadiso.local",
+            }
+
+        respuesta = client.get("/perfil")
+
+    html = respuesta.get_data(as_text=True)
+    assert respuesta.status_code == 200
+    assert 'action="/logout"' in html
+    assert 'method="post"' in html
+    assert "Cerrar sesión" in html
+
+
+def test_logout_limpia_la_sesion_y_redirige_a_cartelera():
+    app = create_app(TestConfig)
+
+    with app.test_client() as client:
+        with client.session_transaction() as sesion:
+            sesion["access_token"] = "jwt-de-prueba"
+            sesion["usuario"] = {"id": 1, "nombre": "Cliente Demo"}
+
+        respuesta = client.post("/logout")
+
+        with client.session_transaction() as sesion:
+            assert "access_token" not in sesion
+            assert "usuario" not in sesion
+
+    assert respuesta.status_code == 302
+    assert respuesta.headers["Location"] == "/"
+
+
 def test_confirmar_compra_envia_jwt_y_datos_a_la_api(monkeypatch):
     respuesta_api = Mock()
     respuesta_api.status_code = 201

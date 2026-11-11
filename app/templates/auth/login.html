@@ -1,20 +1,44 @@
 {% extends "base.html" %}
 {% block title %}Iniciar sesión | Cine Paradiso{% endblock %}
+{% block extra_styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+{% endblock %}
 {% block content %}
 <section class="panel narrow">
     <h1>Iniciar sesión</h1>
-    {% if error %}
-    <p role="alert">{{ error }}</p>
-    {% endif %}
     {# Flask envía las credenciales al backend; el navegador no usa fetch. #}
     <form class="form-stack" method="post" action="{{ url_for('auth.login') }}">
         <input type="hidden" name="next" value="{{ next }}">
-        <label>Email <input type="email" name="email" required></label>
+        <label>Email <input type="email" name="email" value="{{ email }}" required></label>
         <label>Contraseña <input type="password" name="password" required></label>
         <button type="submit">Ingresar</button>
     </form>
     <a href="{{ url_for('auth.registro') }}">Crear una cuenta</a>
 </section>
-<script src="{{ url_for('static', filename='js/login.js') }}"></script>
+
+{% if error %}
+<div class="toast-region" aria-live="assertive" aria-atomic="true">
+    <aside class="login-toast" role="alert" data-toast>
+        <span class="login-toast-icon" aria-hidden="true">!</span>
+        <div class="login-toast-copy">
+            <strong>{{ error_titulo }}</strong>
+            <p>{{ error }}</p>
+        </div>
+        <button
+            class="login-toast-close"
+            type="button"
+            aria-label="Cerrar mensaje de error"
+            data-toast-close
+        >×</button>
+        <span class="login-toast-timer" aria-hidden="true"></span>
+    </aside>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+{% if error %}
+    <script src="{{ url_for('static', filename='js/toast.js') }}" defer></script>
+{% endif %}
 {% endblock %}
 

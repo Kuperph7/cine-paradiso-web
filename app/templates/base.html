@@ -25,9 +25,23 @@
                 <a{% if request.endpoint == 'cliente.sucursales' %} class="active"{% endif %} href="{{ url_for('cliente.sucursales') }}">Sucursales</a>
                 <a href="{{ url_for('cliente.mis_entradas') }}">Mis entradas</a>
                 {% if session.get('usuario') %}
-                <a class="profile-link" href="{{ url_for('auth.perfil') }}">{{ session['usuario']['nombre'] }}</a>
+                {% set nombre_usuario = session['usuario']['nombre'] %}
+                <a
+                    class="profile-link profile-link-user{% if request.endpoint == 'auth.perfil' %} active{% endif %}"
+                    href="{{ url_for('auth.perfil') }}"
+                    aria-label="Abrir perfil de {{ nombre_usuario }}"
+                >
+                    <span class="profile-link-avatar" aria-hidden="true">{{ nombre_usuario[0]|upper }}</span>
+                    <span class="profile-link-name">{{ nombre_usuario }}</span>
+                </a>
                 {% else %}
-                <a class="profile-link" href="{{ url_for('auth.login') }}">Ingresar</a>
+                <a
+                    class="profile-link profile-link-login{% if request.endpoint == 'auth.login' %} active{% endif %}"
+                    href="{{ url_for('auth.login') }}"
+                >
+                    <span>Ingresar</span>
+                    <span class="profile-link-arrow" aria-hidden="true">→</span>
+                </a>
                 {% endif %}
             </nav>
         </div>
@@ -57,6 +71,7 @@
     {% include "auth/perfil_sin_sesion.html" %}
     {% endif %}
     </div>
+    {% block extra_scripts %}{% endblock %}
 </body>
 </html>
 
