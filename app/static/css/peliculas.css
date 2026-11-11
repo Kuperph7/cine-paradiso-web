@@ -22,7 +22,7 @@
 
 .peliculas-lista {
     width: min(100%, 785px);
-    margin: 0 auto 46px;
+    margin: 0 auto 24px;
     overflow: hidden;
     border-radius: 5px;
     background: #edf2f6;
@@ -32,19 +32,19 @@
 .peliculas-lista h2 {
     min-height: 23px;
     margin: 0;
-    padding: 6px 9px;
+    padding: 10px 14px;
     background: #607f91;
     color: #fff;
-    font-size: 0.58rem;
+    font-size: 0.95rem;
     font-weight: 700;
 }
 
 .peliculas-busqueda {
     display: flex;
-    min-height: 27px;
+    min-height: 44px;
     align-items: center;
     gap: 7px;
-    padding: 4px 9px;
+    padding: 8px 14px;
     border-bottom: 1px solid #cbd3d8;
     background: #f5f8fa;
     color: #60717d;
@@ -63,7 +63,7 @@
     background: transparent;
     color: #17212b;
     font: inherit;
-    font-size: 0.58rem;
+    font-size: 0.95rem;
 }
 
 .peliculas-busqueda input::placeholder {
@@ -73,13 +73,13 @@
 
 .pelicula-row {
     display: flex;
-    min-height: 25px;
+    min-height: 48px;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding: 4px 8px;
+    padding: 8px 14px;
     border-bottom: 1px solid #cbd3d8;
-    font-size: 0.57rem;
+    font-size: 0.95rem;
 }
 
 .pelicula-nombre {
@@ -88,18 +88,20 @@
 
 .pelicula-actions {
     display: flex;
-    gap: 5px;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
 .pelicula-button {
     min-width: 32px;
-    padding: 2px 6px;
+    padding: 8px 12px;
     border: 0;
     border-radius: 2px;
     background: #e8c45c;
     color: #171717;
     font: inherit;
-    font-size: 0.55rem;
+    font-size: 0.95rem;
     cursor: pointer;
 }
 
@@ -118,10 +120,10 @@
     min-height: 17px;
     align-items: center;
     justify-content: space-between;
-    padding: 3px 8px;
+    padding: 8px 14px;
     background: #607f91;
     color: #fff;
-    font-size: 0.45rem;
+    font-size: 0.85rem;
 }
 
 .peliculas-pagination {
@@ -248,7 +250,50 @@
 }
 
 
-/* Vista mobile */
+.pelicula-actions form {
+    margin: 0;
+}
+
+.pelicula-inactiva {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    border: 1px solid #b7c3cd;
+    border-radius: 4px;
+    background: #dce4eb;
+    color: #344454;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.peliculas-rows > p {
+    margin: 0;
+    padding: 16px 14px;
+}
+
+.pelicula-dialog .dialog-actions {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.pelicula-dialog .dialog-actions button {
+    min-height: 40px;
+    padding: 9px 16px;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.pelicula-dialog .dialog-cancel {
+    border: 1px solid #344454;
+    background: #344454;
+    color: #fff;
+}
+
+.pelicula-dialog .dialog-cancel:hover {
+    background: #253442;
+}
+
 @media (max-width: 600px) {
     .peliculas-page {
         padding: 18px 22px 28px;
@@ -267,7 +312,7 @@
     .peliculas-lista h2 {
         min-height: 30px;
         padding: 9px 10px;
-        font-size: 0.72rem;
+        font-size: 0.9rem;
     }
 
     .peliculas-busqueda {
@@ -276,19 +321,19 @@
     }
 
     .peliculas-busqueda input {
-        font-size: 0.78rem;
+        font-size: 0.9rem;
     }
 
     .pelicula-row {
         min-height: 41px;
         padding: 6px 10px;
-        font-size: 0.72rem;
+        font-size: 0.9rem;
     }
 
     .pelicula-button {
         min-width: 51px;
         padding: 4px 8px;
-        font-size: 0.72rem;
+        font-size: 0.9rem;
     }
 
     .peliculas-footer {

@@ -7,57 +7,60 @@
 
 <section class="peliculas-page" aria-labelledby="peliculas-title">
     <h1 id="peliculas-title">Películas</h1>
+    {% for categoria, mensaje in get_flashed_messages(with_categories=true) %}
+    <p role="{{ 'alert' if categoria == 'error' else 'status' }}">{{ mensaje }}</p>
+    {% endfor %}
 
     <section class="peliculas-lista" aria-labelledby="api-title">
         <h2 id="api-title">Listado de películas API</h2>
-
-        <label class="peliculas-busqueda">
-            <span aria-hidden="true">⌕</span>
-            <input
-                type="search"
-                placeholder="Buscar película por nombre"
-                aria-label="Buscar película en la API"
-            >
-        </label>
-
+        {% if errores_externos %}
+        <div role="alert">
+            <ul>
+                {% for error in errores_externos %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        <form action="{{ url_for('admin.peliculas') }}" method="get">
+            <input type="hidden" name="titulo" value="{{ titulo }}">
+            <label class="peliculas-busqueda">
+                <span aria-hidden="true">⌕</span>
+                <input
+                    type="search"
+                    name="titulo_externo"
+                    value="{{ titulo_externo }}"
+                    placeholder="Buscar película por nombre"
+                    aria-label="Buscar película en la API"
+                >
+            </label>
+        </form>
         <div class="peliculas-rows">
-            {% for pelicula in peliculas_api|default([]) %}
+            {% for pelicula in peliculas_api %}
             <div class="pelicula-row">
-                <span class="pelicula-nombre">
-                    {{ pelicula.titulo|default("PELÍCULA " ~ loop.index) }}
-                </span>
-
+                <span class="pelicula-nombre">{{ pelicula.titulo }}</span>
                 <button
                     type="button"
                     class="pelicula-button"
                     data-pelicula-open="agregar"
-                >
-                    Añadir
-                </button>
+                    data-id-externo="{{ pelicula.id_externo }}"
+                    data-titulo="{{ pelicula.titulo }}"
+                    data-sinopsis="{{ pelicula.sinopsis|default('', true) }}"
+                    data-poster-url="{{ pelicula.poster_url|default('', true) }}"
+                >Añadir</button>
             </div>
             {% else %}
-            {% for i in range(1, 7) %}
-            <div class="pelicula-row">
-                <span class="pelicula-nombre">PELÍCULA {{ i }}</span>
-
-                <button
-                    type="button"
-                    class="pelicula-button"
-                    data-pelicula-open="agregar"
-                >
-                    Añadir
-                </button>
-            </div>
-            {% endfor %}
+            {% if not errores_externos %}
+            {% if titulo_externo %}
+            <p>No se encontraron películas en el catálogo externo.</p>
+            {% else %}
+            <p>Ingresá un título para buscar en el catálogo externo.</p>
+            {% endif %}
+            {% endif %}
             {% endfor %}
         </div>
-
         <footer class="peliculas-footer">
-            <span>
-                {{ peliculas_api|default([1, 2, 3, 4, 5, 6], true)|length }}
-                películas listadas
-            </span>
-
+            <span>{{ peliculas_api|length }} películas listadas</span>
             <nav
                 class="peliculas-pagination"
                 aria-label="Paginación de películas de API"
@@ -72,131 +75,143 @@
 
     <section class="peliculas-lista" aria-labelledby="sistema-title">
         <h2 id="sistema-title">Listado de películas Sistema</h2>
-
-        <label class="peliculas-busqueda">
-            <span aria-hidden="true">⌕</span>
-            <input
-                type="search"
-                placeholder="Buscar película por nombre"
-                aria-label="Buscar película del sistema"
-            >
-        </label>
-
+        {% if errores %}
+        <div role="alert">
+            <ul>
+                {% for error in errores %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        <form action="{{ url_for('admin.peliculas') }}" method="get">
+            <input type="hidden" name="titulo_externo" value="{{ titulo_externo }}">
+            <label class="peliculas-busqueda">
+                <span aria-hidden="true">⌕</span>
+                <input
+                    type="search"
+                    name="titulo"
+                    value="{{ titulo }}"
+                    placeholder="Buscar película por nombre"
+                    aria-label="Buscar película del sistema"
+                >
+            </label>
+        </form>
         <div class="peliculas-rows">
-            {% for pelicula in peliculas|default([]) %}
+            {% for pelicula in peliculas %}
             <div class="pelicula-row">
-                <span class="pelicula-nombre">
-                    {{ pelicula.titulo|default("PELÍCULA " ~ loop.index) }}
-                </span>
-
+                <span class="pelicula-nombre">{{ pelicula.titulo }}</span>
                 <div class="pelicula-actions">
                     <button
                         type="button"
                         class="pelicula-button"
                         data-pelicula-open="editar"
-                        data-id="{{ pelicula.id|default('') }}"
-                        data-sinopsis="{{ pelicula.sinopsis|default('') }}"
-                        data-disponibilidad="{{ pelicula.disponibilidad|default('') }}"
-                    >
-                        Editar
-                    </button>
-
-                    <button type="button" class="pelicula-button">
-                        Borrar
-                    </button>
+                        data-id="{{ pelicula.id }}"
+                        data-titulo="{{ pelicula.titulo }}"
+                        data-sinopsis="{{ pelicula.sinopsis|default('', true) }}"
+                        data-poster-url="{{ pelicula.poster_url|default('', true) }}"
+                        data-duracion="{{ pelicula.duracion_minutos }}"
+                        data-clasificacion="{{ pelicula.clasificacion }}"
+                        data-genero="{{ pelicula.genero }}"
+                        data-action="{{ url_for('admin.modificar_pelicula', pelicula_id=pelicula.id, titulo=titulo, titulo_externo=titulo_externo) }}"
+                    >Editar</button>
+                    {% if pelicula.activa %}
+                    <form method="post"
+                        action="{{ url_for('admin.desactivar_pelicula', pelicula_id=pelicula.id, titulo=titulo, titulo_externo=titulo_externo) }}">
+                        <button type="submit" class="pelicula-button">Desactivar</button>
+                    </form>
+                    {% else %}
+                    <span class="pelicula-inactiva">Inactiva</span>
+                    {% endif %}
                 </div>
             </div>
             {% else %}
-            {% for i in range(1, 7) %}
-            <div class="pelicula-row">
-                <span class="pelicula-nombre">PELÍCULA {{ i }}</span>
-
-                <div class="pelicula-actions">
-                    <button
-                        type="button"
-                        class="pelicula-button"
-                        data-pelicula-open="editar"
-                        data-id="{{ i }}"
-                        data-sinopsis=""
-                        data-disponibilidad=""
-                    >
-                        Editar
-                    </button>
-
-                    <button type="button" class="pelicula-button">
-                        Borrar
-                    </button>
-                </div>
-            </div>
-            {% endfor %}
+            {% if not errores %}
+            {% if titulo %}
+            <p>No se encontraron películas con ese título.</p>
+            {% else %}
+            <p>No hay películas registradas.</p>
+            {% endif %}
+            {% endif %}
             {% endfor %}
         </div>
-
         <footer class="peliculas-footer">
-            <span>
-                {{ peliculas|default([1, 2, 3, 4, 5, 6], true)|length }}
-                películas listadas
-            </span>
-
-            <nav
-                class="peliculas-pagination"
-                aria-label="Paginación de películas del sistema"
-            >
-                <button type="button" aria-label="Página anterior" disabled>‹</button>
-                <button type="button" aria-current="page">1</button>
-                <button type="button">2</button>
-                <button type="button" aria-label="Página siguiente">›</button>
-            </nav>
+            <span>{{ peliculas|length }} películas listadas</span>
         </footer>
     </section>
 </section>
 
-<dialog class="pelicula-dialog" id="pelicula-dialog">
+{% set crear_url = url_for('admin.crear_pelicula', titulo=titulo, titulo_externo=titulo_externo) %}
+{% set pelicula_id = formulario.get('pelicula_id', '') %}
+{% set guardar_url = crear_url %}
+{% if pelicula_id %}
+{% set guardar_url = url_for('admin.modificar_pelicula', pelicula_id=pelicula_id|int, titulo=titulo, titulo_externo=titulo_externo) %}
+{% endif %}
+
+<dialog class="pelicula-dialog" id="pelicula-dialog" data-con-errores="{{ 'true' if errores_formulario else 'false' }}">
     <form
         id="pelicula-form"
         method="post"
-        enctype="multipart/form-data"
+        action="{{ guardar_url }}"
+        data-crear-url="{{ crear_url }}"
     >
         <div class="dialog-header">
-            <h2 id="pelicula-dialog-title">Formulario de película</h2>
-
-            <button
-                class="dialog-close"
-                type="button"
-                aria-label="Cerrar"
-            >
-                ×
-            </button>
+            <h2 id="pelicula-dialog-title">{{ 'Editar película' if pelicula_id else 'Añadir película' }}</h2>
+            <button class="dialog-close" type="button" aria-label="Cerrar">×</button>
         </div>
 
-        <input type="hidden" name="pelicula_id" id="pelicula-id">
+        {% if errores_formulario %}
+        <div role="alert" id="pelicula-errores">
+            <ul>
+                {% for error in errores_formulario %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
 
-        <label class="imagen-upload">
-            <span>Cargar imagen</span>
-            <input type="file" name="imagen" accept="image/*">
+        <input type="hidden" name="pelicula_id" id="pelicula-id" value="{{ pelicula_id }}">
+        <input type="hidden" name="id_externo" id="pelicula-id-externo"
+            value="{{ formulario.get('id_externo', '') }}">
+
+        <label class="pelicula-field">
+            <span>Título</span>
+            <input type="text" name="titulo" id="pelicula-titulo"
+                value="{{ formulario.get('titulo', '') }}" required>
         </label>
 
         <label class="pelicula-field">
-            <span>Editar sinopsis</span>
-            <textarea name="sinopsis" id="pelicula-sinopsis"></textarea>
+            <span>Sinopsis</span>
+            <textarea name="sinopsis" id="pelicula-sinopsis" required>{{ formulario.get('sinopsis', '') }}</textarea>
         </label>
 
         <label class="pelicula-field">
-            <span>Editar Disponibilidad</span>
-            <textarea
-                name="disponibilidad"
-                id="pelicula-disponibilidad"
-            ></textarea>
+            <span>URL del póster</span>
+            <input type="url" name="poster_url" id="pelicula-poster-url"
+                value="{{ formulario.get('poster_url', '') }}" required>
+        </label>
+
+        <label class="pelicula-field">
+            <span>Duración en minutos</span>
+            <input type="number" name="duracion_minutos" id="pelicula-duracion"
+                value="{{ formulario.get('duracion_minutos', '') }}" min="1" step="1" required>
+        </label>
+
+        <label class="pelicula-field">
+            <span>Clasificación</span>
+            <input type="text" name="clasificacion" id="pelicula-clasificacion"
+                value="{{ formulario.get('clasificacion', '') }}" required>
+        </label>
+
+        <label class="pelicula-field">
+            <span>Género</span>
+            <input type="text" name="genero" id="pelicula-genero"
+                value="{{ formulario.get('genero', '') }}" required>
         </label>
 
         <div class="dialog-actions">
-            <button class="pelicula-button" type="submit">
-                Aceptar Cambios
-            </button>
-
-            <button class="dialog-cancel" type="button">
-                Cancelar
-            </button>
+            <button class="pelicula-button" type="submit">Guardar</button>
+            <button class="dialog-cancel" type="button">Cancelar</button>
         </div>
     </form>
 </dialog>
