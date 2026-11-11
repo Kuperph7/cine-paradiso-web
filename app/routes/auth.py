@@ -1,5 +1,5 @@
-from flask import Blueprint, render_template , render_template, request , session
-from app.services.api_client import api_post
+from flask import Blueprint, render_template , request , session , redirect , url_for
+from app.services.api_client import api_post , api_get
 
 
 auth_bp = Blueprint("auth", __name__)
@@ -19,9 +19,10 @@ def login():
     
     if respuesta.ok:
         resultado = respuesta.json()
+        session["token"] = resultado.get("token")
+        session["usuario"] = resultado.get("usuario")
         
-        
-        return render_template("auth/perfil.html", mensaje = "Inicio de sesión exitoso")
+        return redirect(url_for("auth.perfil"))
         
     try:
         error = respuesta.json()
@@ -61,7 +62,30 @@ def registro():
 
 @auth_bp.get("/perfil")
 def perfil():
-    return render_template("auth/perfil.html")
+    token = session.get("token")
+    
+    if not token:
+        return redirect(url_for("cliente.cartelera"))
+    
+    respuesta= api_get("/auth/perfil", headers={"Authorization": f"Bearer {token}"})
+    
+    if respuesta.ok:
+        usuario = respuesta.json()
+        session["usuario"] = usuario
+        
+        return render_template( "auth/perfil.html",usuario=usuario)
+    
+    session.clear()
+    
+    return render_template(
+        "auth/perfil_sin_sesion.html",
+        error="La sesión expiró. Iniciá sesión nuevamente."
+    )
+
+@auth_bp.get("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("cliente.cartelera"))
 
 @auth_bp.get("/perfil/configuracion")
 def configuracion_perfil():
