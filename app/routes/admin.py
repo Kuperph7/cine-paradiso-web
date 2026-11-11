@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, request, url_for, redirect
 import requests
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
@@ -32,7 +32,7 @@ def salas():
                     timeout=5,
                 )
                 respuesta.raise_for_status()
-                print("Sala creada correctamente")
+                
             except requests.RequestException:
                 print(datos)
         
@@ -48,7 +48,7 @@ def salas():
     return render_template("administrador/salas.html", salas = salas, error_salas = error_salas)
 
 
-@admin_bp.route("/servicios", methods=["GET", "POST", "DELETE"])
+@admin_bp.route("/servicios", methods=["GET", "POST"])
 def servicios():
     error_servicios = False
 
@@ -68,7 +68,7 @@ def servicios():
                     timeout=5,
                 )
 
-            #Edicion del servicios
+            #Edicion del servicio
             elif accion == "editar":
                 servicio_id = int(request.form.get("servicio_id"))
 
@@ -92,23 +92,25 @@ def servicios():
                     f"{Backend_url}/servicios/{servicio_id}",
                     timeout=5,
                 )
-
+                respuesta.raise_for_status()
+                return redirect(url_for("admin.servicios"))
             
             #Creacion del servicio
-            datos = {
-                "nombre": request.form.get("nombre", "").strip(),
-                "descripcion": request.form.get("descripcion", "").strip(),
-                "precio": request.form.get("precio", type=float),
-            }
+            elif accion == "crear":
+                datos = {
+                    "nombre": request.form.get("nombre", "").strip(),
+                    "descripcion": request.form.get("descripcion", "").strip(),
+                    "precio": request.form.get("precio", type=float),
+                }
 
-            respuesta = requests.post(
-                f"{Backend_url}/servicios",
-                json=datos,
-                timeout=5,
-                )
+                respuesta = requests.post(
+                    f"{Backend_url}/servicios",
+                    json=datos,
+                    timeout=5,
+                    )
 
             respuesta.raise_for_status()
-
+            return redirect(url_for("admin.servicios"))
 
         except (requests.RequestException, TypeError, ValueError):
             error_servicios = True
