@@ -2,14 +2,14 @@
 {% block title %}Carrito de compra | Cine Paradiso{% endblock %}
 {% block content %}
 {#
-    Los datos del carrito son temporales y llegan desde la ruta de Flask.
-    Durante la integración, Flask conservará esta renderización con Jinja y
-    enviará la confirmación al backend mediante api_client, sin usar fetch.
-
-    Flujo esperado:
-    selección de función -> butacas -> Candy -> este resumen -> POST /compras
-    -> respuesta 201 con entradas y QR -> confirmación de compra con QR.
+    Flask obtuvo estos datos desde la API y los renderiza con Jinja.
+    La confirmación vuelve a Flask, que llama a POST /compras sin usar fetch.
 #}
+{% with mensajes = get_flashed_messages(category_filter=['error']) %}
+{% if mensajes %}
+<p class="checkout-empty" role="alert">{{ mensajes[0] }}</p>
+{% endif %}
+{% endwith %}
 <header class="checkout-heading">
     <div>
         <p class="eyebrow">Último paso</p>
@@ -23,19 +23,18 @@
         <h2 id="checkout-details-title">Tu selección</h2>
 
         <article class="checkout-movie">
-            <div class="checkout-mini-poster {{ compra.estilo }}">
+            <div class="checkout-mini-poster">
+                {% if compra.poster_url %}
+                <img src="{{ compra.poster_url }}" alt="Póster de {{ compra.pelicula }}">
+                {% endif %}
                 <span>{{ compra.clasificacion }}</span>
-                <strong aria-hidden="true">CP</strong>
+                {% if not compra.poster_url %}<strong aria-hidden="true">CP</strong>{% endif %}
             </div>
             <div>
                 <p class="checkout-item-label">Película y función</p>
                 <h3>{{ compra.pelicula }}</h3>
                 <p>{{ compra.funcion.fecha }} · {{ compra.funcion.hora }}</p>
                 <p>{{ compra.funcion.sucursal }} · {{ compra.funcion.sala }}</p>
-                <div class="checkout-tags">
-                    <span>{{ compra.funcion.formato }}</span>
-                    <span>{{ compra.funcion.idioma }}</span>
-                </div>
             </div>
         </article>
 
@@ -73,7 +72,7 @@
                     Debe regresar al catálogo de Candy conservando película,
                     función y butacas, además de los productos ya seleccionados.
                 #}
-                <a href="{{ url_for('cliente.seleccionar_servicios') }}">Modificar</a>
+                <a href="{{ url_for('cliente.seleccionar_servicios', funcion_id=compra.funcion.id, butaca_ids=compra.butacas | map(attribute='id') | list) }}">Modificar</a>
             </div>
 
             {% if compra.servicios %}
@@ -110,26 +109,14 @@
             </div>
         </dl>
 
-        {#
-            DESTINO FUTURO DEL BOTÓN CONFIRMAR:
-
-            1. En la integración será type="submit" dentro de un formulario
-               dirigido a una ruta POST de Flask, no directamente al backend.
-            2. La ruta Flask llamará mediante api_client a POST /compras con
-               funcion_id y butaca_ids, respetando el contrato Swagger.
-            3. El backend volverá a validar las butacas, registrará la compra y
-               responderá 201 con las entradas y un QR único por cada butaca.
-            4. Si la compra fue confirmada, Flask redirigirá a la pantalla de
-               confirmación/QR (detalle_entrada.html o su ruta definitiva).
-            5. Si el backend devuelve un error, Flask volverá a este resumen y
-               mostrará el mensaje correspondiente sin perder la selección.
-
-            Por ahora el enlace permite recorrer el mockup hasta la pantalla de
-            QR. No registra una compra real ni llama directamente al backend.
-        #}
-        <a class="checkout-confirm-button" href="{{ url_for('cliente.detalle_entrada', entrada_id=1) }}">
-            Confirmar compra
-        </a>
+        <form action="{{ url_for('cliente.confirmar_compra') }}" method="post">
+            <input type="hidden" name="funcion_id" value="{{ compra.funcion.id }}">
+            {% for butaca in compra.butacas %}
+            <input type="hidden" name="butaca_ids" value="{{ butaca.id }}">
+            {% endfor %}
+            <input type="hidden" name="medio_pago" value="tarjeta">
+            <button class="checkout-confirm-button" type="submit">Confirmar compra</button>
+        </form>
         <p class="checkout-legal">
             Al confirmar, se volverá a validar la disponibilidad de las butacas.
         </p>

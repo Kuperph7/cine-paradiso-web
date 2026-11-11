@@ -1,6 +1,10 @@
-from app import create_app
+import re
 from unittest.mock import Mock
+
+import requests
 from flask import render_template
+
+from app import create_app
 
 class TestConfig:
     TESTING = True
@@ -9,7 +13,84 @@ class TestConfig:
     API_BASE_URL = "http://api.test"
 
 
-def test_initial_pages_render():
+def _respuesta_butacas():
+    respuesta = Mock()
+    respuesta.status_code = 200
+    respuesta.json.return_value = {
+        "funcion_id": 1,
+        "total_butacas": 4,
+        "butacas_libres": 1,
+        "butacas": [
+            {"id": 2, "fila": "A", "numero": 2, "estado": "reservada"},
+            {"id": 1, "fila": "A", "numero": 1, "estado": "disponible"},
+            {"id": 4, "fila": "B", "numero": 2, "estado": "inactiva"},
+            {"id": 3, "fila": "B", "numero": 1, "estado": "ocupada"},
+        ],
+    }
+    return respuesta
+
+
+def _respuesta_funcion(funcion_id=1):
+    respuesta = Mock()
+    respuesta.status_code = 200
+    respuesta.json.return_value = {
+        "id": funcion_id,
+        "pelicula_id": 1,
+        "sala_id": 1,
+        "fecha_hora": "2026-12-10T18:30:00-03:00",
+        "precio": 6500,
+        "estado": "programada",
+    }
+    return respuesta
+
+
+def _respuesta_pelicula():
+    respuesta = Mock()
+    respuesta.status_code = 200
+    respuesta.json.return_value = {
+        "id": 1,
+        "titulo": "Horizonte final",
+        "clasificacion": "+13",
+        "poster_url": "https://example.test/poster.jpg",
+        "funciones_disponibles": [
+            {
+                "id": 1,
+                "sala_nombre": "Sala 1",
+                "local_nombre": "Cine Paradiso Centro",
+            },
+            {
+                "id": 7,
+                "sala_nombre": "Sala 1",
+                "local_nombre": "Cine Paradiso Centro",
+            },
+        ],
+    }
+    return respuesta
+
+
+def _api_get_correcto(path, **kwargs):
+    if path.startswith("/funciones/") and path.endswith("/butacas"):
+        return _respuesta_butacas()
+    if path.startswith("/funciones/"):
+        return _respuesta_funcion(int(path.rsplit("/", 1)[1]))
+    if path.startswith("/peliculas/"):
+        return _respuesta_pelicula()
+    raise AssertionError(f"Consulta inesperada: {path}")
+
+
+def _input_butaca(html, butaca_id):
+    return re.search(
+        rf'<input[^>]*id="butaca-{butaca_id}"[^>]*>',
+        html,
+        re.DOTALL,
+    ).group()
+
+
+def test_initial_pages_render(monkeypatch):
+    monkeypatch.setattr(
+        "app.routes.cliente.api_get",
+        Mock(side_effect=_api_get_correcto),
+    )
     app = create_app(TestConfig)
     client = app.test_client()
     paths = [
@@ -20,10 +101,8 @@ def test_initial_pages_render():
         "/peliculas/1",
         "/funciones/1/butacas",
         "/compras/servicios",
-        "/compras/resumen",
-        "/mis-compras",
+        "/compras/resumen?funcion_id=1&butaca_ids=1",
         "/mis-entradas",
-        "/entradas/1",
         "/admin/peliculas",
         "/admin/funciones",
         "/admin/salas",
@@ -34,6 +113,9 @@ def test_initial_pages_render():
 
     for path in paths:
         assert client.get(path).status_code == 200
+
+    assert client.get("/mis-compras").status_code == 302
+    assert client.get("/entradas/1").status_code == 302
 
 def test_admin_funciones_muestra_datos_api(monkeypatch):
     respuesta_api = Mock()
@@ -326,3 +408,122 @@ def test_admin_funciones_patch(monkeypatch):
 
     assert "Tenés que iniciar sesión" in respuesta.get_data(as_text=True)
     patch_simulado.assert_not_called()
+def test_butacas_se_consultan_y_solo_las_disponibles_se_habilitan(
+    monkeypatch,
+):
+    api_get = Mock(side_effect=_api_get_correcto)
+    monkeypatch.setattr("app.routes.cliente.api_get", api_get)
+    app = create_app(TestConfig)
+
+    respuesta = app.test_client().get("/funciones/7/butacas")
+    html = respuesta.get_data(as_text=True)
+
+    assert respuesta.status_code == 200
+    assert api_get.call_args_list[-1].args == ("/funciones/7/butacas",)
+    assert api_get.call_count == 3
+    assert "disabled" not in _input_butaca(html, 1)
+    assert "disabled" in _input_butaca(html, 2)
+    assert "disabled" in _input_butaca(html, 3)
+    assert "disabled" in _input_butaca(html, 4)
+    assert html.index("Butaca A1") < html.index("Butaca A2")
+    assert "1 de 4" in html
+
+
+def test_butacas_muestra_error_si_el_backend_no_responde(monkeypatch):
+    monkeypatch.setattr(
+        "app.routes.cliente.api_get",
+        Mock(side_effect=requests.exceptions.ConnectionError),
+    )
+    app = create_app(TestConfig)
+
+    respuesta = app.test_client().get("/funciones/7/butacas")
+
+    assert respuesta.status_code == 200
+    assert "No se pudo conectar con el servidor" in respuesta.get_data(
+        as_text=True
+    )
+
+
+def test_butacas_muestra_error_si_la_funcion_no_existe(monkeypatch):
+    respuesta_api = Mock()
+    respuesta_api.status_code = 404
+    respuesta_api.raise_for_status.side_effect = requests.exceptions.HTTPError(
+        response=respuesta_api
+    )
+    monkeypatch.setattr(
+        "app.routes.cliente.api_get",
+        Mock(return_value=respuesta_api),
+    )
+    app = create_app(TestConfig)
+
+    respuesta = app.test_client().get("/funciones/999/butacas")
+
+    assert respuesta.status_code == 200
+    assert "No se encontró la función seleccionada" in respuesta.get_data(
+        as_text=True
+    )
+
+
+def test_login_guarda_token_y_usuario_en_la_sesion(monkeypatch):
+    respuesta_api = Mock()
+    respuesta_api.status_code = 200
+    respuesta_api.json.return_value = {
+        "token": "jwt-de-prueba",
+        "usuario": {"id": 1, "nombre": "Cliente Demo", "rol": "cliente"},
+    }
+    api_post = Mock(return_value=respuesta_api)
+    monkeypatch.setattr("app.routes.auth.api_post", api_post)
+    app = create_app(TestConfig)
+
+    with app.test_client() as client:
+        respuesta = client.post(
+            "/login",
+            data={
+                "email": "cliente@cineparadiso.local",
+                "password": "Cliente123!",
+                "next": "/",
+            },
+        )
+        with client.session_transaction() as sesion:
+            assert sesion["access_token"] == "jwt-de-prueba"
+            assert sesion["usuario"]["id"] == 1
+
+    assert respuesta.status_code == 302
+    api_post.assert_called_once()
+
+
+def test_confirmar_compra_envia_jwt_y_datos_a_la_api(monkeypatch):
+    respuesta_api = Mock()
+    respuesta_api.status_code = 201
+    respuesta_api.json.return_value = {"id": 55}
+    api_post = Mock(return_value=respuesta_api)
+    monkeypatch.setattr("app.routes.cliente.api_post", api_post)
+    app = create_app(TestConfig)
+
+    with app.test_client() as client:
+        with client.session_transaction() as sesion:
+            sesion["access_token"] = "jwt-de-prueba"
+
+        respuesta = client.post(
+            "/compras/confirmar",
+            data={
+                "funcion_id": "101",
+                "butaca_ids": ["16", "17"],
+                "medio_pago": "tarjeta",
+            },
+        )
+
+    assert respuesta.status_code == 302
+    assert respuesta.headers["Location"].endswith(
+        "/compras/55/confirmacion"
+    )
+    api_post.assert_called_once_with(
+        "/compras",
+        json={
+            "funcion_id": 101,
+            "butaca_ids": [16, 17],
+            "servicios": [],
+            "medio_pago": "tarjeta",
+        },
+        headers={"Authorization": "Bearer jwt-de-prueba"},
+    )
