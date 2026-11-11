@@ -32,11 +32,10 @@
 }
 
 .salas-form {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 18px;
-    min-height: 56px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 12px;
     padding: 12px 20px;
     border: 1px solid #344454;
     background: #eef3f7;
@@ -52,18 +51,28 @@
     justify-content: space-between;
     gap: 8px;
     min-width: 0;
-    padding: 5px 8px;
+    padding: 7px 8px;
     background: #a3b0b8;
     font-size: 0.8rem;
     font-weight: 700;
 }
 
+.salas-error {
+    color: #b42318;
+    font-weight: 600;
+    text-align: center;
+    padding: 16px;
+}
+
 .salas-form select,
 .salas-form input {
+    flex: 1;
+    width: auto;
     min-width: 0;
-    height: 28px;
+    height: 30px;
     border: 0;
     border-radius: 0;
+    padding: 3px 5px;
     background: #eef3f7;
     color: #101820;
     font: inherit;
@@ -78,9 +87,14 @@
     padding: 2px 5px;
 }
 
+.salas-form label span {
+    flex: 0 0 auto;
+}
+
 .salas-form button {
-    min-width: 72px;
-    padding: 4px 12px;
+    grid-column: 1 / -1;
+    min-height: 40px;
+    padding: 6px 12px;
     border: 1px solid #8a7134;
     background: #f5d36b;
     color: #111;
@@ -202,32 +216,30 @@
     }
 
     .salas-form {
-        gap: 26px 12px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
         padding: 11px;
     }
 
     .salas-form label {
-        width: calc((100% - 12px) / 2);
-        flex: 0 0 calc((100% - 12px) / 2);
+        min-height: 62px;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: center;
+        gap: 5px;
+        padding: 7px 8px;
+        font-size: 0.82rem;
     }
 
-    .salas-form label {
-        min-height: 42px;
-        padding: 6px 8px;
-        font-size: 0.9rem;
-    }
-
-    .salas-form select {
-        width: 46%;
-    }
-
+    .salas-form select,
     .salas-form input {
-        width: 46px;
+        flex: none;
+        width: 100%;
+        height: 30px;
     }
 
     .salas-form button {
         width: 100%;
-        flex: 0 0 100%;
         min-height: 43px;
         font-size: 1.1rem;
     }
