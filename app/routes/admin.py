@@ -5,11 +5,10 @@ import requests
 from flask import Blueprint, redirect, render_template, session, url_for, request, flash
 from requests.exceptions import RequestException
 
-from app.services.api_client import api_get, api_post, api_patch
+from app.services.api_client import api_delete, api_get, api_patch, api_post
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
-Backend_url = "http://127.0.0.1:5000"
 
 def obtener_errores_api(respuesta):
     try:
@@ -453,10 +452,9 @@ def salas():
                 "butacas_por_fila": request.form.get("butacas_por_fila", type=int),
             }
             try:
-                respuesta = requests.post(
-                    f"{Backend_url}/salas",
+                respuesta = api_post(
+                    "/salas",
                     json=datos,
-                    timeout=5,
                 )
                 respuesta.raise_for_status()
                 
@@ -466,7 +464,7 @@ def salas():
 
     salas = []
     try:
-        respuesta = requests.get(f"{Backend_url}/salas", timeout=5)
+        respuesta = api_get("/salas")
         
         salas = respuesta.json()["salas"]
         error_salas = False
@@ -489,10 +487,9 @@ def servicios():
                 servicio_id = int(request.form.get("servicio_id"))
                 activo = request.form.get("activo") == "1"
 
-                respuesta = requests.patch(
-                    f"{Backend_url}/servicios/{servicio_id}",
+                respuesta = api_patch(
+                    f"/servicios/{servicio_id}",
                     json={"activo": activo},
-                    timeout=5,
                 )
 
             #Edicion del servicio
@@ -505,19 +502,17 @@ def servicios():
                     "precio": request.form.get("precio", type=float),
                 }
 
-                respuesta = requests.patch(
-                    f"{Backend_url}/servicios/{servicio_id}",
+                respuesta = api_patch(
+                    f"/servicios/{servicio_id}",
                     json=datos,
-                    timeout=5,
                 )
 
             #Eliminacion del servicio
             elif accion == "borrar":
                 servicio_id = int(request.form.get("servicio_id"))
 
-                respuesta = requests.delete(
-                    f"{Backend_url}/servicios/{servicio_id}",
-                    timeout=5,
+                respuesta = api_delete(
+                    f"/servicios/{servicio_id}",
                 )
                 respuesta.raise_for_status()
                 return redirect(url_for("admin.servicios"))
@@ -530,10 +525,9 @@ def servicios():
                     "precio": request.form.get("precio", type=float),
                 }
 
-                respuesta = requests.post(
-                    f"{Backend_url}/servicios",
+                respuesta = api_post(
+                    "/servicios",
                     json=datos,
-                    timeout=5,
                     )
 
             respuesta.raise_for_status()
@@ -547,7 +541,7 @@ def servicios():
     servicios = []
 
     try:
-        respuesta = requests.get(f"{Backend_url}/servicios", timeout=5)
+        respuesta = api_get("/servicios")
         respuesta.raise_for_status()
 
         datos_respuesta = respuesta.json()
