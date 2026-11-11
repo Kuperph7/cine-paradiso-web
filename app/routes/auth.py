@@ -152,7 +152,7 @@ def perfil():
     )
 
 @auth_bp.get("/logout")
-def logout():
+def logout_get():
     session.clear()
     return redirect(url_for("cliente.cartelera"))
 

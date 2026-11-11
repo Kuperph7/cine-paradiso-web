@@ -116,7 +116,7 @@
       font-size: 0.78rem;
     }
     .main-nav .profile-link {
-      padding: 0.75rem 0;
+      padding: 0.4rem 0.65rem;
     }
     .banner-principal {
       min-height: 470px;
@@ -486,9 +486,82 @@
     transform: scaleX(1);
   }
   .main-nav .profile-link {
-    padding: 0.75rem 0;
-    border: 0;
-    border-radius: 0;
+    display: inline-flex;
+    min-height: 42px;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    padding: 0.42rem 0.72rem;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    box-shadow: 0 8px 20px rgba(11, 22, 48, 0.14);
+    font-weight: 800;
+    transition:
+      background 180ms ease,
+      box-shadow 180ms ease,
+      color 180ms ease,
+      transform 180ms ease;
+  }
+  .main-nav .profile-link::after {
+    display: none;
+  }
+  .main-nav .profile-link:hover {
+    transform: translateY(-2px);
+  }
+  .main-nav .profile-link:focus-visible {
+    outline: 3px solid rgba(243, 200, 75, 0.72);
+    outline-offset: 3px;
+  }
+  .main-nav .profile-link-login {
+    border-color: #102044;
+    background: #102044;
+    color: #ffffff;
+  }
+  .main-nav .profile-link-login:hover,
+  .main-nav .profile-link-login.active {
+    background: #1c376b;
+    box-shadow: 0 10px 24px rgba(16, 32, 68, 0.24);
+    color: #ffffff;
+  }
+  .profile-link-arrow {
+    display: grid;
+    width: 26px;
+    height: 26px;
+    place-items: center;
+    border-radius: 50%;
+    background: #f3c84b;
+    color: #102044;
+    font-size: 1rem;
+    line-height: 1;
+  }
+  .main-nav .profile-link-user {
+    border-color: rgba(169, 121, 0, 0.3);
+    background: #f3c84b;
+    color: #102044;
+  }
+  .main-nav .profile-link-user:hover,
+  .main-nav .profile-link-user.active {
+    background: #ffda65;
+    box-shadow: 0 10px 24px rgba(169, 121, 0, 0.22);
+    color: #102044;
+  }
+  .profile-link-avatar {
+    display: grid;
+    width: 28px;
+    height: 28px;
+    flex: 0 0 28px;
+    place-items: center;
+    border-radius: 50%;
+    background: #102044;
+    color: #ffffff;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 0.86rem;
+  }
+  .profile-link-name {
+    max-width: 9rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   /* ===================== FIN NAVBAR ===================== */
 

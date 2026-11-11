@@ -578,6 +578,25 @@ def test_login_muestra_toast_si_no_hay_conexion(monkeypatch):
     assert "El servidor de autenticación no está disponible." in html
 
 
+def test_navbar_distingue_ingreso_y_usuario_autenticado():
+    app = create_app(TestConfig)
+
+    with app.test_client() as client:
+        login_html = client.get("/login").get_data(as_text=True)
+        assert "profile-link-login active" in login_html
+        assert "Ingresar" in login_html
+
+        with client.session_transaction() as sesion:
+            sesion["access_token"] = "jwt-de-prueba"
+            sesion["usuario"] = {"id": 1, "nombre": "Cliente Demo"}
+
+        usuario_html = client.get("/login").get_data(as_text=True)
+        assert "profile-link-user" in usuario_html
+        assert 'class="profile-link-avatar"' in usuario_html
+        assert ">C</span>" in usuario_html
+        assert "Cliente Demo" in usuario_html
+
+
 def test_perfil_muestra_boton_para_cerrar_sesion():
     app = create_app(TestConfig)
 
