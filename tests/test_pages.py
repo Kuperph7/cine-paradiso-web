@@ -6,6 +6,13 @@ from flask import render_template
 
 from app import create_app
 
+
+# Estas funciones se ejecutan únicamente mediante pytest o "Run Test".
+# Navegar por http://127.0.0.1:5101 en Google Chrome ejecuta la aplicación
+# normal: no carga este archivo, no activa monkeypatch y consulta el backend y
+# MySQL reales.
+
+
 class TestConfig:
     TESTING = True
     DEBUG = False
@@ -465,6 +472,9 @@ def test_butacas_muestra_error_si_la_funcion_no_existe(monkeypatch):
 
 
 def test_login_guarda_token_y_usuario_en_la_sesion(monkeypatch):
+    # Esta prueba reemplaza temporalmente la llamada al backend. No sustituye
+    # el login real: comprueba que el frontend guarda correctamente el JWT y
+    # el usuario cuando POST /auth/login responde exitosamente.
     respuesta_api = Mock()
     respuesta_api.status_code = 200
     respuesta_api.json.return_value = {
@@ -493,6 +503,9 @@ def test_login_guarda_token_y_usuario_en_la_sesion(monkeypatch):
 
 
 def test_confirmar_compra_envia_jwt_y_datos_a_la_api(monkeypatch):
+    # Se reemplaza api_post solo durante el test para inspeccionar el JSON y el
+    # encabezado JWT enviados. La compra real utiliza POST /compras y persiste
+    # sus datos en MySQL mediante el backend.
     respuesta_api = Mock()
     respuesta_api.status_code = 201
     respuesta_api.json.return_value = {"id": 55}
