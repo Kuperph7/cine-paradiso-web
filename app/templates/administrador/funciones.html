@@ -11,28 +11,46 @@
     <div class="funciones-layout">
         <section class="funcion-form-card" aria-labelledby="generar-title">
             <h2 id="generar-title">Generar Función</h2>
+            {% if mensaje_accion %}
+                <p>{{ mensaje_accion }}</p>
+            {% endif %}
 
-            <form class="funcion-form">
+            <form class="funcion-form" method="post">
                 <label for="pelicula">Película</label>
-                <select id="pelicula">
-                    <option value=""></option>
-                    <option>Película 1</option>
-                    <option>Película 2</option>
-                    <option>Película 3</option>
+                <select id="pelicula" name="pelicula_id" required>
+                    <option value = "">Seleccione una película</option>
+
+                    {% for pelicula in peliculas|default([]) %}
+                        <option value="{{ pelicula.id }}">
+                            {{ pelicula.titulo }}
+                        </option>
+                    {% endfor %}
                 </select>
 
                 <label for="sala">Sala</label>
-                <select id="sala">
-                    <option value=""></option>
-                    <option>Sala 1</option>
-                    <option>Sala 2</option>
-                    <option>Sala 3</option>
+
+                <select id="sala" name="sala_id" required>
+                    <option value="">Seleccione una sala</option>
+                    {% for sala in salas|default([]) %}
+                        <option value="{{ sala.id }}">
+                            {{ sala.nombre }}
+                        </option>
+                    {% endfor %}
                 </select>
+                {% if mensaje_salas %}
+                    <p>{{ mensaje_salas }}</p>
+                {% endif %}
+
+                <label for="fecha">Fecha</label>
+                <input id="fecha" name="fecha" type="date" required>
 
                 <label for="horario">Horario</label>
-                <input id="horario" type="time">
+                <input id="horario" name="horario" type="time" required>
 
-                <button type="button">Generar</button>
+                <label for="precio">Precio</label>
+                <input id="precio" name="precio" type="number" min="0" step="1" required>
+
+                <button type="submit">Generar</button>
             </form>
         </section>
 
@@ -43,50 +61,146 @@
                 <table class="funciones-table">
                     <thead>
                         <tr>
-                            <th scope="col">Lista de Funciones</th>
-                            <th scope="col">Capacidad</th>
-                            <th scope="col"><span class="visually-hidden">Acciones</span></th>
+                            <th scope="col">Función</th>
+                            <th scope="col">Sala y horario</th>
+                            <th scope="col">Estado</th>
+                            <th scope="col">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for funcion in funciones|default([]) %}
+                        {% for funcion in funciones %}
                         <tr>
-                            <td data-label="Lista de Funciones">
-                                {{ funcion.nombre|default("Función " ~ loop.index) }}
+                            <td data-label="Función">
+                                Función {{ funcion.id  }}
+                                - Pelicula {{ funcion.pelicula_id }}
                             </td>
-                            <td data-label="Capacidad">
-                                {{ funcion.capacidad|default("Número / Número") }}
+
+                            <td data-label="Sala y horario">
+                                {{ funcion.sala_id }}
+                                - {{ funcion.fecha_hora}}
                             </td>
-                            <td class="funcion-action-cell">
-                                <button type="button" class="funcion-button">Butacas</button>
+
+                            <td data-label="Estado">
+                                {{ funcion.estado }}
                             </td>
+
+
+                            <td data-label="Acciones">
+                                {% if session.get("token") %}
+
+                                    <!-- Cancelar o publicar una función -->
+                                    <form method="post">
+                                        <input type="hidden" name="funcion_id" value="{{ funcion.id }}">
+
+                                        {% if funcion.estado == "cancelada" %}
+                                            <button type="submit" name="accion" value="publicar">
+                                                Publicar
+                                            </button>
+                                        {% else %}
+                                            <button type="submit" name="accion" value="cancelar">
+                                                Cancelar
+                                            </button>
+                                        {% endif %}
+                                    </form>
+
+                                    <!-- Editar los datos de una función -->
+                                    <details>
+                                        <summary>Editar función</summary>
+
+                                        <form method="post" class="funcion-edicion">
+                                            <input type="hidden" name="accion" value="editar">
+                                            <input type="hidden" name="funcion_id" value="{{ funcion.id }}">
+
+                                            <label>
+                                                Película
+                                                <select name="pelicula_id" required>
+                                                    {% for pelicula in peliculas %}
+                                                        <option
+                                                            value="{{ pelicula.id }}"
+                                                            {% if pelicula.id == funcion.pelicula_id %}selected{% endif %}
+                                                        >
+                                                            {{ pelicula.titulo }}
+                                                        </option>
+                                                    {% endfor %}
+                                                </select>
+                                            </label>
+
+                                            <label>
+                                                Sala
+                                                <select name="sala_id" required>
+                                                    {% for sala in salas %}
+                                                        <option
+                                                            value="{{ sala.id }}"
+                                                            {% if sala.id == funcion.sala_id %}selected{% endif %}
+                                                        >
+                                                            {{ sala.nombre }}
+                                                        </option>
+                                                    {% endfor %}
+                                                </select>
+                                            </label>
+
+                                            <label>
+                                                Fecha
+                                                <input
+                                                    type="date"
+                                                    name="fecha"
+                                                    value="{{ funcion.fecha_hora[:10] }}"
+                                                    required
+                                                >
+                                            </label>
+
+                                            <label>
+                                                Horario
+                                                <input
+                                                    type="time"
+                                                    name="horario"
+                                                    value="{{ funcion.fecha_hora[11:16] }}"
+                                                    required
+                                                >
+                                            </label>
+
+                                            <label>
+                                                Precio
+                                                <input
+                                                    type="number"
+                                                    name="precio"
+                                                    value="{{ funcion.precio }}"
+                                                    min="0"
+                                                    step="1"
+                                                    required
+                                                >
+                                            </label>
+
+                                            <button type="submit">Guardar cambios</button>
+                                        </form>
+                                    </details>
+
+                                {% else %}
+                                    Iniciá sesión como administrador
+                                {% endif %}
+                            </td>
+
+
+
                         </tr>
                         {% else %}
-                        {% for i in range(1, 7) %}
                         <tr>
-                            <td data-label="Lista de Funciones">Función {{ i }}</td>
-                            <td data-label="Capacidad">Número / Número</td>
-                            <td class="funcion-action-cell">
-                                <button type="button" class="funcion-button">Butacas</button>
+                            <td colspan="4">
+                                {% if mensaje_error %}
+                                    {{ mensaje_error }}
+                                {% else %}
+                                    No hay funciones disponibles.
+                                {% endif %}
                             </td>
                         </tr>
-                        {% endfor %}
                         {% endfor %}
                     </tbody>
                 </table>
 
                 <footer class="funciones-table-footer">
                     <span>
-                        {{ funciones|default([1, 2, 3, 4, 5, 6], true)|length }}
-                        funciones listadas
+                        {{ funciones|length }} funciones listadas
                     </span>
-
-                    <nav class="funciones-pagination" aria-label="Paginación">
-                        <button type="button" aria-label="Página anterior" disabled>‹</button>
-                        <button type="button" aria-current="page">1</button>
-                        <button type="button">2</button>
-                        <button type="button" aria-label="Página siguiente">›</button>
-                    </nav>
                 </footer>
             </div>
         </section>

@@ -1962,6 +1962,11 @@
     background: linear-gradient(180deg, transparent, rgba(3, 8, 20, 0.72));
     content: "";
   }
+  .checkout-mini-poster > img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
   .checkout-mini-poster > span {
     position: absolute;
     top: 0.65rem;
@@ -2117,6 +2122,26 @@
     font-size: 0.7rem;
     line-height: 1.45;
     text-align: center;
+  }
+  .purchase-confirmation-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0;
+    list-style: none;
+  }
+  .purchase-confirmation-ticket {
+    padding: 1rem;
+    border: 1px solid rgba(16, 32, 68, 0.15);
+    border-radius: 12px;
+    background: #ffffff;
+  }
+  .purchase-confirmation-code {
+    display: block;
+    margin-top: 0.5rem;
+    overflow-wrap: anywhere;
+    color: #607086;
+    font-size: 0.75rem;
   }
   /* ===================== FIN CARRITO DE COMPRA ===================== */
 
