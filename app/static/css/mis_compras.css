@@ -1,4 +1,4 @@
-/* ==================== VISTA HISTORIAL DE CONSUMOS ==================== */
+
 .compras-container {
     max-width: 800px;
     margin: 2rem auto;
@@ -13,7 +13,8 @@
 }
 
 .compra-card {
-    background-color: #ffffff;
+    background-color: #f7d369;
+;
     border: 1px solid #e2e8f0;
     border-radius: 12px;
     padding: 1.5rem;
@@ -55,7 +56,7 @@
 }
 
 .btn-ver-ticket {
-    background-color: #f7d369;
+    background-color: rgba(255, 255, 255, 0.85);
     color: #102044;
     padding: 0.6rem 1.2rem;
     border-radius: 8px;
@@ -67,4 +68,28 @@
 
 .btn-ver-ticket:hover {
     background-color: #e5c052;
+}
+
+/* Responsivo para celulares */
+@media (max-width: 600px) {
+    .compras-container {
+        margin: 1rem auto;
+    }
+
+    .compra-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 1.2rem;
+    }
+
+    .compra-acciones {
+        width: 100%;
+    }
+
+    .btn-ver-ticket {
+        display: block;
+        text-align: center;
+        width: 100%;
+    }
 }
