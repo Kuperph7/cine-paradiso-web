@@ -6,11 +6,13 @@ from flask import render_template
 
 from app import create_app
 
-class TestConfig:
-    TESTING = True
-    DEBUG = False
-    SECRET_KEY = "test"
-    API_BASE_URL = "http://api.test"
+TEST_CONFIG = {
+    "TESTING": True,
+    "DEBUG": False,
+    "SECRET_KEY": "test",
+    "API_BASE_URL": "http://api.test",
+}
+
 
 
 def _respuesta_butacas():
@@ -91,7 +93,9 @@ def test_initial_pages_render(monkeypatch):
         "app.routes.cliente.api_get",
         Mock(side_effect=_api_get_correcto),
     )
-    app = create_app(TestConfig)
+    app = create_app()
+    app.config.update(TEST_CONFIG)
+
     client = app.test_client()
     paths = [
         "/",
@@ -168,7 +172,9 @@ def test_admin_funciones_muestra_datos_api(monkeypatch):
         api_get_simulado
     )
 
-    app = create_app(TestConfig)
+    app = create_app()
+    app.config.update(TEST_CONFIG)
+
     client = app.test_client()
 
     with client.session_transaction() as sesion:
@@ -186,7 +192,8 @@ def test_admin_funciones_muestra_datos_api(monkeypatch):
     assert "Sala Premium" in html
 
 def test_selector_salas_muestra_opciones():
-    app = create_app(TestConfig)
+    app = create_app()
+    app.config.update(TEST_CONFIG)
 
     with app.test_request_context("/admin/funciones"):
         html = render_template(
@@ -235,7 +242,9 @@ def test_crear_funcion_correctamente(monkeypatch):
     monkeypatch.setattr("app.routes.admin.api_get", api_get_simulado)
     monkeypatch.setattr("app.routes.admin.api_post", api_post_simulado)
 
-    app = create_app(TestConfig)
+    app = create_app()
+    app.config.update(TEST_CONFIG)
+
     client = app.test_client()
 
     with client.session_transaction() as sesion:
@@ -278,7 +287,9 @@ def test_crear_funcion_con_errores(monkeypatch):
         api_post_simulado
     )
 
-    app = create_app(TestConfig)
+    app = create_app()
+    app.config.update(TEST_CONFIG)
+
     client = app.test_client()
 
     # Caso 1: usuario sin iniciar sesión
@@ -340,7 +351,9 @@ def test_admin_funciones_patch(monkeypatch):
         patch_simulado
     )
 
-    app = create_app(TestConfig)
+    app = create_app()
+    app.config.update(TEST_CONFIG)
+
     client = app.test_client()
 
     with client.session_transaction() as sesion:
@@ -415,7 +428,8 @@ def test_butacas_se_consultan_y_solo_las_disponibles_se_habilitan(
 ):
     api_get = Mock(side_effect=_api_get_correcto)
     monkeypatch.setattr("app.routes.cliente.api_get", api_get)
-    app = create_app(TestConfig)
+    app = create_app()
+    app.config.update(TEST_CONFIG)
 
     respuesta = app.test_client().get("/funciones/7/butacas")
     html = respuesta.get_data(as_text=True)
@@ -436,7 +450,8 @@ def test_butacas_muestra_error_si_el_backend_no_responde(monkeypatch):
         "app.routes.cliente.api_get",
         Mock(side_effect=requests.exceptions.ConnectionError),
     )
-    app = create_app(TestConfig)
+    app = create_app()
+    app.config.update(TEST_CONFIG)
 
     respuesta = app.test_client().get("/funciones/7/butacas")
 
@@ -456,7 +471,8 @@ def test_butacas_muestra_error_si_la_funcion_no_existe(monkeypatch):
         "app.routes.cliente.api_get",
         Mock(return_value=respuesta_api),
     )
-    app = create_app(TestConfig)
+    app = create_app()
+    app.config.update(TEST_CONFIG)
 
     respuesta = app.test_client().get("/funciones/999/butacas")
 
@@ -475,7 +491,8 @@ def test_login_guarda_token_y_usuario_en_la_sesion(monkeypatch):
     }
     api_post = Mock(return_value=respuesta_api)
     monkeypatch.setattr("app.routes.auth.api_post", api_post)
-    app = create_app(TestConfig)
+    app = create_app()
+    app.config.update(TEST_CONFIG)
 
     with app.test_client() as client:
         respuesta = client.post(
@@ -500,7 +517,8 @@ def test_confirmar_compra_envia_jwt_y_datos_a_la_api(monkeypatch):
     respuesta_api.json.return_value = {"id": 55}
     api_post = Mock(return_value=respuesta_api)
     monkeypatch.setattr("app.routes.cliente.api_post", api_post)
-    app = create_app(TestConfig)
+    app = create_app()
+    app.config.update(TEST_CONFIG)
 
     with app.test_client() as client:
         with client.session_transaction() as sesion:
