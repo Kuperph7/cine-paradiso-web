@@ -72,7 +72,7 @@ def peliculas():
 
 
 def renderizar_peliculas(formulario=None, errores_formulario=None):
-    credencial_acceso = session.get("credencial_acceso")
+    credencial_acceso = session.get("access_token")
     if not credencial_acceso:
         return redirect(url_for("auth.login"))
 
@@ -145,7 +145,7 @@ def renderizar_peliculas(formulario=None, errores_formulario=None):
 
 @admin_bp.post("/peliculas/crear")
 def crear_pelicula():
-    credencial_acceso = session.get("credencial_acceso")
+    credencial_acceso = session.get("access_token")
     if not credencial_acceso:
         return redirect(url_for("auth.login"))
 
@@ -183,7 +183,7 @@ def crear_pelicula():
 
 @admin_bp.post("/peliculas/<int:pelicula_id>/modificar")
 def modificar_pelicula(pelicula_id):
-    credencial_acceso = session.get("credencial_acceso")
+    credencial_acceso = session.get("access_token")
     if not credencial_acceso:
         return redirect(url_for("auth.login"))
 
@@ -223,7 +223,7 @@ def modificar_pelicula(pelicula_id):
 
 @admin_bp.post("/peliculas/<int:pelicula_id>/desactivar")
 def desactivar_pelicula(pelicula_id):
-    credencial_acceso = session.get("credencial_acceso")
+    credencial_acceso = session.get("access_token")
     if not credencial_acceso:
         return redirect(url_for("auth.login"))
 

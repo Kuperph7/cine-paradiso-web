@@ -12,7 +12,7 @@ def cliente():
     cliente = app.test_client()
 
     with cliente.session_transaction() as sesion:
-        sesion["credencial_acceso"] = "credencial-simulada"
+        sesion["access_token"] = "credencial-simulada"
 
     with patch(
         "app.services.api_client.api_request",

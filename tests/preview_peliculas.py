@@ -32,7 +32,7 @@ catalogo = [{
 
 @app.before_request
 def sesion_de_prueba():
-    session["credencial_acceso"] = "credencial-simulada"
+    session["access_token"] = "credencial-simulada"
 
 
 def respuesta_simulada(estado, datos):
