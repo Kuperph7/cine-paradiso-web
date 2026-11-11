@@ -53,14 +53,56 @@ def logout():
     return redirect(url_for("cliente.cartelera"))
 
 
-@auth_bp.get("/registro")
+@auth_bp.route("/registro", methods=["GET", "POST"])
 def registro():
-    return render_template("auth/registro.html")
+    if request.method == "GET":
+        return render_template("auth/registro.html")
+    
+    datos = {
+        "nombre": request.form.get("nombre", ""),
+        "email": request.form.get("email", ""),
+        "password": request.form.get("password", "")
+    }
+    
+    respuesta = api_post("/auth/register", json=datos)
+    
+    if respuesta.ok:
+        return render_template("auth/login.html", mensaje="Registro exitoso. Por favor, inicia sesión.")
+    try:
+        error = respuesta.json()
+        mensaje = error.get("mensaje", "No se pudo registrar el usuario")
+    
+    except ValueError:
+        mensaje = "No se pudo registrar el usuario"
 
+    return render_template("auth/registro.html", error=mensaje), respuesta.status_code
 
 @auth_bp.get("/perfil")
 def perfil():
-    return render_template("auth/perfil.html")
+    token = session.get("token")
+    
+    if not token:
+        return redirect(url_for("cliente.cartelera"))
+    
+    respuesta= api_get("/auth/perfil", headers={"Authorization": f"Bearer {token}"})
+    
+    if respuesta.ok:
+        usuario = respuesta.json()
+        session["usuario"] = usuario
+        
+        return render_template( "auth/perfil.html",usuario=usuario)
+    
+    session.clear()
+    
+    return render_template(
+        "auth/perfil_sin_sesion.html",
+        error="La sesión expiró. Iniciá sesión nuevamente."
+    )
+
+@auth_bp.get("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("cliente.cartelera"))
 
 @auth_bp.get("/perfil/configuracion")
 def configuracion_perfil():

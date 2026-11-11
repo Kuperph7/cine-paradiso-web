@@ -9,6 +9,19 @@ from app.services.api_client import api_delete, api_get, api_patch, api_post
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
+def admin_required(funcion):
+    @wraps(funcion)
+    def funcion_protegida(*args, **kwargs):
+        if not session.get("token"):
+            return redirect(url_for("auth.login"))
+        
+        usuario = session.get("usuario", {})
+        
+        if usuario.get("rol") != "administrador":
+            return redirect(url_for("cliente.cartelera"))
+        
+        return funcion(*args, **kwargs)
+    return funcion_protegida
 
 def obtener_errores_api(respuesta):
     try:
@@ -67,6 +80,7 @@ def preparar_datos_pelicula(formulario):
 
 
 @admin_bp.get("/peliculas")
+@admin_required
 def peliculas():
     return renderizar_peliculas()
 
@@ -562,11 +576,13 @@ def servicios():
 
 
 @admin_bp.get("/estadisticas")
+@admin_required
 def estadisticas():
     return render_template("administrador/estadisticas.html")
 
 
 @admin_bp.get("/entradas/validar")
+@admin_required
 def validar_entrada():
     return render_template("administrador/validar_entrada.html")
 
