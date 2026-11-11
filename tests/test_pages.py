@@ -103,7 +103,6 @@ def test_initial_pages_render(monkeypatch):
         "/compras/servicios",
         "/compras/resumen?funcion_id=1&butaca_ids=1",
         "/mis-entradas",
-        "/admin/peliculas",
         "/admin/funciones",
         "/admin/salas",
         "/admin/servicios",
@@ -114,6 +113,9 @@ def test_initial_pages_render(monkeypatch):
     for path in paths:
         assert client.get(path).status_code == 200
 
+    respuesta = client.get("/admin/peliculas")
+    assert respuesta.status_code == 302
+    assert respuesta.headers["Location"] == "/login"
     assert client.get("/mis-compras").status_code == 302
     assert client.get("/entradas/1").status_code == 302
 
