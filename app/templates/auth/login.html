@@ -3,9 +3,14 @@
 {% block content %}
 <section class="panel narrow">
     <h1>Iniciar sesión</h1>
-    <form id = "Formulario-login" class="form-stack" method="POST" action="{{ url_for('auth.login') }}">
-        <label>Email <input id = "email" type="email" name="email" required></label>
-        <label>Contraseña <input id = "password" type="password" name="password" required></label>
+    {% if error %}
+    <p role="alert">{{ error }}</p>
+    {% endif %}
+    {# Flask envía las credenciales al backend; el navegador no usa fetch. #}
+    <form class="form-stack" method="post" action="{{ url_for('auth.login') }}">
+        <input type="hidden" name="next" value="{{ next }}">
+        <label>Email <input type="email" name="email" required></label>
+        <label>Contraseña <input type="password" name="password" required></label>
         <button type="submit">Ingresar</button>
     </form>
     <a href="{{ url_for('auth.registro') }}">Crear una cuenta</a>

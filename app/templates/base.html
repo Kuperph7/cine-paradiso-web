@@ -24,10 +24,10 @@
                 <a{% if request.endpoint == 'cliente.seleccionar_servicios' %} class="active"{% endif %} href="{{ url_for('cliente.seleccionar_servicios') }}">Candy</a>
                 <a{% if request.endpoint == 'cliente.sucursales' %} class="active"{% endif %} href="{{ url_for('cliente.sucursales') }}">Sucursales</a>
                 <a href="{{ url_for('cliente.mis_entradas') }}">Mis entradas</a>
-                {% if session.get("token") %}
-                     <a class="profile-link" href="#perfil-con-sesion">Perfil</a>
+                {% if session.get('usuario') %}
+                <a class="profile-link" href="{{ url_for('auth.perfil') }}">{{ session['usuario']['nombre'] }}</a>
                 {% else %}
-                     <a class="profile-link" href="#perfil-sin-sesion">Perfil</a>
+                <a class="profile-link" href="{{ url_for('auth.login') }}">Ingresar</a>
                 {% endif %}
             </nav>
         </div>
@@ -53,10 +53,8 @@
         <p class="copyright">© 2026 Cine Paradiso. Todos los derechos reservados.</p>
     </footer>
     </div>
-    {% if session.get("token") %}
-        {% include "auth/perfil_con_sesion.html" %}
-    {% else %}
-        {% include "auth/perfil_sin_sesion.html" %}
+    {% if not session.get('usuario') %}
+    {% include "auth/perfil_sin_sesion.html" %}
     {% endif %}
     </div>
 </body>

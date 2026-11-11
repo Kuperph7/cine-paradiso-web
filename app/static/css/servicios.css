@@ -124,6 +124,75 @@
     opacity: 0.5;
 }
 
+.servicio-form-section {
+    width: min(100%, 585px);
+    margin: 0 auto 24px;
+}
+
+.servicio-form-section h2 {
+    margin: 0 0 8px;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.servicio-form {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    align-items: center;
+    gap: 10px;
+    padding: 14px;
+    border: 1px solid #344454;
+    background: #edf2f6;
+}
+
+.servicio-form label {
+    font-size: 0.85rem;
+}
+
+.servicio-form input,
+.servicio-form textarea {
+    width: 100%;
+    min-width: 0;
+    padding: 7px;
+    border: 1px solid #a3b0b8;
+    background: #fff;
+    color: #101820;
+    font: inherit;
+}
+
+.servicio-form textarea {
+    resize: vertical;
+}
+
+.servicio-form button {
+    grid-column: 1 / -1;
+    justify-self: end;
+    padding: 7px 14px;
+    border: 0;
+    border-radius: 2px;
+    background: #e8c45c;
+    cursor: pointer;
+}
+
+.servicio-info {
+    min-width: 0;
+}
+
+.servicio-description {
+    margin: 5px 0;
+    color: #344454;
+    font-size: 0.75rem;
+}
+
+.servicio-price {
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.servicio-actions form {
+    margin: 0;
+}
+
 /* Vista mobile */
 @media (max-width: 600px) {
     .servicios-page {
@@ -184,5 +253,126 @@
         width: 20px;
         height: 19px;
         font-size: 0.65rem;
+    }
+
+    .servicio-form-section {
+        width: 100%;
+        margin-bottom: 22px;
+    }
+
+    .servicio-form {
+        grid-template-columns: 1fr;
+        gap: 6px;
+        padding: 12px;
+    }
+
+    .servicio-form button {
+        grid-column: auto;
+        justify-self: stretch;
+        min-height: 40px;
+    }
+
+    .servicio-actions {
+        flex-wrap: wrap;
+    }
+}
+
+
+.servicio-dialog {
+    width: min(92vw, 460px);
+    max-height: 90vh;
+    padding: 0;
+    overflow: auto;
+    border: 1px solid #344454;
+    background: #a7bac8;
+    color: #101820;
+}
+
+.servicio-dialog::backdrop {
+    background: rgb(18 28 42 / 65%);
+}
+
+.servicio-dialog-form {
+    display: grid;
+    gap: 8px;
+    padding: 16px;
+}
+
+.servicio-dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+
+.servicio-dialog-header h2 {
+    margin: 0;
+    color: #1e2c46;
+    font-size: 1.2rem;
+}
+
+.servicio-dialog-close {
+    width: 30px;
+    height: 30px;
+    border: 1px solid #60717d;
+    background: #edf2f6;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.servicio-dialog-form label {
+    font-size: 0.9rem;
+}
+
+.servicio-dialog-form input,
+.servicio-dialog-form textarea {
+    width: 100%;
+    min-width: 0;
+    padding: 8px;
+    border: 1px solid #a3b0b8;
+    background: #fff;
+    color: #101820;
+    font: inherit;
+}
+
+.servicio-dialog-form textarea {
+    resize: vertical;
+}
+
+.servicio-dialog-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.servicio-button-delete {
+    background: #d9786d;
+}
+
+.servicio-button-delete:hover {
+    background: #e58a7e;
+}
+
+.servicio-dialog-cancel {
+    padding: 6px 12px;
+    border: 1px solid #60717d;
+    background: #edf2f6;
+    color: #17212b;
+    cursor: pointer;
+}
+
+@media (max-width: 600px) {
+    .servicio-dialog-form {
+        padding: 12px;
+    }
+
+    .servicio-dialog-actions {
+        flex-direction: column;
+    }
+
+    .servicio-dialog-actions button {
+        width: 100%;
+        min-height: 40px;
     }
 }

@@ -8,13 +8,14 @@
 <section class="salas-page" aria-labelledby="salas-title">
     <h1 id="salas-title" class="salas-title">Salas</h1>
 
+    <!-- Formulario creacion de salas-->
     <section class="salas-form-section" aria-labelledby="cargar-sala-title">
         <h2 id="cargar-sala-title">Cargar Sala</h2>
 
-        <form class="salas-form" method="post">
+        <form class="salas-form" method="post" action="{{ url_for('admin.salas') }}">
             <label class="field-local" for="local">
                 <span>Local</span>
-                <select id="local" name="local">
+                <select id="local" name="local" required>
                     <option value="">Seleccionar</option>
                     <option value="1">Local 1</option>
                     <option value="2">Local 2</option>
@@ -22,15 +23,46 @@
                 </select>
             </label>
 
-            <label class="field-capacidad" for="capacidad">
-                <span>Capacidad</span>
-                <input id="capacidad" name="capacidad" type="number" min="1">
+            <label class="field-nombre" for="nombre">
+                <span>Nombre de sala</span>
+                <input
+                    id="nombre"
+                    name="nombre"
+                    type="text"
+                    maxlength="100"
+                    required
+                >
+            </label>
+
+            <label class="field-filas" for="filas">
+                <span>Filas</span>
+                <input
+                    id="filas"
+                    name="filas"
+                    type="number"
+                    min="1"
+                    step="1"
+                    required
+                >
+            </label>
+
+            <label class="field-butacas" for="butacas_por_fila">
+                <span>Butacas por fila</span>
+                <input
+                    id="butacas_por_fila"
+                    name="butacas_por_fila"
+                    type="number"
+                    min="1"
+                    step="1"
+                    required
+                >
             </label>
 
             <button type="submit">Cargar</button>
         </form>
     </section>
 
+    <!-- Listado de salas -->
     <section class="salas-list-section" aria-labelledby="lista-salas-title">
         <h2 id="lista-salas-title">Lista de Salas</h2>
 
@@ -44,50 +76,31 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for sala in salas|default([]) %}
+                    {% if error_salas|default(false) %}
                     <tr>
-                        <td data-label="Lista de Funciones">
-                            {{ sala.nombre|default("Sala " ~ loop.index) }}
-                        </td>
-                        <td data-label="Capacidad">
-                            {{ sala.capacidad|default("—") }}
-                        </td>
-                        <td data-label="Local">
-                            {{ sala.local|default("—") }}
+                        <td class="salas-error" colspan="3" role="alert">
+                            Error cargando las salas
                         </td>
                     </tr>
+                    {% elif salas %}
+                        {% for sala in salas %}
+                        <tr>
+                            <td data-label="Lista de Funciones">
+                                {{ sala.nombre|default("Sala " ~ loop.index) }}
+                            </td>
+                            <td data-label="Capacidad">
+                                {{ sala.capacidad|default("—") }}
+                            </td>
+                            <td data-label="Local">
+                                {{ sala.local_id|default("—") }}
+                            </td>
+                        </tr>
+                        {% endfor %}
                     {% else %}
                     <tr>
-                        <td data-label="Lista de Funciones">Sala 1</td>
-                        <td data-label="Capacidad">Número / Número</td>
-                        <td data-label="Local">Local 1</td>
+                        <td colspan="3">No hay salas para mostrar.</td>
                     </tr>
-                    <tr>
-                        <td data-label="Lista de Funciones">Sala 2</td>
-                        <td data-label="Capacidad">Número / Número</td>
-                        <td data-label="Local">Local 1</td>
-                    </tr>
-                    <tr>
-                        <td data-label="Lista de Funciones">Sala 3</td>
-                        <td data-label="Capacidad">Número / Número</td>
-                        <td data-label="Local">Local 1</td>
-                    </tr>
-                    <tr>
-                        <td data-label="Lista de Funciones">Sala 4</td>
-                        <td data-label="Capacidad">Número / Número</td>
-                        <td data-label="Local">Local 1</td>
-                    </tr>
-                    <tr>
-                        <td data-label="Lista de Funciones">Sala 5</td>
-                        <td data-label="Capacidad">Número / Número</td>
-                        <td data-label="Local">Local 1</td>
-                    </tr>
-                    <tr>
-                        <td data-label="Lista de Funciones">Sala 6</td>
-                        <td data-label="Capacidad">Número / Número</td>
-                        <td data-label="Local">Local 1</td>
-                    </tr>
-                    {% endfor %}
+                    {% endif %}
                 </tbody>
             </table>
 

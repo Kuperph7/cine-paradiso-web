@@ -2,11 +2,10 @@
 {% block title %}Seleccionar butacas | Cine Paradiso{% endblock %}
 {% block content %}
 {#
-    Los datos de esta pantalla son placeholders enviados por Flask.
-    En la integración, la ruta del frontend consultará mediante api_client:
-    GET /cartelera/funciones/{funcion_id}/butacas
+    Flask consulta mediante api_client:
+    GET /funciones/{funcion_id}/butacas
 
-    El backend devolverá las butacas libres y ocupadas. Al continuar, Flask
+    El backend devuelve el estado real de cada butaca. Al continuar, Flask
     deberá conservar funcion_id y butaca_ids durante Candy y el resumen. La
     disponibilidad se volverá a validar al confirmar POST /compras.
 #}
@@ -26,9 +25,12 @@
         <p class="eyebrow">Elegí tu lugar</p>
         <h1>Seleccioná tus butacas</h1>
     </div>
-    <p>Las butacas ocupadas no pueden seleccionarse. La disponibilidad se confirmará al finalizar la compra.</p>
+    <p>Las butacas que no están disponibles no pueden seleccionarse. La disponibilidad se confirmará al finalizar la compra.</p>
 </header>
 
+{% if error %}
+<p class="seats-selection-help" role="alert">{{ error }}</p>
+{% else %}
 <form class="seats-layout" action="{{ url_for('cliente.resumen_compra') }}" method="get">
     <input type="hidden" name="funcion_id" value="{{ funcion.id }}">
 
@@ -41,7 +43,7 @@
             <div class="seats-function-meta">
                 <span>{{ funcion.fecha }}</span>
                 <strong>{{ funcion.hora }}</strong>
-                <span>{{ funcion.formato }} · {{ funcion.idioma }}</span>
+                <span>{{ funcion.sala }}</span>
             </div>
         </div>
 
@@ -61,15 +63,15 @@
                         name="butaca_ids"
                         type="checkbox"
                         value="{{ butaca.id }}"
-                        {% if butaca.ocupada %}disabled{% endif %}
+                        {% if not butaca.disponible %}disabled{% endif %}
                     >
                     <label
-                        class="seat{% if butaca.ocupada %} occupied{% endif %}"
+                        class="seat{% if not butaca.disponible %} occupied{% endif %}"
                         for="butaca-{{ butaca.id }}"
-                        title="Butaca {{ butaca.fila }}{{ butaca.columna }}{% if butaca.ocupada %} ocupada{% endif %}"
+                        title="Butaca {{ butaca.fila }}{{ butaca.numero }}: {{ butaca.estado }}"
                     >
-                        <span>{{ butaca.columna }}</span>
-                        <span class="visually-hidden">Butaca {{ butaca.fila }}{{ butaca.columna }}{% if butaca.ocupada %}, ocupada{% else %}, disponible{% endif %}</span>
+                        <span>{{ butaca.numero }}</span>
+                        <span class="visually-hidden">Butaca {{ butaca.fila }}{{ butaca.numero }}, {{ butaca.estado }}</span>
                     </label>
                     {% endfor %}
                 </div>
@@ -123,5 +125,6 @@
         >Agregar productos de Candy</button>
     </aside>
 </form>
+{% endif %}
 {% endblock %}
 

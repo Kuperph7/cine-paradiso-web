@@ -1,5 +1,7 @@
 Flask
+gunicorn
 python-dotenv
 requests
+tzdata
 pytest
 

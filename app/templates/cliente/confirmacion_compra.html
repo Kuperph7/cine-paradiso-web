@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Compra confirmada | Cine Paradiso{% endblock %}
+{% block content %}
+{#
+    "compra" proviene de GET /compras/{id}. Cada código pertenece a una
+    entrada persistida por el backend. La imagen QR podrá generarse en el
+    backend a partir de ese código sin cambiar el flujo de esta pantalla.
+#}
+<header class="checkout-heading">
+    <div>
+        <p class="eyebrow">Compra #{{ compra.id }}</p>
+        <h1>¡Compra confirmada!</h1>
+    </div>
+    <p>Las butacas ya quedaron ocupadas y tus entradas fueron emitidas.</p>
+</header>
+
+<div class="checkout-layout">
+    <section class="checkout-details" aria-labelledby="entradas-title">
+        <h2 id="entradas-title">Tus entradas</h2>
+        <ul class="purchase-confirmation-list">
+            {% for entrada in compra.entradas %}
+            <li class="purchase-confirmation-ticket">
+                <strong>Butaca {{ entrada.butaca.fila }}{{ entrada.butaca.numero }}</strong>
+                <span class="purchase-confirmation-code">
+                    Código QR: {{ entrada.codigo_qr }}
+                </span>
+            </li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <aside class="checkout-summary">
+        <p class="eyebrow">Estado</p>
+        <h2>{{ compra.estado | capitalize }}</h2>
+        <dl class="checkout-totals">
+            <div>
+                <dt>Entradas</dt>
+                <dd>${{ "{:,.0f}".format(compra.total_entradas).replace(",", ".") }}</dd>
+            </div>
+            <div>
+                <dt>Productos</dt>
+                <dd>${{ "{:,.0f}".format(compra.total_servicios).replace(",", ".") }}</dd>
+            </div>
+            <div class="checkout-total-final">
+                <dt>Total</dt>
+                <dd>${{ "{:,.0f}".format(compra.total).replace(",", ".") }}</dd>
+            </div>
+        </dl>
+        <a class="checkout-confirm-button" href="{{ url_for('cliente.cartelera') }}">
+            Volver a cartelera
+        </a>
+    </aside>
+</div>
+{% endblock %}
