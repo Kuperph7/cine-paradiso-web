@@ -5,13 +5,12 @@
 
     <div class="perfil-sesion-panel">
 
-        <a href="#" class="perfil-sesion-cerrar">X</a>
 
         <div class="perfil-sesion-avatar">
-            N
+            
         </div>
 
-        <h1>Nombre</h1>
+        <h1>{{ session.get("usuario", {}).get("nombre", "Usuario") }}</h1>
 
         <div class="perfil-sesion-opciones">
 
@@ -23,8 +22,8 @@
                 Películas vistas
             </a>
 
-            <a href="#">
-                Salir sesión
+            <a href="{{ url_for('auth.logout') }}">
+                 Salir sesión
             </a>
 
         </div>

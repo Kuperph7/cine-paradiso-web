@@ -15,30 +15,6 @@
     </form>
     <a href="{{ url_for('auth.registro') }}">Crear una cuenta</a>
 </section>
-
-{% if error %}
-<div class="toast-region" aria-live="assertive" aria-atomic="true">
-    <aside class="login-toast" role="alert" data-toast>
-        <span class="login-toast-icon" aria-hidden="true">!</span>
-        <div class="login-toast-copy">
-            <strong>{{ error_titulo }}</strong>
-            <p>{{ error }}</p>
-        </div>
-        <button
-            class="login-toast-close"
-            type="button"
-            aria-label="Cerrar mensaje de error"
-            data-toast-close
-        >×</button>
-        <span class="login-toast-timer" aria-hidden="true"></span>
-    </aside>
-</div>
-{% endif %}
-{% endblock %}
-
-{% block extra_scripts %}
-{% if error %}
-    <script src="{{ url_for('static', filename='js/toast.js') }}" defer></script>
-{% endif %}
+<script src="{{ url_for('static', filename='js/login.js') }}"></script>
 {% endblock %}
 
