@@ -20,7 +20,13 @@ cliente_bp = Blueprint("cliente", __name__)
 def _mensaje_error_api(respuesta, mensaje_predeterminado):
     """Extrae la descripción pública del formato de errores del backend."""
     try:
-        errores = respuesta.json().get("errors", [])
+        cuerpo = respuesta.json()
+        detalles = cuerpo.get("detalles", [])
+        if detalles:
+            return detalles[0].get("mensaje", mensaje_predeterminado)
+
+        # Compatibilidad temporal con respuestas anteriores del backend.
+        errores = cuerpo.get("errors", [])
         if errores:
             return errores[0].get("description", mensaje_predeterminado)
     except (AttributeError, TypeError, ValueError):
@@ -275,88 +281,53 @@ def seleccionar_butacas(funcion_id):
 
 @cliente_bp.get("/compras/servicios")
 def seleccionar_servicios():
-    # Contenido temporal utilizado únicamente para desarrollar el template.
-    # En el hito de integración, los productos llegarán desde la API backend.
-    # El contrato actual solo expone la gestión administrativa de servicios;
-    # antes de integrar esta vista, el equipo deberá confirmar de qué endpoint
-    # cliente se obtendrán los productos sin inventar una ruta nueva.
-    categorias = [
-        "Combos",
-        "Pochoclos",
-        "Bebidas",
-        "Snacks",
-        "Golosinas",
-        "Café y helados",
-    ]
-    productos = [
-        {
-            "nombre": "Combo Paradiso",
-            "descripcion": "Pochoclos grandes y dos gaseosas medianas",
-            "precio": 14800,
-            "categoria": "Combos",
-            "marca": "CP",
-            "estilo": "candy-combo",
-        },
-        {
-            "nombre": "Combo Dúo",
-            "descripcion": "Pochoclos medianos y dos gaseosas chicas",
-            "precio": 11200,
-            "categoria": "Combos",
-            "marca": "2×",
-            "estilo": "candy-duo",
-        },
-        {
-            "nombre": "Pochoclos clásicos",
-            "descripcion": "Pochoclos acaramelados tamaño grande",
-            "precio": 6800,
-            "categoria": "Pochoclos",
-            "marca": "POP",
-            "estilo": "candy-popcorn",
-        },
-        {
-            "nombre": "Gaseosa mediana",
-            "descripcion": "Vaso de 500 ml, sabor a elección",
-            "precio": 4200,
-            "categoria": "Bebidas",
-            "marca": "500",
-            "estilo": "candy-drink",
-        },
-        {
-            "nombre": "Nachos con cheddar",
-            "descripcion": "Nachos crocantes con salsa de cheddar",
-            "precio": 5900,
-            "categoria": "Snacks",
-            "marca": "N",
-            "estilo": "candy-nachos",
-        },
-        {
-            "nombre": "Chocolate",
-            "descripcion": "Chocolate con leche de 100 gramos",
-            "precio": 3500,
-            "categoria": "Golosinas",
-            "marca": "CH",
-            "estilo": "candy-chocolate",
-        },
-        {
-            "nombre": "Café con leche",
-            "descripcion": "Café suave con leche espumada",
-            "precio": 3900,
-            "categoria": "Café y helados",
-            "marca": "CAFÉ",
-            "estilo": "candy-coffee",
-        },
-        {
-            "nombre": "Helado individual",
-            "descripcion": "Pote individual, sabor a elección",
-            "precio": 4700,
-            "categoria": "Café y helados",
-            "marca": "ICE",
-            "estilo": "candy-icecream",
-        },
-    ]
-
     funcion_id = request.args.get("funcion_id", type=int)
     butaca_ids = request.args.getlist("butaca_ids", type=int)
+    servicio_ids = request.args.getlist("servicio_ids", type=int)
+    cantidades = {
+        servicio_id: max(
+            1,
+            request.args.get(f"cantidad_{servicio_id}", 1, type=int),
+        )
+        for servicio_id in servicio_ids
+    }
+    productos = []
+    error = None
+    estilos = (
+        "candy-combo",
+        "candy-duo",
+        "candy-popcorn",
+        "candy-drink",
+        "candy-nachos",
+        "candy-chocolate",
+        "candy-coffee",
+        "candy-icecream",
+    )
+
+    # El navegador no consulta el backend. Flask frontend usa requests en
+    # api_get(), recibe el JSON y recién entonces renderiza el HTML con Jinja.
+    try:
+        respuesta = api_get("/servicios")
+        respuesta.raise_for_status()
+        servicios = respuesta.json().get("servicios", [])
+        productos = [
+            {
+                **servicio,
+                "categoria": "Candy",
+                "marca": "".join(
+                    palabra[0] for palabra in servicio["nombre"].split()
+                )[:4].upper(),
+                "estilo": estilos[indice % len(estilos)],
+            }
+            for indice, servicio in enumerate(servicios)
+        ]
+    except requests.exceptions.RequestException:
+        current_app.logger.exception("No fue posible cargar el catálogo de Candy")
+        error = "No se pudo conectar con el servidor para cargar Candy."
+    except (AttributeError, KeyError, TypeError, ValueError):
+        current_app.logger.exception("La API devolvió servicios inválidos")
+        error = "No se pudo interpretar el catálogo de Candy."
+
     resumen_url = url_for(
         "cliente.resumen_compra",
         funcion_id=funcion_id,
@@ -365,9 +336,14 @@ def seleccionar_servicios():
 
     return render_template(
         "cliente/seleccionar_servicios.html",
-        categorias=categorias,
+        categorias=["Todos los productos"],
         productos=productos,
         resumen_url=resumen_url,
+        funcion_id=funcion_id,
+        butaca_ids=butaca_ids,
+        servicio_ids=servicio_ids,
+        cantidades=cantidades,
+        error=error,
     )
 
 
@@ -377,6 +353,7 @@ def resumen_compra():
     # vuelve a contrastar con la disponibilidad actual informada por la API.
     funcion_id = request.args.get("funcion_id", type=int)
     butaca_ids = request.args.getlist("butaca_ids", type=int)
+    servicio_ids = request.args.getlist("servicio_ids", type=int)
 
     if funcion_id is None or not butaca_ids:
         flash("Seleccioná al menos una butaca para continuar.", "error")
@@ -391,6 +368,9 @@ def resumen_compra():
         respuesta_butacas = api_get(f"/funciones/{funcion_id}/butacas")
         respuesta_butacas.raise_for_status()
         butacas_api = respuesta_butacas.json().get("butacas", [])
+        respuesta_servicios = api_get("/servicios")
+        respuesta_servicios.raise_for_status()
+        servicios_api = respuesta_servicios.json().get("servicios", [])
     except requests.exceptions.RequestException:
         flash("No se pudo validar la selección con el servidor.", "error")
         return redirect(
@@ -427,15 +407,60 @@ def resumen_compra():
         }
         for butaca_id in butaca_ids
     ]
+    servicios_disponibles = {
+        int(servicio["id"]): servicio for servicio in servicios_api
+    }
+    if any(servicio_id not in servicios_disponibles for servicio_id in servicio_ids):
+        flash("Uno de los productos elegidos ya no está disponible.", "error")
+        return redirect(
+            url_for(
+                "cliente.seleccionar_servicios",
+                funcion_id=funcion_id,
+                butaca_ids=butaca_ids,
+            )
+        )
+
+    servicios_seleccionados = []
+    for servicio_id in servicio_ids:
+        cantidad = request.args.get(f"cantidad_{servicio_id}", 1, type=int)
+        if cantidad is None or cantidad < 1:
+            flash("La cantidad de cada producto debe ser mayor a cero.", "error")
+            return redirect(
+                url_for(
+                    "cliente.seleccionar_servicios",
+                    funcion_id=funcion_id,
+                    butaca_ids=butaca_ids,
+                )
+            )
+        servicio = servicios_disponibles[servicio_id]
+        servicios_seleccionados.append(
+            {
+                "servicio_id": servicio_id,
+                "nombre": servicio["nombre"],
+                "cantidad": cantidad,
+                "precio_unitario": int(servicio["precio"]),
+            }
+        )
+
     compra = {
         "pelicula": funcion["pelicula"],
         "clasificacion": funcion["clasificacion"],
         "poster_url": funcion["poster_url"],
         "funcion": funcion,
         "butacas": butacas_seleccionadas,
-        # Candy todavía no forma parte de este flujo mínimo de prueba.
-        "servicios": [],
+        "servicios": servicios_seleccionados,
     }
+
+    candy_url = url_for(
+        "cliente.seleccionar_servicios",
+        funcion_id=funcion_id,
+        butaca_ids=butaca_ids,
+        servicio_ids=servicio_ids,
+        **{
+            f"cantidad_{servicio['servicio_id']}": servicio["cantidad"]
+            for servicio in servicios_seleccionados
+        },
+    )
 
     total_entradas = sum(
         butaca["precio"] for butaca in compra["butacas"]
@@ -451,6 +476,7 @@ def resumen_compra():
         total_entradas=total_entradas,
         total_servicios=total_servicios,
         total=total_entradas + total_servicios,
+        candy_url=candy_url,
     )
 
 
@@ -459,10 +485,25 @@ def confirmar_compra():
     """Envía la compra a la API usando el JWT guardado por Flask."""
     funcion_id = request.form.get("funcion_id", type=int)
     butaca_ids = request.form.getlist("butaca_ids", type=int)
+    servicio_ids = request.form.getlist("servicio_ids", type=int)
+    servicios = [
+        {
+            "servicio_id": servicio_id,
+            "cantidad": request.form.get(
+                f"cantidad_{servicio_id}", 1, type=int
+            ),
+        }
+        for servicio_id in servicio_ids
+    ]
     resumen_url = url_for(
         "cliente.resumen_compra",
         funcion_id=funcion_id,
         butaca_ids=butaca_ids,
+        servicio_ids=servicio_ids,
+        **{
+            f"cantidad_{servicio['servicio_id']}": servicio["cantidad"]
+            for servicio in servicios
+        },
     )
 
     token = session.get("access_token")
@@ -475,7 +516,7 @@ def confirmar_compra():
             json={
                 "funcion_id": funcion_id,
                 "butaca_ids": butaca_ids,
-                "servicios": [],
+                "servicios": servicios,
                 "medio_pago": request.form.get("medio_pago", "tarjeta"),
             },
             headers={"Authorization": f"Bearer {token}"},
