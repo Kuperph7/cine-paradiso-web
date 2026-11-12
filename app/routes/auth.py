@@ -8,7 +8,7 @@ from flask import (
     url_for,
 )
 
-from app.services.api_client import api_post
+from app.services.api_client import api_post, api_get
 
 
 auth_bp = Blueprint("auth", __name__)
@@ -61,8 +61,11 @@ def login():
                 session["access_token"] = datos["token"]
                 session["usuario"] = datos["usuario"]
 
+                if datos["usuario"].get("rol") == "administrador":
+                    return redirect(url_for("admin.peliculas"))
                 if destino.startswith("/") and not destino.startswith("//"):
                     return redirect(destino)
+
                 return redirect(url_for("cliente.cartelera"))
 
             mensaje_api = _mensaje_error_api(respuesta)
@@ -131,7 +134,7 @@ def registro():
 
 @auth_bp.get("/perfil")
 def perfil():
-    token = session.get("token")
+    token = session.get("access_token")
     
     if not token:
         return redirect(url_for("cliente.cartelera"))

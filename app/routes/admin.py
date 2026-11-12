@@ -13,7 +13,7 @@ admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 def admin_required(funcion):
     @wraps(funcion)
     def funcion_protegida(*args, **kwargs):
-        if not session.get("token"):
+        if not session.get("access_token"):
             return redirect(url_for("auth.login"))
         
         usuario = session.get("usuario", {})
@@ -279,7 +279,7 @@ def funciones():
     mensaje_salas = None
     mensaje_accion = None
 
-    token = session.get("token")
+    token = session.get("access_token")
 
     if request.method == "POST" and not request.form.get("accion"):
         if not token:

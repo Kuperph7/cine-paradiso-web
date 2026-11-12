@@ -35,6 +35,15 @@ def sesion_de_prueba():
     session["access_token"] = "credencial-simulada"
 
 
+@app.before_request
+def sesion_de_prueba():
+    session["access_token"] = "credencial-simulada"
+    session["usuario"] = {
+        "nombre": "Administrador de prueba",
+        "rol": "administrador",
+    }
+
+
 def respuesta_simulada(estado, datos):
     respuesta = Mock(status_code=estado)
     respuesta.json.return_value = datos

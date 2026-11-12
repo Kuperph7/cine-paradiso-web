@@ -178,7 +178,7 @@ def test_admin_funciones_muestra_datos_api(monkeypatch):
     client = app.test_client()
 
     with client.session_transaction() as sesion:
-        sesion["token"] = "token-prueba"
+        sesion["access_token"] = "token-prueba"
 
     respuesta = client.get("/admin/funciones")
     html = respuesta.get_data(as_text=True)
@@ -248,7 +248,7 @@ def test_crear_funcion_correctamente(monkeypatch):
     client = app.test_client()
 
     with client.session_transaction() as sesion:
-        sesion["token"] = "token-prueba"
+        sesion["access_token"] = "token-prueba"
 
     respuesta = client.post(
         "/admin/funciones",
@@ -310,7 +310,7 @@ def test_crear_funcion_con_errores(monkeypatch):
 
     # Caso 2: administrador con precio inválido
     with client.session_transaction() as sesion:
-        sesion["token"] = "token-prueba"
+        sesion["access_token"] = "token-prueba"
 
     respuesta = client.post(
         "/admin/funciones",
@@ -357,7 +357,7 @@ def test_admin_funciones_patch(monkeypatch):
     client = app.test_client()
 
     with client.session_transaction() as sesion:
-        sesion["token"] = "token-prueba"
+        sesion["access_token"] = "token-prueba"
 
     casos = [
         (

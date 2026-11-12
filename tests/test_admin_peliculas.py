@@ -13,13 +13,16 @@ def cliente():
 
     with cliente.session_transaction() as sesion:
         sesion["access_token"] = "credencial-simulada"
+        sesion["usuario"] = {
+            "nombre": "Administrador de prueba",
+            "rol": "administrador",
+        }
 
     with patch(
         "app.services.api_client.api_request",
         side_effect=AssertionError("La prueba no debe llamar a la API real."),
     ):
         yield cliente
-
 
 @pytest.fixture
 def formulario():
