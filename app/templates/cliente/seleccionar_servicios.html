@@ -50,7 +50,20 @@
         <p>{{ productos|length }} opciones disponibles</p>
     </div>
 
-    <div class="candy-list">
+    {% if error %}
+    <p class="checkout-empty" role="alert">{{ error }}</p>
+    {% endif %}
+
+    {#
+        El formulario envía la selección con GET a otra ruta de Flask. No usa
+        JavaScript ni fetch: Jinja ya recibió el catálogo desde el servidor.
+    #}
+    <form class="candy-selection-form" action="{{ url_for('cliente.resumen_compra') }}" method="get">
+        <input type="hidden" name="funcion_id" value="{{ funcion_id }}">
+        {% for butaca_id in butaca_ids %}
+        <input type="hidden" name="butaca_ids" value="{{ butaca_id }}">
+        {% endfor %}
+        <div class="candy-list">
         {% for producto in productos %}
         <article class="candy-card">
             <div class="candy-product-image {{ producto.estilo }}" aria-hidden="true">
@@ -62,26 +75,38 @@
                 <p>{{ producto.descripcion }}</p>
                 <div class="candy-card-actions">
                     <strong>${{ "{:,.0f}".format(producto.precio).replace(",", ".") }}</strong>
-                    {#
-                        Este botón deberá agregar el producto y su cantidad al
-                        estado temporal de la compra. No confirma ni registra
-                        una compra por sí mismo.
-                    #}
-                    <button type="button" aria-label="Agregar {{ producto.nombre }}">+</button>
+                    <div class="candy-product-selection">
+                        <label for="cantidad-{{ producto.id }}">Cantidad</label>
+                        <input
+                            id="cantidad-{{ producto.id }}"
+                            name="cantidad_{{ producto.id }}"
+                            type="number"
+                            min="1"
+                            value="{{ cantidades.get(producto.id, 1) }}"
+                        >
+                        <input
+                            class="candy-product-checkbox"
+                            id="servicio-{{ producto.id }}"
+                            name="servicio_ids"
+                            type="checkbox"
+                            value="{{ producto.id }}"
+                            {% if producto.id in servicio_ids %}checked{% endif %}
+                        >
+                        <label class="candy-add-product" for="servicio-{{ producto.id }}">
+                            Agregar
+                        </label>
+                    </div>
                 </div>
             </div>
         </article>
         {% endfor %}
-    </div>
+        </div>
+
+        <div class="candy-flow-actions">
+            <a class="candy-secondary-action" href="{{ resumen_url }}">Continuar sin productos</a>
+            <button class="candy-primary-action" type="submit">Revisar compra</button>
+        </div>
+    </form>
 </section>
-{#
-    Estos controles permiten recorrer el mockup completo. En la integración,
-    deberán conservar la función, las butacas y los productos elegidos antes
-    de dirigir al usuario a cliente.resumen_compra.
-#}
-<div class="candy-flow-actions">
-    <a class="candy-secondary-action" href="{{ resumen_url }}">Continuar sin productos</a>
-    <a class="candy-primary-action" href="{{ resumen_url }}">Revisar compra</a>
-</div>
 {% endblock %}
 
