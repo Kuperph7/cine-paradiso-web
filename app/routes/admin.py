@@ -416,7 +416,10 @@ def funciones():
         mensaje_error = "No fue posible conectar con la API"
 
     try:
-        respuesta_peliculas = api_get("/admin/peliculas")
+        respuesta_peliculas = api_get(
+            "/admin/peliculas",
+            headers={"Authorization": f"Bearer {token}"},
+)
 
         if respuesta_peliculas.status_code == 200:
             datos_peliculas = respuesta_peliculas.json()
