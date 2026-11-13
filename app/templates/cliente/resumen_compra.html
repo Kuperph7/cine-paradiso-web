@@ -72,7 +72,7 @@
                     Debe regresar al catálogo de Candy conservando película,
                     función y butacas, además de los productos ya seleccionados.
                 #}
-                <a href="{{ url_for('cliente.seleccionar_servicios', funcion_id=compra.funcion.id, butaca_ids=compra.butacas | map(attribute='id') | list) }}">Modificar</a>
+                <a href="{{ candy_url }}">Modificar</a>
             </div>
 
             {% if compra.servicios %}
@@ -113,6 +113,10 @@
             <input type="hidden" name="funcion_id" value="{{ compra.funcion.id }}">
             {% for butaca in compra.butacas %}
             <input type="hidden" name="butaca_ids" value="{{ butaca.id }}">
+            {% endfor %}
+            {% for servicio in compra.servicios %}
+            <input type="hidden" name="servicio_ids" value="{{ servicio.servicio_id }}">
+            <input type="hidden" name="cantidad_{{ servicio.servicio_id }}" value="{{ servicio.cantidad }}">
             {% endfor %}
             <input type="hidden" name="medio_pago" value="tarjeta">
             <button class="checkout-confirm-button" type="submit">Confirmar compra</button>
