@@ -46,14 +46,17 @@
 <form class="movie-filters" method="get" aria-label="Filtros de cartelera">
 
     <label>
-        <span>ID de sucursal</span>
-        <input
-            type="number"
-            name="local_id"
-            min="1"
-            value="{{ local_id }}"
-            placeholder="ID de sucursal"
-        >
+        <span>Sucursal</span>
+
+        <select name="local_id">
+            <option value="">Todos los locales</option>
+            {% for local in locales %}
+                <option value="{{ local.id }}"
+                    {% if local.id|string == local_id|string %}selected{% endif %}>
+                    {{ local.nombre }}
+                </option>
+            {% endfor %}
+        </select>
     </label>
 
     <label>

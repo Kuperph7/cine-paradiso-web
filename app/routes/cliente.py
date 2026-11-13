@@ -142,6 +142,11 @@ def cartelera():
     local_id = request.args.get("local_id", "").strip()
     fecha = request.args.get("fecha", "").strip()
 
+    locales = [
+        {"id": 1, "nombre": "Cine Paradiso Centro"},
+        {"id": 2, "nombre": "Cine Paradiso Norte"},
+        {"id": 3, "nombre": "Cine Paradiso Puerto"}
+    ]
     parametros = {}
 
     if local_id:
@@ -178,6 +183,7 @@ def cartelera():
         error=error,
         local_id=local_id,
         fecha=fecha,
+        locales=locales,
     )
 
 
