@@ -18,6 +18,16 @@ def _respuesta(datos, estado=200):
 
 
 def _api_get(path, **kwargs):
+    if path == "/reservas/reserva-1":
+        return _respuesta(
+            {
+                "id": "reserva-1",
+                "funcion_id": 1,
+                "estado": "retenida",
+                "expira_en": "2026-12-10T21:00:00Z",
+                "butacas": [{"id": 1, "fila": "A", "numero": 1}],
+            }
+        )
     if path == "/servicios":
         return _respuesta(
             {
@@ -82,15 +92,19 @@ def test_candy_renderiza_catalogo_obtenido_del_backend(monkeypatch):
     app = create_app()
     app.config.update(TEST_CONFIG)
 
-    respuesta = app.test_client().get(
-        "/compras/servicios?funcion_id=1&butaca_ids=1"
-    )
+    client = app.test_client()
+    with client.session_transaction() as sesion:
+        sesion["access_token"] = "token-prueba"
+    respuesta = client.get("/compras/servicios?reserva_id=reserva-1")
 
     html = respuesta.get_data(as_text=True)
     assert respuesta.status_code == 200
     assert "Combo Paradiso" in html
     assert 'name="servicio_ids"' in html
-    api_get.assert_called_once_with("/servicios")
+    assert [llamada.args[0] for llamada in api_get.call_args_list] == [
+        "/reservas/reserva-1",
+        "/servicios",
+    ]
 
 
 def test_butacas_continua_a_candy_y_candy_permite_omitir(monkeypatch):
@@ -103,18 +117,18 @@ def test_butacas_continua_a_candy_y_candy_permite_omitir(monkeypatch):
     html_butacas = respuesta_butacas.get_data(as_text=True)
 
     assert respuesta_butacas.status_code == 200
-    assert 'action="/compras/servicios"' in html_butacas
+    assert 'action="/funciones/1/reservas"' in html_butacas
     assert ">Continuar<" in html_butacas
     assert "Agregar productos de Candy" not in html_butacas
 
-    respuesta_candy = client.get(
-        "/compras/servicios?funcion_id=1&butaca_ids=1"
-    )
+    with client.session_transaction() as sesion:
+        sesion["access_token"] = "token-prueba"
+    respuesta_candy = client.get("/compras/servicios?reserva_id=reserva-1")
     html_candy = respuesta_candy.get_data(as_text=True)
 
     assert respuesta_candy.status_code == 200
     assert "Continuar sin productos" in html_candy
-    assert "/compras/resumen?funcion_id=1&amp;butaca_ids=1" in html_candy
+    assert "/compras/resumen?reserva_id=reserva-1" in html_candy
 
 
 def test_resumen_conserva_candy_y_calcula_total(monkeypatch):
@@ -122,8 +136,11 @@ def test_resumen_conserva_candy_y_calcula_total(monkeypatch):
     app = create_app()
     app.config.update(TEST_CONFIG)
 
-    respuesta = app.test_client().get(
-        "/compras/resumen?funcion_id=1&butaca_ids=1"
+    client = app.test_client()
+    with client.session_transaction() as sesion:
+        sesion["access_token"] = "token-prueba"
+    respuesta = client.get(
+        "/compras/resumen?reserva_id=reserva-1"
         "&servicio_ids=1&cantidad_1=2"
     )
 
@@ -132,3 +149,36 @@ def test_resumen_conserva_candy_y_calcula_total(monkeypatch):
     assert "2 × Combo Paradiso" in html
     assert "$29.600" in html
     assert 'name="cantidad_1" value="2"' in html
+
+
+def test_continuar_retiene_butacas_antes_de_ir_a_candy(monkeypatch):
+    respuesta_api = _respuesta(
+        {
+            "id": "reserva-1",
+            "funcion_id": 1,
+            "estado": "retenida",
+        },
+        estado=201,
+    )
+    api_post = Mock(return_value=respuesta_api)
+    monkeypatch.setattr("app.routes.cliente.api_post", api_post)
+    app = create_app()
+    app.config.update(TEST_CONFIG)
+
+    with app.test_client() as client:
+        with client.session_transaction() as sesion:
+            sesion["access_token"] = "token-prueba"
+        respuesta = client.post(
+            "/funciones/1/reservas",
+            data={"butaca_ids": ["1", "2"]},
+        )
+
+    assert respuesta.status_code == 302
+    assert respuesta.headers["Location"].endswith(
+        "/compras/servicios?reserva_id=reserva-1"
+    )
+    api_post.assert_called_once_with(
+        "/funciones/1/reservas",
+        json={"butaca_ids": [1, 2]},
+        headers={"Authorization": "Bearer token-prueba"},
+    )

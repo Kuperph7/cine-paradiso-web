@@ -1,5 +1,451 @@
 @layer base, responsive;
 
+/* Reserva temporal: señalética inspirada en la luz de sala, integrada al checkout. */
+.hold-status {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.9rem;
+  margin: 1.25rem 0 2rem;
+  padding: 0.9rem 1.1rem;
+  color: #f7f3e8;
+  background: linear-gradient(105deg, #132238, #203b50 70%, #294b5d);
+  border: 1px solid rgba(238, 188, 91, 0.35);
+  border-radius: 14px;
+  box-shadow: 0 14px 34px rgba(8, 18, 31, 0.16);
+}
+
+.hold-status-dot {
+  width: 0.7rem;
+  height: 0.7rem;
+  background: #efbd59;
+  border-radius: 50%;
+  box-shadow: 0 0 0 6px rgba(239, 189, 89, 0.12), 0 0 20px #efbd59;
+}
+
+.hold-status div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.hold-status span,
+.hold-status div span {
+  color: #c8d3dc;
+  font-size: 0.82rem;
+}
+
+.hold-status time {
+  min-width: 5.2rem;
+  color: #efbd59;
+  font: 700 1.35rem/1 "Courier New", monospace;
+  letter-spacing: 0.08em;
+  text-align: right;
+}
+
+.hold-status.is-urgent {
+  border-color: #ef775f;
+}
+
+.hold-status.is-urgent time {
+  color: #ff927c;
+}
+
+.seat.state-retenida,
+.seat-legend .held {
+  background: #d99b3d;
+  border-color: #b97820;
+}
+
+.seat.state-pago_en_proceso,
+.seat-legend .payment {
+  background: #5689a6;
+  border-color: #326681;
+}
+
+.seat.state-vendida {
+  background: #556171;
+  border-color: #424c59;
+}
+
+.checkout-held-label {
+  color: #9a671e;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hold-cancel-button {
+  width: 100%;
+  margin-top: 0.8rem;
+  padding: 0.75rem 1rem;
+  color: #5b6675;
+  background: transparent;
+  border: 1px solid #b7c3cd;
+  border-radius: 10px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.hold-cancel-button:hover {
+  color: #7e3028;
+  border-color: #c56a5e;
+}
+
+.payment-waiting {
+  position: relative;
+  max-width: 760px;
+  margin: 3rem auto 5rem;
+  padding: clamp(2rem, 6vw, 4.5rem);
+  overflow: hidden;
+  text-align: center;
+  background: #f8f4e9;
+  border: 1px solid #d9ccb2;
+  border-radius: 28px;
+  box-shadow: 0 28px 70px rgba(17, 33, 50, 0.14);
+}
+
+.payment-waiting::before {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(26, 49, 70, 0.08) 0.7px, transparent 0.7px);
+  background-size: 7px 7px;
+  content: "";
+  pointer-events: none;
+}
+
+.payment-waiting > * {
+  position: relative;
+}
+
+.payment-waiting h1 {
+  max-width: 570px;
+  margin: 0.5rem auto 1rem;
+  color: #172a3d;
+  font-size: clamp(2rem, 5vw, 3.6rem);
+  line-height: 1.02;
+}
+
+.payment-waiting-lead {
+  max-width: 570px;
+  margin: 0 auto 2rem;
+  color: #536578;
+  line-height: 1.7;
+}
+
+.payment-waiting-orbit {
+  display: grid;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 1.5rem;
+  place-items: center;
+  border: 1px solid #d0a04c;
+  border-radius: 50%;
+  animation: payment-pulse 2s ease-in-out infinite;
+}
+
+.payment-waiting-orbit span {
+  width: 26px;
+  height: 26px;
+  background: #d0a04c;
+  border-radius: 50%;
+}
+
+.payment-hold {
+  text-align: left;
+}
+
+.payment-waiting-note {
+  margin: 1.25rem 0 1.8rem;
+  color: #5c6976;
+  font-size: 0.9rem;
+}
+
+/* Pasarela académica: una decisión explícita, sin simular un cobro real. */
+.payment-checkout {
+  max-width: 780px;
+  margin: 1.5rem auto 5rem;
+}
+
+.payment-hold-top {
+  margin-bottom: 1rem;
+}
+
+.payment-checkout-card {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(1.8rem, 5vw, 3.5rem);
+  background:
+    radial-gradient(circle at 100% 0, rgba(239, 189, 89, 0.16), transparent 28%),
+    #f8f4e9;
+  border: 1px solid #d9ccb2;
+  border-radius: 24px;
+  box-shadow: 0 24px 60px rgba(17, 33, 50, 0.13);
+}
+
+.payment-demo-mark {
+  position: absolute;
+  top: 1.4rem;
+  right: 1.4rem;
+  padding: 0.45rem 0.65rem;
+  color: #82580e;
+  background: #f4d98f;
+  border: 1px solid rgba(130, 88, 14, 0.22);
+  border-radius: 7px;
+  font: 800 0.65rem/1 "Courier New", monospace;
+  letter-spacing: 0.14em;
+}
+
+.payment-checkout-card h1 {
+  max-width: 560px;
+  margin: 0.3rem 0 0.8rem;
+  color: #142a3f;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2.25rem, 6vw, 4rem);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1;
+}
+
+.payment-checkout-lead {
+  max-width: 610px;
+  margin: 0 0 1.8rem;
+  color: #536578;
+  line-height: 1.65;
+}
+
+.payment-seat-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 0 0 1rem;
+  border-bottom: 1px solid rgba(20, 42, 63, 0.12);
+  color: #536578;
+}
+
+.payment-seat-summary strong {
+  color: #142a3f;
+}
+
+.payment-method-demo {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 1.1rem;
+  background: rgba(255, 255, 255, 0.76);
+  border: 2px solid #d4a43e;
+  border-radius: 14px;
+  box-shadow: 0 10px 24px rgba(20, 42, 63, 0.07);
+}
+
+.payment-method-radio {
+  width: 1.1rem;
+  height: 1.1rem;
+  background: #d4a43e;
+  border: 4px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px #d4a43e;
+}
+
+.payment-method-demo div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.payment-method-demo strong {
+  color: #142a3f;
+}
+
+.payment-method-demo div span {
+  color: #68778a;
+  font-size: 0.82rem;
+}
+
+.payment-method-badge {
+  color: #8b6219;
+  font-size: 0.68rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+}
+
+.payment-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.payment-actions button {
+  width: 100%;
+  min-height: 52px;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  font: inherit;
+  font-size: 0.93rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.payment-actions button:hover {
+  transform: translateY(-1px);
+}
+
+.payment-actions button:disabled {
+  cursor: wait;
+  opacity: 0.58;
+  transform: none;
+}
+
+.payment-confirm-button {
+  color: #fff;
+  background: #173f55;
+  border: 1px solid #173f55;
+  box-shadow: 0 12px 24px rgba(23, 63, 85, 0.2);
+}
+
+.payment-confirm-button:hover {
+  background: #0f3043;
+}
+
+.payment-cancel-button {
+  color: #913e34;
+  background: transparent;
+  border: 1px solid #c89189;
+}
+
+.payment-cancel-button:hover {
+  background: #fff3f0;
+}
+
+.payment-checkout .payment-waiting-note {
+  margin: 1.1rem 0 0.5rem;
+  text-align: center;
+}
+
+.payment-leave-link {
+  display: block;
+  color: #536578;
+  font-size: 0.88rem;
+  text-align: center;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Recordatorio persistente de una compra todavía recuperable. */
+.active-purchase-banner {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 1.2rem;
+  padding: 1rem 1.1rem;
+  color: #f7f3e8;
+  background:
+    radial-gradient(circle at 84% 0, rgba(239, 189, 89, 0.2), transparent 24%),
+    linear-gradient(110deg, #11243a, #1d4558);
+  border: 1px solid rgba(239, 189, 89, 0.42);
+  border-radius: 18px;
+  box-shadow: 0 15px 35px rgba(8, 18, 31, 0.16);
+}
+
+.active-purchase-icon {
+  display: grid;
+  width: 2.8rem;
+  height: 2.8rem;
+  place-items: center;
+  color: #173348;
+  background: #efbd59;
+  border-radius: 50%;
+  box-shadow: 0 0 0 7px rgba(239, 189, 89, 0.1);
+  font-size: 0.85rem;
+}
+
+.active-purchase-copy .eyebrow {
+  margin-bottom: 0.2rem;
+  color: #efbd59;
+}
+
+.active-purchase-copy h2 {
+  margin: 0;
+  color: #fff;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.35rem;
+}
+
+.active-purchase-copy > p:last-child {
+  margin: 0.25rem 0 0;
+  color: #c8d3dc;
+  font-size: 0.82rem;
+}
+
+.active-purchase-time {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 7rem;
+}
+
+.active-purchase-time span {
+  color: #aebdca;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.active-purchase-time time {
+  color: #efbd59;
+  font: 700 1.25rem/1 "Courier New", monospace;
+  letter-spacing: 0.08em;
+}
+
+.active-purchase-banner.is-urgent .active-purchase-time time {
+  color: #ff927c;
+}
+
+.active-purchase-action {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  padding: 0.7rem 1rem;
+  color: #11243a;
+  background: #efbd59;
+  border-radius: 999px;
+  font-size: 0.84rem;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.active-purchase-action:hover {
+  background: #ffd374;
+}
+
+@keyframes payment-pulse {
+  50% { transform: scale(1.08); box-shadow: 0 0 0 14px rgba(208, 160, 76, 0.08); }
+}
+
+@media (max-width: 600px) {
+  .hold-status { grid-template-columns: auto minmax(0, 1fr); }
+  .hold-status time { grid-column: 2; text-align: left; }
+  .payment-waiting { border-radius: 18px; }
+  .payment-checkout-card { border-radius: 18px; }
+  .payment-demo-mark { position: static; display: inline-flex; margin-bottom: 1rem; }
+  .payment-actions { grid-template-columns: 1fr; }
+  .payment-method-demo { grid-template-columns: auto minmax(0, 1fr); }
+  .payment-method-badge { grid-column: 2; }
+  .active-purchase-banner { grid-template-columns: auto minmax(0, 1fr); }
+  .active-purchase-time { grid-column: 2; }
+  .active-purchase-action { grid-column: 1 / -1; }
+}
+
 /* ==================== INICIO MEDIA QUERIES ==================== */
 /* Estas capas mantienen la prioridad responsive aunque los media estén arriba. */
 @layer responsive {
