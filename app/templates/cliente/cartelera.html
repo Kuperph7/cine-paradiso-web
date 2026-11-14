@@ -43,7 +43,12 @@
     Flask deberá leerlos y consultar GET /cartelera mediante api_client;
     el navegador no debe consumir la API directamente con fetch.
 #}
-<form class="movie-filters" method="get" aria-label="Filtros de cartelera">
+<form class="movie-filters" action="{{ url_for('cliente.cartelera') }}" method="get" aria-label="Filtros de cartelera">
+    {% for campo in ['idioma', 'formato', 'categoria'] %}
+    {% for valor in request.args.getlist(campo) %}
+    <input type="hidden" name="{{ campo }}" value="{{ valor }}">
+    {% endfor %}
+    {% endfor %}
 
     <label>
         <span>Sucursal</span>
@@ -82,7 +87,7 @@
                {% if pelicula.poster_url %}
                style="background-image: url('{{ pelicula.poster_url }}');"
                {% endif %}
-               href="{{ url_for('cliente.detalle_pelicula', pelicula_id=pelicula.id) }}">
+               href="{{ url_con_filtros('cliente.detalle_pelicula', pelicula_id=pelicula.id) }}">
                 <span class="rating">{{ pelicula.clasificacion }}</span>
                 <span class="poster-mark" aria-hidden="true">CP</span>
                 <span class="poster-title">{{ pelicula.titulo }}</span>
@@ -95,7 +100,7 @@
                     · {{ pelicula.duracion_minutos }} min
                 </p>
                 <h3>{{ pelicula.titulo }}</h3>
-                <a href="{{ url_for('cliente.detalle_pelicula', pelicula_id=pelicula.id) }}">
+                <a href="{{ url_con_filtros('cliente.detalle_pelicula', pelicula_id=pelicula.id) }}">
                     Ver funciones <span aria-hidden="true">→</span>
                 </a>
             </div>

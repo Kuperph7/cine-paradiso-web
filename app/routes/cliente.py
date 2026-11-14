@@ -123,22 +123,21 @@ def _agrupar_butacas_por_fila(butacas):
     ]
 
 
+# Conserva los filtros seleccionados al navegar entre las pantallas.
 def obtener_filtros():
-    # Conserva los filtros elegidos al navegar entre la cartelera y las
-    # pantallas de preferencias. Más adelante Flask enviará estos valores al
-    # backend mediante api_client; el navegador no consultará la API con fetch.
-    nombres_filtros = (
-        "local_id",
-        "fecha",
-        "genero",
-        "idioma",
-        "formato",
-        "categoria",
-    )
-    return {
-        nombre: request.args.get(nombre, "")
-        for nombre in nombres_filtros
+    filtros = {
+        nombre: request.args.get(nombre, "").strip()
+        for nombre in ("local_id", "fecha", "genero")
     }
+
+    for campo in ("formato", "idioma", "categoria"):
+        filtros[campo] = [
+            valor.strip()
+            for valor in request.args.getlist(campo)
+            if valor.strip()
+        ]
+
+    return filtros
 
 def obtener_headers():
     token = session.get("access_token", "")
@@ -165,6 +164,10 @@ def contexto_filtros():
 
 @cliente_bp.get("/")
 def cartelera():
+    return renderizar_cartelera("cliente/cartelera.html")
+
+
+def renderizar_cartelera(template):
     peliculas = []
     error = None
 
@@ -183,6 +186,11 @@ def cartelera():
 
     if fecha:
         parametros["fecha"] = fecha
+
+    filtros = obtener_filtros()
+    for campo in ("formato", "idioma", "categoria"):
+        if filtros[campo]:
+            parametros[campo] = filtros[campo]
 
     try:
         respuesta = api_get("/cartelera", params=parametros)
@@ -205,7 +213,7 @@ def cartelera():
                 generos.append(genero)
 
     return render_template(
-        "cliente/cartelera.html",
+        template,
         peliculas=peliculas,
         estrenos=[],
         generos=generos,
@@ -221,18 +229,46 @@ def detalle_pelicula(pelicula_id):
     pelicula = None
     funciones = []
     error = None
+    filtros = obtener_filtros()
+    locales = []
 
     try:
         respuesta = api_get(f"/cartelera/{pelicula_id}")
         respuesta.raise_for_status()
 
         pelicula = respuesta.json()
-        funciones = pelicula.get("funciones_disponibles", [])
+        funciones_disponibles = pelicula.get("funciones_disponibles", [])
 
-        for funcion in funciones:
-            fecha_hora = funcion["fecha_hora"]
-            funcion["fecha"] = fecha_hora[0:10]
-            funcion["hora"] = fecha_hora[11:16]
+        locales_por_id = {}
+        for funcion in funciones_disponibles:
+            local_id = funcion["local_id"]
+            locales_por_id[local_id] = {
+                "id": local_id,
+                "nombre": funcion["local_nombre"],
+            }
+
+        locales = sorted(locales_por_id.values(), key=lambda local: local["nombre"])
+
+        if filtros["local_id"]:
+            for funcion in funciones_disponibles:
+                if str(funcion["local_id"]) != filtros["local_id"]:
+                    continue
+
+                fecha_hora = funcion["fecha_hora"]
+                fecha = fecha_hora[0:10]
+
+                if filtros["fecha"] and fecha != filtros["fecha"]:
+                    continue
+
+                if filtros["formato"] and funcion.get("formato") not in filtros["formato"]:
+                    continue
+
+                if filtros["idioma"] and funcion.get("idioma") not in filtros["idioma"]:
+                    continue
+
+                funcion["fecha"] = fecha
+                funcion["hora"] = fecha_hora[11:16]
+                funciones.append(funcion)
 
     except requests.exceptions.HTTPError as error_api:
         current_app.logger.exception(
@@ -255,6 +291,8 @@ def detalle_pelicula(pelicula_id):
         pelicula=pelicula,
         funciones=funciones,
         error=error,
+        filtros=filtros,
+        locales=locales,
     )
 
 
@@ -810,14 +848,14 @@ def peliculas_vistas():
 
 @cliente_bp.get("/configuracion/idioma")
 def configurar_idioma():
-    return render_template("cliente/idioma.html")
+    return renderizar_cartelera("cliente/idioma.html")
 
 
 @cliente_bp.get("/configuracion/formato")
 def configurar_formato():
-    return render_template("cliente/formato.html")
+    return renderizar_cartelera("cliente/formato.html")
 
 
 @cliente_bp.get("/configuracion/categoria")
 def configurar_categoria():
-    return render_template("cliente/categoria.html")
+    return renderizar_cartelera("cliente/categoria.html")
