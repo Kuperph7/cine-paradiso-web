@@ -94,22 +94,21 @@ def _agrupar_butacas_por_fila(butacas):
     ]
 
 
+# Conserva los filtros seleccionados al navegar entre las pantallas.
 def obtener_filtros():
-    # Conserva los filtros elegidos al navegar entre la cartelera y las
-    # pantallas de preferencias. Más adelante Flask enviará estos valores al
-    # backend mediante api_client; el navegador no consultará la API con fetch.
-    nombres_filtros = (
-        "local_id",
-        "fecha",
-        "genero",
-        "idioma",
-        "formato",
-        "categoria",
-    )
-    return {
-        nombre: request.args.get(nombre, "")
-        for nombre in nombres_filtros
+    filtros = {
+        nombre: request.args.get(nombre, "").strip()
+        for nombre in ("local_id", "fecha", "genero")
     }
+
+    for campo in ("formato", "idioma", "categoria"):
+        filtros[campo] = [
+            valor.strip()
+            for valor in request.args.getlist(campo)
+            if valor.strip()
+        ]
+
+    return filtros
 
 def obtener_headers():
     token = session.get("access_token", "")
@@ -136,6 +135,10 @@ def contexto_filtros():
 
 @cliente_bp.get("/")
 def cartelera():
+    return renderizar_cartelera("cliente/cartelera.html")
+
+
+def renderizar_cartelera(template):
     peliculas = []
     error = None
 
@@ -149,6 +152,11 @@ def cartelera():
 
     if fecha:
         parametros["fecha"] = fecha
+
+    filtros = obtener_filtros()
+    for campo in ("formato", "idioma", "categoria"):
+        if filtros[campo]:
+            parametros[campo] = filtros[campo]
 
     try:
         respuesta = api_get("/cartelera", params=parametros)
@@ -171,7 +179,7 @@ def cartelera():
                 generos.append(genero)
 
     return render_template(
-        "cliente/cartelera.html",
+        template,
         peliculas=peliculas,
         estrenos=[],
         generos=generos,
@@ -724,14 +732,14 @@ def peliculas_vistas():
 
 @cliente_bp.get("/configuracion/idioma")
 def configurar_idioma():
-    return render_template("cliente/idioma.html")
+    return renderizar_cartelera("cliente/idioma.html")
 
 
 @cliente_bp.get("/configuracion/formato")
 def configurar_formato():
-    return render_template("cliente/formato.html")
+    return renderizar_cartelera("cliente/formato.html")
 
 
 @cliente_bp.get("/configuracion/categoria")
 def configurar_categoria():
-    return render_template("cliente/categoria.html")
+    return renderizar_cartelera("cliente/categoria.html")

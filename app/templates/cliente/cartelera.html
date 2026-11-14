@@ -43,7 +43,12 @@
     Flask deberá leerlos y consultar GET /cartelera mediante api_client;
     el navegador no debe consumir la API directamente con fetch.
 #}
-<form class="movie-filters" method="get" aria-label="Filtros de cartelera">
+<form class="movie-filters" action="{{ url_for('cliente.cartelera') }}" method="get" aria-label="Filtros de cartelera">
+    {% for campo in ['idioma', 'formato', 'categoria'] %}
+    {% for valor in request.args.getlist(campo) %}
+    <input type="hidden" name="{{ campo }}" value="{{ valor }}">
+    {% endfor %}
+    {% endfor %}
 
     <label>
         <span>ID de sucursal</span>
