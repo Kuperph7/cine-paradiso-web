@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const dialogTitle = document.getElementById("pelicula-dialog-title");
     const erroresPanel = document.getElementById("pelicula-errores");
 
-    if (dialog.dataset.conErrores === "true") {
+    if (dialog.dataset.conErrores === "true" || dialog.dataset.abrir === "true") {
         dialog.showModal();
     }
 

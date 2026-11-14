@@ -123,7 +123,7 @@ def peliculas():
     return renderizar_peliculas()
 
 
-def renderizar_peliculas(formulario=None, errores_formulario=None):
+def renderizar_peliculas(formulario=None, errores_formulario=None, abrir_formulario=False):
     credencial_acceso = session.get("access_token")
     if not credencial_acceso:
         return redirect(url_for("auth.login"))
@@ -196,7 +196,59 @@ def renderizar_peliculas(formulario=None, errores_formulario=None):
         errores_formulario=errores_formulario or [],
         categorias=categorias,
         errores_categorias=errores_categorias,
+        abrir_formulario=abrir_formulario,
     )
+
+
+@admin_bp.get("/peliculas/externas/<int:id_externo>")
+@admin_required
+def seleccionar_pelicula_externa(id_externo):
+    credencial_acceso = session["access_token"]
+    formulario = {"id_externo": str(id_externo)}
+    errores = []
+    estado = 200
+
+    try:
+        respuesta = api_get(
+            f"/admin/peliculas/externas/{id_externo}",
+            headers={"Authorization": f"Bearer {credencial_acceso}"},
+        )
+
+        if respuesta.status_code == 200:
+            datos = respuesta.json()
+            pelicula = datos.get("pelicula") if isinstance(datos, dict) else None
+
+            if isinstance(pelicula, dict):
+                for campo in (
+                    "titulo", "sinopsis", "poster_url",
+                    "duracion_minutos", "clasificacion", "genero",
+                ):
+                    valor = pelicula.get(campo)
+                    formulario[campo] = "" if valor is None else str(valor)
+
+                formulario["categoria_ids"] = [
+                    str(categoria_id)
+                    for categoria_id in pelicula.get("categoria_ids", [])
+                ]
+            else:
+                errores = ["La API devolvió un detalle de película inválido."]
+                estado = 502
+        else:
+            errores = obtener_errores_api(respuesta)
+            estado = respuesta.status_code
+
+    except requests.RequestException:
+        errores = ["No se pudo conectar con la API para consultar la película."]
+        estado = 502
+    except ValueError:
+        errores = ["La API devolvió una respuesta inválida."]
+        estado = 502
+
+    return renderizar_peliculas(
+        formulario=formulario,
+        errores_formulario=errores,
+        abrir_formulario=True,
+    ), estado
 
 
 @admin_bp.post("/peliculas/crear")

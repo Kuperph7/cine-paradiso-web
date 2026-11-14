@@ -39,15 +39,7 @@
             {% for pelicula in peliculas_api %}
             <div class="pelicula-row">
                 <span class="pelicula-nombre">{{ pelicula.titulo }}</span>
-                <button
-                    type="button"
-                    class="pelicula-button"
-                    data-pelicula-open="agregar"
-                    data-id-externo="{{ pelicula.id_externo }}"
-                    data-titulo="{{ pelicula.titulo }}"
-                    data-sinopsis="{{ pelicula.sinopsis|default('', true) }}"
-                    data-poster-url="{{ pelicula.poster_url|default('', true) }}"
-                >Añadir</button>
+                <a class="pelicula-button" href="{{ url_for('admin.seleccionar_pelicula_externa', id_externo=pelicula.id_externo, titulo=titulo, titulo_externo=titulo_externo) }}">Añadir</a>
             </div>
             {% else %}
             {% if not errores_externos %}
@@ -149,7 +141,7 @@
 {% set guardar_url = url_for('admin.modificar_pelicula', pelicula_id=pelicula_id|int, titulo=titulo, titulo_externo=titulo_externo) %}
 {% endif %}
 
-<dialog class="pelicula-dialog" id="pelicula-dialog" data-con-errores="{{ 'true' if errores_formulario else 'false' }}">
+<dialog class="pelicula-dialog" id="pelicula-dialog" data-con-errores="{{ 'true' if errores_formulario else 'false' }}" data-abrir="{{ 'true' if abrir_formulario else 'false' }}">
     <form
         id="pelicula-form"
         method="post"
