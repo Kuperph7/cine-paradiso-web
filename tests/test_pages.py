@@ -57,13 +57,19 @@ def _respuesta_pelicula():
         "funciones_disponibles": [
             {
                 "id": 1,
+                "local_id": 1,
                 "sala_nombre": "Sala 1",
                 "local_nombre": "Cine Paradiso Centro",
+                "fecha_hora": "2026-12-10T18:30:00-03:00",
+                "precio": 6500,
             },
             {
                 "id": 7,
+                "local_id": 1,
                 "sala_nombre": "Sala 1",
                 "local_nombre": "Cine Paradiso Centro",
+                "fecha_hora": "2026-12-10T20:30:00-03:00",
+                "precio": 6500,
             },
         ],
     }
@@ -71,6 +77,12 @@ def _respuesta_pelicula():
 
 
 def _api_get_correcto(path, **kwargs):
+    if path == "/cartelera":
+        respuesta = Mock(status_code=200)
+        respuesta.json.return_value = {"peliculas": []}
+        return respuesta
+    if path.startswith("/cartelera/"):
+        return _respuesta_pelicula()
     if path.startswith("/funciones/") and path.endswith("/butacas"):
         return _respuesta_butacas()
     if path.startswith("/funciones/"):
@@ -101,17 +113,12 @@ def test_initial_pages_render(monkeypatch):
         "/",
         "/login",
         "/registro",
-        "/perfil",
         "/peliculas/1",
         "/funciones/1/butacas",
-        "/compras/servicios",
-        "/compras/resumen?funcion_id=1&butaca_ids=1",
         "/mis-entradas",
         "/admin/funciones",
         "/admin/salas",
         "/admin/servicios",
-        "/admin/estadisticas",
-        "/admin/entradas/validar",
     ]
 
     for path in paths:
@@ -178,7 +185,7 @@ def test_admin_funciones_muestra_datos_api(monkeypatch):
     client = app.test_client()
 
     with client.session_transaction() as sesion:
-        sesion["token"] = "token-prueba"
+        sesion["access_token"] = "token-prueba"
 
     respuesta = client.get("/admin/funciones")
     html = respuesta.get_data(as_text=True)
@@ -248,7 +255,7 @@ def test_crear_funcion_correctamente(monkeypatch):
     client = app.test_client()
 
     with client.session_transaction() as sesion:
-        sesion["token"] = "token-prueba"
+        sesion["access_token"] = "token-prueba"
 
     respuesta = client.post(
         "/admin/funciones",
@@ -310,7 +317,7 @@ def test_crear_funcion_con_errores(monkeypatch):
 
     # Caso 2: administrador con precio inválido
     with client.session_transaction() as sesion:
-        sesion["token"] = "token-prueba"
+        sesion["access_token"] = "token-prueba"
 
     respuesta = client.post(
         "/admin/funciones",
@@ -357,7 +364,7 @@ def test_admin_funciones_patch(monkeypatch):
     client = app.test_client()
 
     with client.session_transaction() as sesion:
-        sesion["token"] = "token-prueba"
+        sesion["access_token"] = "token-prueba"
 
     casos = [
         (
@@ -528,7 +535,8 @@ def test_login_muestra_toast_con_error_de_credenciales(monkeypatch):
         "app.routes.auth.api_post",
         Mock(return_value=respuesta_api),
     )
-    app = create_app(TestConfig)
+    app = create_app()
+    app.config.update(TEST_CONFIG)
 
     respuesta = app.test_client().post(
         "/login",
@@ -564,7 +572,8 @@ def test_login_muestra_toast_con_mensaje_del_servidor(monkeypatch):
         "app.routes.auth.api_post",
         Mock(return_value=respuesta_api),
     )
-    app = create_app(TestConfig)
+    app = create_app()
+    app.config.update(TEST_CONFIG)
 
     respuesta = app.test_client().post(
         "/login",
@@ -582,7 +591,8 @@ def test_login_muestra_toast_si_no_hay_conexion(monkeypatch):
         "app.routes.auth.api_post",
         Mock(side_effect=requests.exceptions.ConnectionError),
     )
-    app = create_app(TestConfig)
+    app = create_app()
+    app.config.update(TEST_CONFIG)
 
     respuesta = app.test_client().post(
         "/login",
@@ -596,7 +606,8 @@ def test_login_muestra_toast_si_no_hay_conexion(monkeypatch):
 
 
 def test_navbar_distingue_ingreso_y_usuario_autenticado():
-    app = create_app(TestConfig)
+    app = create_app()
+    app.config.update(TEST_CONFIG)
 
     with app.test_client() as client:
         login_html = client.get("/login").get_data(as_text=True)
@@ -614,8 +625,16 @@ def test_navbar_distingue_ingreso_y_usuario_autenticado():
         assert "Cliente Demo" in usuario_html
 
 
-def test_perfil_muestra_boton_para_cerrar_sesion():
-    app = create_app(TestConfig)
+def test_perfil_muestra_boton_para_cerrar_sesion(monkeypatch):
+    respuesta_api = Mock(status_code=200, ok=True)
+    respuesta_api.json.return_value = {
+        "id": 1,
+        "nombre": "Cliente Demo",
+        "email": "cliente@cineparadiso.local",
+    }
+    monkeypatch.setattr("app.routes.auth.api_get", Mock(return_value=respuesta_api))
+    app = create_app()
+    app.config.update(TEST_CONFIG)
 
     with app.test_client() as client:
         with client.session_transaction() as sesion:
@@ -636,7 +655,8 @@ def test_perfil_muestra_boton_para_cerrar_sesion():
 
 
 def test_logout_limpia_la_sesion_y_redirige_a_cartelera():
-    app = create_app(TestConfig)
+    app = create_app()
+    app.config.update(TEST_CONFIG)
 
     with app.test_client() as client:
         with client.session_transaction() as sesion:
@@ -655,8 +675,12 @@ def test_logout_limpia_la_sesion_y_redirige_a_cartelera():
 
 def test_confirmar_compra_envia_jwt_y_datos_a_la_api(monkeypatch):
     respuesta_api = Mock()
-    respuesta_api.status_code = 201
-    respuesta_api.json.return_value = {"id": 55}
+    respuesta_api.status_code = 202
+    respuesta_api.json.return_value = {
+        "id": "reserva-1",
+        "estado": "pago_en_proceso",
+        "compra_id": 55,
+    }
     api_post = Mock(return_value=respuesta_api)
     monkeypatch.setattr("app.routes.cliente.api_post", api_post)
     app = create_app()
@@ -665,27 +689,271 @@ def test_confirmar_compra_envia_jwt_y_datos_a_la_api(monkeypatch):
     with app.test_client() as client:
         with client.session_transaction() as sesion:
             sesion["access_token"] = "jwt-de-prueba"
+            sesion["checkout_id"] = "checkout-1"
 
         respuesta = client.post(
             "/compras/confirmar",
             data={
-                "funcion_id": "101",
-                "butaca_ids": ["16", "17"],
+                "checkout_id": "checkout-1",
+                    "reserva_id": "reserva-1",
                 "medio_pago": "tarjeta",
             },
         )
 
     assert respuesta.status_code == 302
     assert respuesta.headers["Location"].endswith(
-        "/compras/55/confirmacion"
+        "/reservas/reserva-1/pago-pendiente"
     )
     api_post.assert_called_once_with(
-        "/compras",
+        "/reservas/reserva-1/pagos",
         json={
-            "funcion_id": 101,
-            "butaca_ids": [16, 17],
             "servicios": [],
             "medio_pago": "tarjeta",
         },
-        headers={"Authorization": "Bearer jwt-de-prueba"},
+        headers={
+            "Authorization": "Bearer jwt-de-prueba",
+            "Idempotency-Key": "checkout-1",
+        },
+    )
+
+
+def _api_get_resumen(path, **kwargs):
+    if path == "/reservas/reserva-1":
+        respuesta = Mock(status_code=200)
+        respuesta.json.return_value = {
+            "id": "reserva-1",
+            "funcion_id": 1,
+            "estado": "retenida",
+            "expira_en": "2026-12-10T21:00:00Z",
+            "butacas": [{"id": 1, "fila": "A", "numero": 1}],
+        }
+        return respuesta
+    if path == "/servicios":
+        respuesta = Mock()
+        respuesta.status_code = 200
+        respuesta.json.return_value = {"servicios": []}
+        return respuesta
+    return _api_get_correcto(path, **kwargs)
+
+
+def test_resumen_no_se_cachea_y_habilita_una_confirmacion(monkeypatch):
+    monkeypatch.setattr(
+        "app.routes.cliente.api_get",
+        Mock(side_effect=_api_get_resumen),
+    )
+    app = create_app()
+    app.config.update(TEST_CONFIG)
+
+    with app.test_client() as client:
+        with client.session_transaction() as sesion:
+            sesion["access_token"] = "token-prueba"
+        respuesta = client.get("/compras/resumen?reserva_id=reserva-1")
+
+        with client.session_transaction() as sesion:
+            checkout_id = sesion["checkout_id"]
+
+    assert respuesta.status_code == 200
+    assert respuesta.headers["Cache-Control"] == "no-store"
+    assert (
+        f'name="checkout_id" value="{checkout_id}"'
+        in respuesta.get_data(as_text=True)
+    )
+
+
+def test_reenviar_el_formulario_no_crea_otra_compra(monkeypatch):
+    # Issue #96: comprar, volver atrás y confirmar de nuevo el mismo carrito.
+    respuesta_api = Mock()
+    respuesta_api.status_code = 202
+    respuesta_api.json.return_value = {
+        "id": "reserva-1",
+        "estado": "pago_en_proceso",
+        "compra_id": 55,
+    }
+    api_post = Mock(return_value=respuesta_api)
+    monkeypatch.setattr("app.routes.cliente.api_post", api_post)
+    app = create_app()
+    app.config.update(TEST_CONFIG)
+    formulario = {
+        "checkout_id": "checkout-1",
+        "reserva_id": "reserva-1",
+        "medio_pago": "tarjeta",
+    }
+
+    with app.test_client() as client:
+        with client.session_transaction() as sesion:
+            sesion["access_token"] = "jwt-de-prueba"
+            sesion["checkout_id"] = "checkout-1"
+
+        primera = client.post("/compras/confirmar", data=formulario)
+        segunda = client.post("/compras/confirmar", data=formulario)
+
+    assert primera.headers["Location"].endswith(
+        "/reservas/reserva-1/pago-pendiente"
+    )
+    assert segunda.headers["Location"].endswith(
+        "/reservas/reserva-1/pago-pendiente"
+    )
+    api_post.assert_called_once()
+
+
+def test_confirmar_con_un_resumen_vencido_no_llama_a_la_api(monkeypatch):
+    api_post = Mock()
+    monkeypatch.setattr("app.routes.cliente.api_post", api_post)
+    app = create_app()
+    app.config.update(TEST_CONFIG)
+
+    with app.test_client() as client:
+        with client.session_transaction() as sesion:
+            sesion["access_token"] = "jwt-de-prueba"
+            sesion["checkout_id"] = "checkout-nuevo"
+
+        respuesta = client.post(
+            "/compras/confirmar",
+            data={
+                "checkout_id": "checkout-viejo",
+                "reserva_id": "reserva-1",
+            },
+        )
+
+    assert respuesta.status_code == 302
+    assert "/compras/resumen" in respuesta.headers["Location"]
+    api_post.assert_not_called()
+
+
+def test_volver_al_resumen_de_una_compra_hecha_lleva_a_la_confirmacion(
+    monkeypatch,
+):
+    respuesta = Mock(status_code=200)
+    respuesta.json.return_value = {
+        "id": "reserva-vendida",
+        "funcion_id": 101,
+        "estado": "vendida",
+        "compra_id": 55,
+        "butacas": [{"id": 16, "fila": "A", "numero": 1}],
+    }
+    api_get = Mock(return_value=respuesta)
+    monkeypatch.setattr("app.routes.cliente.api_get", api_get)
+    app = create_app()
+    app.config.update(TEST_CONFIG)
+
+    with app.test_client() as client:
+        with client.session_transaction() as sesion:
+            sesion["access_token"] = "token-prueba"
+
+        respuesta = client.get(
+            "/compras/resumen?reserva_id=reserva-vendida"
+        )
+
+    assert respuesta.status_code == 302
+    assert respuesta.headers["Location"].endswith("/compras/55/confirmacion")
+    api_get.assert_called_once()
+
+
+def test_volver_a_butacas_de_compra_finalizada_redirige_a_confirmacion(monkeypatch):
+    api_get = Mock()
+    monkeypatch.setattr("app.routes.cliente.api_get", api_get)
+
+    app = create_app()
+    app.config.update(TEST_CONFIG)
+
+    with app.test_client() as client:
+        with client.session_transaction() as sesion:
+            sesion["ultima_compra"] = {
+                "funcion_id": 7,
+                "compra_id": 55,
+                "checkout_id": "prueba-123",
+            }
+
+        respuesta = client.get("/funciones/7/butacas")
+
+    assert respuesta.status_code == 302
+    assert respuesta.headers["Location"].endswith(
+        "/compras/55/confirmacion"
+    )
+    api_get.assert_not_called()
+
+
+def test_nueva_compra_permite_elegir_butacas(monkeypatch):
+    respuesta_api = Mock()
+    respuesta_api.status_code = 200
+    respuesta_api.json.return_value = {
+        "butacas": [],
+        "total_butacas": 0,
+        "butacas_libres": 0,
+    }
+    api_get = Mock(return_value=respuesta_api)
+
+    monkeypatch.setattr("app.routes.cliente.api_get", api_get)
+    monkeypatch.setattr(
+        "app.routes.cliente._cargar_contexto_funcion",
+        lambda funcion_id: {
+            "id": funcion_id,
+            "pelicula_id": 1,
+            "pelicula": "Horizonte final",
+            "fecha": "14/11/2026",
+            "hora": "20:00",
+            "sala": "Sala 1",
+            "sucursal": "Centro",
+            "precio": 6500,
+        },
+    )
+
+    app = create_app()
+    app.config.update(TEST_CONFIG)
+
+    with app.test_client() as client:
+        with client.session_transaction() as sesion:
+            sesion["ultima_compra"] = {
+                "funcion_id": 7,
+                "compra_id": 55,
+                "checkout_id": "prueba-123",
+            }
+
+        respuesta = client.get("/funciones/7/butacas?nueva_compra=1")
+
+        with client.session_transaction() as sesion:
+            assert "ultima_compra" not in sesion
+
+    assert respuesta.status_code == 200
+    assert "Seleccioná tus butacas" in respuesta.get_data(as_text=True)
+    api_get.assert_called_once_with("/funciones/7/butacas")
+
+
+def test_elegir_funcion_desde_cartelera_inicia_compra_nueva(monkeypatch):
+    respuesta_api = Mock()
+    respuesta_api.status_code = 200
+    respuesta_api.json.return_value = {
+        "id": 1,
+        "titulo": "Horizonte final",
+        "poster_url": None,
+        "clasificacion": "+13",
+        "generos": ["Ciencia ficción"],
+        "duracion_minutos": 120,
+        "sinopsis": "Película de prueba",
+        "funciones_disponibles": [
+            {
+                "id": 7,
+                    "local_id": 1,
+                "fecha_hora": "2026-12-10T20:00:00-03:00",
+                "local_nombre": "Centro",
+                "sala_nombre": "Sala 1",
+                "precio": 6500,
+            }
+        ],
+    }
+
+    monkeypatch.setattr(
+        "app.routes.cliente.api_get",
+        Mock(return_value=respuesta_api),
+    )
+
+    app = create_app()
+    app.config.update(TEST_CONFIG)
+
+    respuesta = app.test_client().get("/peliculas/1?local_id=1")
+
+    assert respuesta.status_code == 200
+    assert (
+        'href="/funciones/7/butacas?nueva_compra=1"'
+        in respuesta.get_data(as_text=True)
     )

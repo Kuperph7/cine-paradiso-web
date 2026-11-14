@@ -3,8 +3,28 @@
 {% block content %}
 {#
     Flask obtuvo estos datos desde la API y los renderiza con Jinja.
-    La confirmación vuelve a Flask, que llama a POST /compras sin usar fetch.
+    Flask inicia un pago pendiente y la siguiente pantalla permite resolverlo
+    mediante la pasarela ficticia del proyecto.
 #}
+<nav class="purchase-steps" aria-label="Progreso de la compra">
+    <span class="completed">1. Función</span>
+    <span class="completed">2. Butacas</span>
+    <span class="completed">3. Candy</span>
+    <span class="active" aria-current="step">4. Resumen</span>
+    <span>5. Pago</span>
+</nav>
+
+<aside
+    class="hold-status"
+    data-hold-expiry="{{ reserva.expira_en }}"
+    data-expired-url="{{ url_for('cliente.seleccionar_butacas', funcion_id=reserva.funcion_id) }}"
+    role="status"
+>
+    <span class="hold-status-dot" aria-hidden="true"></span>
+    <div><strong>Reserva activa</strong><span>Este tiempo lo controla el servidor.</span></div>
+    <time data-hold-countdown>05:00</time>
+</aside>
+
 {% with mensajes = get_flashed_messages(category_filter=['error']) %}
 {% if mensajes %}
 <p class="checkout-empty" role="alert">{{ mensajes[0] }}</p>
@@ -49,7 +69,7 @@
                     En la integración, las selecciones actuales deberán
                     conservarse para que el usuario pueda modificarlas.
                 #}
-                <a href="{{ url_for('cliente.seleccionar_butacas', funcion_id=compra.funcion.id) }}">Modificar</a>
+                <span class="checkout-held-label">Retenidas</span>
             </div>
 
             <ul class="checkout-line-list">
@@ -110,21 +130,34 @@
         </dl>
 
         <form action="{{ url_for('cliente.confirmar_compra') }}" method="post">
-            <input type="hidden" name="funcion_id" value="{{ compra.funcion.id }}">
-            {% for butaca in compra.butacas %}
-            <input type="hidden" name="butaca_ids" value="{{ butaca.id }}">
-            {% endfor %}
+            <input type="hidden" name="checkout_id" value="{{ checkout_id }}">
+            <input type="hidden" name="reserva_id" value="{{ reserva_id }}">
             {% for servicio in compra.servicios %}
             <input type="hidden" name="servicio_ids" value="{{ servicio.servicio_id }}">
             <input type="hidden" name="cantidad_{{ servicio.servicio_id }}" value="{{ servicio.cantidad }}">
             {% endfor %}
             <input type="hidden" name="medio_pago" value="tarjeta">
-            <button class="checkout-confirm-button" type="submit">Confirmar compra</button>
+            <button class="checkout-confirm-button" type="submit">Ir al pago</button>
         </form>
         <p class="checkout-legal">
-            Al confirmar, se volverá a validar la disponibilidad de las butacas.
+            Las entradas se emitirán cuando confirmes el pago de demostración.
         </p>
+        <form action="{{ url_for('cliente.cancelar_reserva', reserva_id=reserva_id) }}" method="post">
+            <button class="hold-cancel-button" type="submit">Cancelar reserva</button>
+        </form>
     </aside>
 </div>
 {% endblock %}
 
+{% block extra_scripts %}
+<script>
+    // Si el navegador restaura este carrito desde su caché al volver atrás,
+    // se recarga para que Flask valide si la compra ya fue confirmada.
+    window.addEventListener("pageshow", (evento) => {
+        if (evento.persisted) {
+            window.location.reload();
+        }
+    });
+</script>
+<script src="{{ url_for('static', filename='js/hold_timer.js') }}" defer></script>
+{% endblock %}

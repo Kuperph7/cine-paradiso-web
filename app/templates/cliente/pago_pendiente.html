@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Pago pendiente | Cine Paradiso{% endblock %}
+{% block content %}
+<nav class="purchase-steps" aria-label="Progreso de la compra">
+    <span class="completed">1. Función</span>
+    <span class="completed">2. Butacas</span>
+    <span class="completed">3. Candy</span>
+    <span class="completed">4. Resumen</span>
+    <span class="active" aria-current="step">5. Pago</span>
+</nav>
+
+<section
+    class="payment-checkout"
+    data-payment-poll="{{ url_for('cliente.estado_reserva', reserva_id=reserva.id) }}"
+    data-payment-expiry="{{ reserva.expira_en }}"
+>
+    <aside class="hold-status payment-hold payment-hold-top" role="status">
+        <span class="hold-status-dot" aria-hidden="true"></span>
+        <div>
+            <strong>Tus butacas siguen bloqueadas</strong>
+            <span>Completá o cancelá la compra antes de que termine el tiempo.</span>
+        </div>
+        <time data-payment-countdown>05:00</time>
+    </aside>
+
+    <div class="payment-checkout-card">
+        <div class="payment-demo-mark" aria-hidden="true">DEMO</div>
+        <p class="eyebrow">Pago de demostración</p>
+        <h1>Finalizá tu compra</h1>
+        <p class="payment-checkout-lead">
+            Esta pasarela es ficticia y no realiza ningún cargo real. Elegí
+            pagar para emitir las entradas o cancelá para liberar las butacas.
+        </p>
+
+        <div class="payment-seat-summary">
+            <span>{{ reserva.butacas|length }} butaca{% if reserva.butacas|length != 1 %}s{% endif %}</span>
+            <strong>
+                {% for butaca in reserva.butacas %}
+                    {{ butaca.fila }}{{ butaca.numero }}{% if not loop.last %} · {% endif %}
+                {% endfor %}
+            </strong>
+        </div>
+
+        <div class="payment-method-demo" aria-label="Método de pago ficticio seleccionado">
+            <span class="payment-method-radio" aria-hidden="true"></span>
+            <div>
+                <strong>Tarjeta de prueba</strong>
+                <span>•••• 4242 · Aprobación inmediata</span>
+            </div>
+            <span class="payment-method-badge">SIMULADA</span>
+        </div>
+
+        <div class="payment-actions">
+            <form method="post" action="{{ url_for('cliente.resolver_pago_simulado', reserva_id=reserva.id) }}">
+                <input type="hidden" name="resultado" value="aprobado">
+                <button class="payment-confirm-button" type="submit">Pagar y confirmar compra</button>
+            </form>
+            <form method="post" action="{{ url_for('cliente.resolver_pago_simulado', reserva_id=reserva.id) }}">
+                <input type="hidden" name="resultado" value="cancelado">
+                <button class="payment-cancel-button" type="submit">Cancelar compra</button>
+            </form>
+        </div>
+
+        <p class="payment-waiting-note" data-payment-message>
+            La reserva permanece activa mientras decidís.
+        </p>
+        <a class="payment-leave-link" href="{{ url_for('cliente.cartelera') }}">
+            Volver a cartelera y continuar más tarde
+        </a>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/payment_status.js') }}" defer></script>
+{% endblock %}

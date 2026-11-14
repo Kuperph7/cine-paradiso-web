@@ -1,0 +1,40 @@
+{% extends "cliente/cartelera.html" %}
+{% block title %}Idioma | Cine Paradiso{% endblock %}
+
+{% block filter_sidebar %}
+<a class="config-dismiss"
+    href="{{ url_con_filtros('cliente.cartelera') }}"
+    aria-label="Cerrar filtro de idioma">
+</a>
+
+<aside class="config-sidebar" aria-labelledby="idioma-title">
+    <h2 id="idioma-title">Idioma</h2>
+
+    <form class="config-filter-form" action="{{ url_for('cliente.cartelera') }}" method="get" aria-labelledby="idioma-title">
+        {% for campo in ['local_id', 'fecha', 'genero'] %}
+        {% if request.args.get(campo) %}
+        <input type="hidden" name="{{ campo }}" value="{{ request.args.get(campo) }}">
+        {% endif %}
+        {% endfor %}
+
+        {% for campo in ['formato', 'categoria'] %}
+        {% for valor in request.args.getlist(campo) %}
+        <input type="hidden" name="{{ campo }}" value="{{ valor }}">
+        {% endfor %}
+        {% endfor %}
+
+        {% for idioma in ['Castellano', 'Subtitulada'] %}
+        <label class="config-filter-option">
+            <input type="checkbox" name="idioma" value="{{ idioma }}"
+                {% if idioma in request.args.getlist('idioma') %}checked{% endif %}>
+            <span>{{ idioma }}</span>
+        </label>
+        {% endfor %}
+
+        <div class="config-filter-actions">
+            <button class="config-trigger" type="submit">Aplicar</button>
+            <a href="{{ url_con_filtros('cliente.cartelera', idioma=[]) }}">Limpiar idioma</a>
+        </div>
+    </form>
+</aside>
+{% endblock %}

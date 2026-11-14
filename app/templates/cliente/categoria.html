@@ -1,0 +1,53 @@
+{% extends "cliente/cartelera.html" %}
+{% block title %}Categoría | Cine Paradiso{% endblock %}
+
+{% block filter_sidebar %}
+<a class="config-dismiss"
+    href="{{ url_con_filtros('cliente.cartelera') }}"
+    aria-label="Cerrar filtro de categoría">
+</a>
+
+<aside class="config-sidebar category-sidebar" aria-labelledby="categoria-title">
+    <h2 id="categoria-title">Categoría</h2>
+
+    <form class="config-filter-form" action="{{ url_for('cliente.cartelera') }}" method="get" aria-labelledby="categoria-title">
+        {% for campo in ['local_id', 'fecha', 'genero'] %}
+        {% if request.args.get(campo) %}
+        <input type="hidden" name="{{ campo }}" value="{{ request.args.get(campo) }}">
+        {% endif %}
+        {% endfor %}
+
+        {% for campo in ['formato', 'idioma'] %}
+        {% for valor in request.args.getlist(campo) %}
+        <input type="hidden" name="{{ campo }}" value="{{ valor }}">
+        {% endfor %}
+        {% endfor %}
+
+        {% for categoria in [
+            'Cine de Culto',
+            'Drama',
+            'Acción',
+            'Aventura',
+            'Ciencia Ficción',
+            'Terror / Horror',
+            'Comedia',
+            'Suspenso / Thriller',
+            'Animación / Infantil',
+            'Documental',
+            'Romance',
+            'Clásicos'
+        ] %}
+        <label class="config-filter-option">
+            <input type="checkbox" name="categoria" value="{{ categoria }}"
+                {% if categoria in request.args.getlist('categoria') %}checked{% endif %}>
+            <span>{{ categoria }}</span>
+        </label>
+        {% endfor %}
+
+        <div class="config-filter-actions">
+            <button class="config-trigger" type="submit">Aplicar</button>
+            <a href="{{ url_con_filtros('cliente.cartelera', categoria=[]) }}">Limpiar categoría</a>
+        </div>
+    </form>
+</aside>
+{% endblock %}

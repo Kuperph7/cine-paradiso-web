@@ -1,0 +1,170 @@
+.movie-selection-page .movie-detail-hero {
+    display: grid;
+    grid-template-columns: minmax(180px, 230px) minmax(0, 1fr);
+    align-items: center;
+    gap: 32px;
+    padding: 28px;
+}
+
+.movie-selection-page .movie-detail-poster {
+    width: 100%;
+    min-width: 0;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.movie-selection-page .movie-detail-copy h1 {
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    line-height: 1.1;
+}
+
+.movie-selection-page .movie-detail-meta {
+    margin: 18px 0 24px;
+}
+
+.movie-selection-page .movie-showtimes {
+    margin-top: 36px;
+}
+
+.movie-selection-page .movie-showtimes-heading {
+    align-items: start;
+    gap: 16px;
+}
+
+.movie-filters.showtime-filters {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: 24px;
+    margin-bottom: 24px;
+    padding: 24px;
+}
+
+.movie-filters.showtime-filters > label {
+    width: auto;
+    min-width: 0;
+    gap: 10px;
+    color: #203047;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: normal;
+    text-transform: none;
+}
+
+.movie-filters.showtime-filters select,
+.movie-filters.showtime-filters input[type="date"] {
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+    font: inherit;
+}
+
+.movie-filters.showtime-filters fieldset {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: start;
+    gap: 10px;
+    min-width: 0;
+    height: 100%;
+    margin: 0;
+    padding: 16px;
+    border: 1px solid #b7c3cd;
+    border-radius: 12px;
+}
+
+.movie-filters.showtime-filters legend {
+    padding: 0 6px;
+    color: #203047;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.movie-filters.showtime-filters .showtime-filter-option {
+    display: inline-flex;
+    flex: 0 1 auto;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    width: auto;
+    min-height: 42px;
+    padding: 8px 4px;
+    color: #203047;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: normal;
+    text-transform: none;
+    cursor: pointer;
+}
+
+.movie-filters.showtime-filters input[type="checkbox"] {
+    flex: 0 0 18px;
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    padding: 0;
+    accent-color: #203047;
+}
+
+.showtime-filters .showtime-filter-footer {
+    display: flex;
+    grid-column: 1 / -1;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #ccd5de;
+}
+
+.showtime-filters .showtime-filter-help {
+    max-width: 520px;
+    margin: 0;
+    color: #52647b;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.movie-filters.showtime-filters button {
+    align-self: center;
+    width: auto;
+    min-height: 48px;
+    flex: 0 0 auto;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.movie-selection-page .showtime-card {
+    width: auto;
+    min-width: 0;
+    flex: 1 1 180px;
+}
+
+@media (max-width: 640px) {
+    .movie-selection-page .movie-detail-hero {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 20px;
+        padding: 20px;
+    }
+
+    .movie-selection-page .movie-detail-poster {
+        width: min(100%, 220px);
+        justify-self: center;
+    }
+
+    .movie-selection-page .movie-showtimes-heading,
+    .showtime-filters .showtime-filter-footer {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .movie-filters.showtime-filters {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 20px;
+        padding: 20px;
+    }
+
+    .movie-filters.showtime-filters button {
+        align-self: stretch;
+        width: 100%;
+    }
+}

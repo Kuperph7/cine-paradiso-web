@@ -1,0 +1,40 @@
+{% extends "cliente/cartelera.html" %}
+{% block title %}Formato | Cine Paradiso{% endblock %}
+
+{% block filter_sidebar %}
+<a class="config-dismiss"
+    href="{{ url_con_filtros('cliente.cartelera') }}"
+    aria-label="Cerrar filtro de formato">
+</a>
+
+<aside class="config-sidebar" aria-labelledby="formato-title">
+    <h2 id="formato-title">Formato</h2>
+
+    <form class="config-filter-form" action="{{ url_for('cliente.cartelera') }}" method="get" aria-labelledby="formato-title">
+        {% for campo in ['local_id', 'fecha', 'genero'] %}
+        {% if request.args.get(campo) %}
+        <input type="hidden" name="{{ campo }}" value="{{ request.args.get(campo) }}">
+        {% endif %}
+        {% endfor %}
+
+        {% for campo in ['idioma', 'categoria'] %}
+        {% for valor in request.args.getlist(campo) %}
+        <input type="hidden" name="{{ campo }}" value="{{ valor }}">
+        {% endfor %}
+        {% endfor %}
+
+        {% for formato in ['2D', '3D', '4D', 'Confort'] %}
+        <label class="config-filter-option">
+            <input type="checkbox" name="formato" value="{{ formato }}"
+                {% if formato in request.args.getlist('formato') %}checked{% endif %}>
+            <span>{{ formato }}</span>
+        </label>
+        {% endfor %}
+
+        <div class="config-filter-actions">
+            <button class="config-trigger" type="submit">Aplicar</button>
+            <a href="{{ url_con_filtros('cliente.cartelera', formato=[]) }}">Limpiar formato</a>
+        </div>
+    </form>
+</aside>
+{% endblock %}
