@@ -24,3 +24,17 @@ la API en `http://127.0.0.1:5000`.
 - `app/static`: estilos e imágenes.
 - `tests`: pruebas automatizadas de las páginas.
 - `docs`: mockups y documentación del frontend.
+
+## Flujo de reservas
+
+Al continuar desde el mapa de butacas, el frontend solicita una retención de
+cinco minutos y conserva únicamente su identificador. Candy y el resumen
+consultan siempre esa reserva en la API, muestran el vencimiento calculado por
+el backend y redirigen si recibe `410 Gone`.
+
+La pantalla final inicia un pago pendiente y lo resuelve mediante una pasarela
+ficticia: pagar confirma la compra y emite las entradas; cancelar libera las
+butacas. Si el usuario vuelve a la cartelera antes de decidir, la API informa
+la reserva activa y el inicio muestra “Continuar con la compra”. El mapa
+actualiza la disponibilidad cada ocho segundos y maneja los conflictos `409`
+sin asumir que el estado visual sea la fuente de verdad.

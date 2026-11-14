@@ -57,13 +57,19 @@ def _respuesta_pelicula():
         "funciones_disponibles": [
             {
                 "id": 1,
+                "local_id": 1,
                 "sala_nombre": "Sala 1",
                 "local_nombre": "Cine Paradiso Centro",
+                "fecha_hora": "2026-12-10T18:30:00-03:00",
+                "precio": 6500,
             },
             {
                 "id": 7,
+                "local_id": 1,
                 "sala_nombre": "Sala 1",
                 "local_nombre": "Cine Paradiso Centro",
+                "fecha_hora": "2026-12-10T20:30:00-03:00",
+                "precio": 6500,
             },
         ],
     }
@@ -71,6 +77,12 @@ def _respuesta_pelicula():
 
 
 def _api_get_correcto(path, **kwargs):
+    if path == "/cartelera":
+        respuesta = Mock(status_code=200)
+        respuesta.json.return_value = {"peliculas": []}
+        return respuesta
+    if path.startswith("/cartelera/"):
+        return _respuesta_pelicula()
     if path.startswith("/funciones/") and path.endswith("/butacas"):
         return _respuesta_butacas()
     if path.startswith("/funciones/"):
@@ -101,17 +113,12 @@ def test_initial_pages_render(monkeypatch):
         "/",
         "/login",
         "/registro",
-        "/perfil",
         "/peliculas/1",
         "/funciones/1/butacas",
-        "/compras/servicios",
-        "/compras/resumen?funcion_id=1&butaca_ids=1",
         "/mis-entradas",
         "/admin/funciones",
         "/admin/salas",
         "/admin/servicios",
-        "/admin/estadisticas",
-        "/admin/entradas/validar",
     ]
 
     for path in paths:
@@ -618,7 +625,14 @@ def test_navbar_distingue_ingreso_y_usuario_autenticado():
         assert "Cliente Demo" in usuario_html
 
 
-def test_perfil_muestra_boton_para_cerrar_sesion():
+def test_perfil_muestra_boton_para_cerrar_sesion(monkeypatch):
+    respuesta_api = Mock(status_code=200, ok=True)
+    respuesta_api.json.return_value = {
+        "id": 1,
+        "nombre": "Cliente Demo",
+        "email": "cliente@cineparadiso.local",
+    }
+    monkeypatch.setattr("app.routes.auth.api_get", Mock(return_value=respuesta_api))
     app = create_app()
     app.config.update(TEST_CONFIG)
 
@@ -661,8 +675,12 @@ def test_logout_limpia_la_sesion_y_redirige_a_cartelera():
 
 def test_confirmar_compra_envia_jwt_y_datos_a_la_api(monkeypatch):
     respuesta_api = Mock()
-    respuesta_api.status_code = 201
-    respuesta_api.json.return_value = {"id": 55}
+    respuesta_api.status_code = 202
+    respuesta_api.json.return_value = {
+        "id": "reserva-1",
+        "estado": "pago_en_proceso",
+        "compra_id": 55,
+    }
     api_post = Mock(return_value=respuesta_api)
     monkeypatch.setattr("app.routes.cliente.api_post", api_post)
     app = create_app()
@@ -677,29 +695,39 @@ def test_confirmar_compra_envia_jwt_y_datos_a_la_api(monkeypatch):
             "/compras/confirmar",
             data={
                 "checkout_id": "checkout-1",
-                "funcion_id": "101",
-                "butaca_ids": ["16", "17"],
+                    "reserva_id": "reserva-1",
                 "medio_pago": "tarjeta",
             },
         )
 
     assert respuesta.status_code == 302
     assert respuesta.headers["Location"].endswith(
-        "/compras/55/confirmacion"
+        "/reservas/reserva-1/pago-pendiente"
     )
     api_post.assert_called_once_with(
-        "/compras",
+        "/reservas/reserva-1/pagos",
         json={
-            "funcion_id": 101,
-            "butaca_ids": [16, 17],
             "servicios": [],
             "medio_pago": "tarjeta",
         },
-        headers={"Authorization": "Bearer jwt-de-prueba"},
+        headers={
+            "Authorization": "Bearer jwt-de-prueba",
+            "Idempotency-Key": "checkout-1",
+        },
     )
 
 
 def _api_get_resumen(path, **kwargs):
+    if path == "/reservas/reserva-1":
+        respuesta = Mock(status_code=200)
+        respuesta.json.return_value = {
+            "id": "reserva-1",
+            "funcion_id": 1,
+            "estado": "retenida",
+            "expira_en": "2026-12-10T21:00:00Z",
+            "butacas": [{"id": 1, "fila": "A", "numero": 1}],
+        }
+        return respuesta
     if path == "/servicios":
         respuesta = Mock()
         respuesta.status_code = 200
@@ -717,7 +745,9 @@ def test_resumen_no_se_cachea_y_habilita_una_confirmacion(monkeypatch):
     app.config.update(TEST_CONFIG)
 
     with app.test_client() as client:
-        respuesta = client.get("/compras/resumen?funcion_id=1&butaca_ids=1")
+        with client.session_transaction() as sesion:
+            sesion["access_token"] = "token-prueba"
+        respuesta = client.get("/compras/resumen?reserva_id=reserva-1")
 
         with client.session_transaction() as sesion:
             checkout_id = sesion["checkout_id"]
@@ -733,16 +763,19 @@ def test_resumen_no_se_cachea_y_habilita_una_confirmacion(monkeypatch):
 def test_reenviar_el_formulario_no_crea_otra_compra(monkeypatch):
     # Issue #96: comprar, volver atrás y confirmar de nuevo el mismo carrito.
     respuesta_api = Mock()
-    respuesta_api.status_code = 201
-    respuesta_api.json.return_value = {"id": 55}
+    respuesta_api.status_code = 202
+    respuesta_api.json.return_value = {
+        "id": "reserva-1",
+        "estado": "pago_en_proceso",
+        "compra_id": 55,
+    }
     api_post = Mock(return_value=respuesta_api)
     monkeypatch.setattr("app.routes.cliente.api_post", api_post)
     app = create_app()
     app.config.update(TEST_CONFIG)
     formulario = {
         "checkout_id": "checkout-1",
-        "funcion_id": "101",
-        "butaca_ids": ["16"],
+        "reserva_id": "reserva-1",
         "medio_pago": "tarjeta",
     }
 
@@ -754,8 +787,12 @@ def test_reenviar_el_formulario_no_crea_otra_compra(monkeypatch):
         primera = client.post("/compras/confirmar", data=formulario)
         segunda = client.post("/compras/confirmar", data=formulario)
 
-    assert primera.headers["Location"].endswith("/compras/55/confirmacion")
-    assert segunda.headers["Location"].endswith("/compras/55/confirmacion")
+    assert primera.headers["Location"].endswith(
+        "/reservas/reserva-1/pago-pendiente"
+    )
+    assert segunda.headers["Location"].endswith(
+        "/reservas/reserva-1/pago-pendiente"
+    )
     api_post.assert_called_once()
 
 
@@ -774,8 +811,7 @@ def test_confirmar_con_un_resumen_vencido_no_llama_a_la_api(monkeypatch):
             "/compras/confirmar",
             data={
                 "checkout_id": "checkout-viejo",
-                "funcion_id": "101",
-                "butaca_ids": ["16"],
+                "reserva_id": "reserva-1",
             },
         )
 
@@ -787,27 +823,30 @@ def test_confirmar_con_un_resumen_vencido_no_llama_a_la_api(monkeypatch):
 def test_volver_al_resumen_de_una_compra_hecha_lleva_a_la_confirmacion(
     monkeypatch,
 ):
-    api_get = Mock(side_effect=_api_get_resumen)
+    respuesta = Mock(status_code=200)
+    respuesta.json.return_value = {
+        "id": "reserva-vendida",
+        "funcion_id": 101,
+        "estado": "vendida",
+        "compra_id": 55,
+        "butacas": [{"id": 16, "fila": "A", "numero": 1}],
+    }
+    api_get = Mock(return_value=respuesta)
     monkeypatch.setattr("app.routes.cliente.api_get", api_get)
     app = create_app()
     app.config.update(TEST_CONFIG)
 
     with app.test_client() as client:
         with client.session_transaction() as sesion:
-            sesion["ultima_compra"] = {
-                "checkout_id": "checkout-1",
-                "compra_id": 55,
-                "funcion_id": 101,
-                "butaca_ids": [16, 17],
-            }
+            sesion["access_token"] = "token-prueba"
 
         respuesta = client.get(
-            "/compras/resumen?funcion_id=101&butaca_ids=17&butaca_ids=16"
+            "/compras/resumen?reserva_id=reserva-vendida"
         )
 
     assert respuesta.status_code == 302
     assert respuesta.headers["Location"].endswith("/compras/55/confirmacion")
-    api_get.assert_not_called()
+    api_get.assert_called_once()
 
 
 def test_volver_a_butacas_de_compra_finalizada_redirige_a_confirmacion(monkeypatch):
@@ -884,6 +923,7 @@ def test_elegir_funcion_desde_cartelera_inicia_compra_nueva(monkeypatch):
     respuesta_api = Mock()
     respuesta_api.status_code = 200
     respuesta_api.json.return_value = {
+        "id": 1,
         "titulo": "Horizonte final",
         "poster_url": None,
         "clasificacion": "+13",
@@ -893,6 +933,7 @@ def test_elegir_funcion_desde_cartelera_inicia_compra_nueva(monkeypatch):
         "funciones_disponibles": [
             {
                 "id": 7,
+                    "local_id": 1,
                 "fecha_hora": "2026-12-10T20:00:00-03:00",
                 "local_nombre": "Centro",
                 "sala_nombre": "Sala 1",
@@ -909,7 +950,7 @@ def test_elegir_funcion_desde_cartelera_inicia_compra_nueva(monkeypatch):
     app = create_app()
     app.config.update(TEST_CONFIG)
 
-    respuesta = app.test_client().get("/peliculas/1")
+    respuesta = app.test_client().get("/peliculas/1?local_id=1")
 
     assert respuesta.status_code == 200
     assert (

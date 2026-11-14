@@ -9,6 +9,19 @@
     <span>5. QR</span>
 </nav>
 
+{% if reserva %}
+<aside
+    class="hold-status"
+    data-hold-expiry="{{ reserva.expira_en }}"
+    data-expired-url="{{ url_for('cliente.seleccionar_butacas', funcion_id=reserva.funcion_id) }}"
+    role="status"
+>
+    <span class="hold-status-dot" aria-hidden="true"></span>
+    <div><strong>Tus butacas están retenidas</strong><span>Terminá antes de que venza el tiempo.</span></div>
+    <time data-hold-countdown>05:00</time>
+</aside>
+{% endif %}
+
 <section class="candy-heading" aria-labelledby="candy-title"> 
     <div>
         <p class="eyebrow">Candy Cine Paradiso</p>
@@ -67,10 +80,7 @@
         JavaScript ni fetch: Jinja ya recibió el catálogo desde el servidor.
     #}
     <form class="candy-selection-form" action="{{ url_for('cliente.resumen_compra') }}" method="get">
-        <input type="hidden" name="funcion_id" value="{{ funcion_id }}">
-        {% for butaca_id in butaca_ids %}
-        <input type="hidden" name="butaca_ids" value="{{ butaca_id }}">
-        {% endfor %}
+        <input type="hidden" name="reserva_id" value="{{ reserva_id }}">
         <div class="candy-list">
         {% for producto in productos %}
         <article class="candy-card">
@@ -116,5 +126,9 @@
         </div>
     </form>
 </section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/hold_timer.js') }}" defer></script>
 {% endblock %}
 

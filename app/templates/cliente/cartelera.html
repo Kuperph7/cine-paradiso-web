@@ -4,6 +4,35 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/configuracion.css') }}">
 {% endblock %}
 {% block content %}
+{% if compra_pendiente %}
+<section
+    class="active-purchase-banner"
+    data-hold-expiry="{{ compra_pendiente.expira_en }}"
+    data-expired-url="{{ url_for('cliente.cartelera') }}"
+    aria-labelledby="active-purchase-title"
+>
+    <span class="active-purchase-icon" aria-hidden="true">▶</span>
+    <div class="active-purchase-copy">
+        <p class="eyebrow">Compra en curso</p>
+        <h2 id="active-purchase-title">Tus butacas siguen reservadas</h2>
+        <p>
+            {% for butaca in compra_pendiente.butacas %}
+                {{ butaca.fila }}{{ butaca.numero }}{% if not loop.last %} · {% endif %}
+            {% endfor %}
+            <span aria-hidden="true">—</span>
+            retomá desde donde dejaste la compra.
+        </p>
+    </div>
+    <div class="active-purchase-time" role="status">
+        <span>Tiempo restante</span>
+        <time data-hold-countdown>05:00</time>
+    </div>
+    <a class="active-purchase-action" href="{{ compra_pendiente.continuar_url }}">
+        Continuar con la compra <span aria-hidden="true">→</span>
+    </a>
+</section>
+{% endif %}
+
 <section class="banner-principal" aria-labelledby="banner-principal-title">
     <div class="banner-principal-content">
         <p class="eyebrow">Esta semana en Cine Paradiso</p>
@@ -140,4 +169,10 @@
 </section>
 {% endif %}
 {% block filter_sidebar %}{% endblock %}
+{% endblock %}
+
+{% block extra_scripts %}
+{% if compra_pendiente %}
+<script src="{{ url_for('static', filename='js/hold_timer.js') }}" defer></script>
+{% endif %}
 {% endblock %}
