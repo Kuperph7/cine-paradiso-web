@@ -352,6 +352,11 @@ def funciones():
                     "precio": precio
                 }
 
+                for campo in ("formato", "idioma"):
+                    valor = request.form.get(campo, "").strip()
+                    if valor:
+                        datos_funcion[campo] = valor
+
                 respuesta_creacion = api_post(
                     "/funciones",
                     json=datos_funcion,
@@ -363,7 +368,9 @@ def funciones():
                 elif respuesta_creacion.status_code in (401, 403):
                     mensaje_accion = "No tenés permisos para crear funciones."
                 else:
-                    mensaje_accion = "No se pudo crear la función."
+                    mensaje_accion = " ".join(
+                        obtener_errores_api(respuesta_creacion)
+                    )
 
             except ValueError:
                 mensaje_accion = "Revisá los datos ingresados."
@@ -413,6 +420,11 @@ def funciones():
                         "precio": precio
                     }
 
+                    for campo in ("formato", "idioma"):
+                        valor = request.form.get(campo, "").strip()
+                        if valor:
+                            datos_actualizacion[campo] = valor
+
                 else:
                     if accion == "cancelar":
                         nuevo_estado = "cancelada"
@@ -434,7 +446,9 @@ def funciones():
                     mensaje_accion = "No tenés permisos para modificar funciones."
 
                 else:
-                    mensaje_accion = "No se pudo actualizar la función."
+                    mensaje_accion = " ".join(
+                        obtener_errores_api(respuesta_actualizacion)
+                    )
 
             except ValueError:
                 mensaje_accion = "El identificador de la función no es válido."
@@ -498,7 +512,9 @@ def funciones():
         salas=salas,
         mensaje_salas=mensaje_salas,
         mensaje_error=mensaje_error,
-        mensaje_accion=mensaje_accion
+        mensaje_accion=mensaje_accion,
+        formatos_funcion=("2D", "3D", "4D", "Confort"),
+        idiomas_funcion=("Castellano", "Subtitulada"),
     )
 
 
