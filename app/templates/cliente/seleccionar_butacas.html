@@ -16,8 +16,9 @@
 <nav class="purchase-steps" aria-label="Progreso de la compra">
     <span class="completed">1. Función</span>
     <span class="active" aria-current="step">2. Butacas</span>
-    <span>3. Carrito</span>
-    <span>4. QR</span>
+    <span>3. Candy</span>
+    <span>4. Resumen</span>
+    <span>5. QR</span>
 </nav>
 
 <header class="seats-heading">
@@ -31,7 +32,7 @@
 {% if error %}
 <p class="seats-selection-help" role="alert">{{ error }}</p>
 {% else %}
-<form class="seats-layout" action="{{ url_for('cliente.resumen_compra') }}" method="get">
+<form class="seats-layout" action="{{ url_for('cliente.seleccionar_servicios') }}" method="get">
     <input type="hidden" name="funcion_id" value="{{ funcion.id }}">
 
     <section class="seats-room" aria-labelledby="seats-map-title">
@@ -113,16 +114,10 @@
         <p class="seats-selection-help">Marcá una o más butacas disponibles para continuar.</p>
 
         {#
-            Estos submits solo permiten recorrer el mockup. Más adelante, las
-            rutas deberán conservar los butaca_ids seleccionados en el carrito
-            tanto si el usuario continúa directamente como si pasa por Candy.
+            La selección continúa siempre por Candy. Allí el usuario puede
+            agregar productos o avanzar al resumen sin elegir ninguno.
         #}
-        <button class="seats-continue" type="submit">Continuar al carrito</button>
-        <button
-            class="seats-skip-candy"
-            type="submit"
-            formaction="{{ url_for('cliente.seleccionar_servicios') }}"
-        >Agregar productos de Candy</button>
+        <button class="seats-continue" type="submit">Continuar</button>
     </aside>
 </form>
 {% endif %}

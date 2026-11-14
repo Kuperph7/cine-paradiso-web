@@ -93,6 +93,30 @@ def test_candy_renderiza_catalogo_obtenido_del_backend(monkeypatch):
     api_get.assert_called_once_with("/servicios")
 
 
+def test_butacas_continua_a_candy_y_candy_permite_omitir(monkeypatch):
+    monkeypatch.setattr("app.routes.cliente.api_get", Mock(side_effect=_api_get))
+    app = create_app()
+    app.config.update(TEST_CONFIG)
+    client = app.test_client()
+
+    respuesta_butacas = client.get("/funciones/1/butacas")
+    html_butacas = respuesta_butacas.get_data(as_text=True)
+
+    assert respuesta_butacas.status_code == 200
+    assert 'action="/compras/servicios"' in html_butacas
+    assert ">Continuar<" in html_butacas
+    assert "Agregar productos de Candy" not in html_butacas
+
+    respuesta_candy = client.get(
+        "/compras/servicios?funcion_id=1&butaca_ids=1"
+    )
+    html_candy = respuesta_candy.get_data(as_text=True)
+
+    assert respuesta_candy.status_code == 200
+    assert "Continuar sin productos" in html_candy
+    assert "/compras/resumen?funcion_id=1&amp;butaca_ids=1" in html_candy
+
+
 def test_resumen_conserva_candy_y_calcula_total(monkeypatch):
     monkeypatch.setattr("app.routes.cliente.api_get", Mock(side_effect=_api_get))
     app = create_app()

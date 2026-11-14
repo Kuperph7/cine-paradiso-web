@@ -5,6 +5,14 @@
     Flask obtuvo estos datos desde la API y los renderiza con Jinja.
     La confirmación vuelve a Flask, que llama a POST /compras sin usar fetch.
 #}
+<nav class="purchase-steps" aria-label="Progreso de la compra">
+    <span class="completed">1. Función</span>
+    <span class="completed">2. Butacas</span>
+    <span class="completed">3. Candy</span>
+    <span class="active" aria-current="step">4. Resumen</span>
+    <span>5. QR</span>
+</nav>
+
 {% with mensajes = get_flashed_messages(category_filter=['error']) %}
 {% if mensajes %}
 <p class="checkout-empty" role="alert">{{ mensajes[0] }}</p>

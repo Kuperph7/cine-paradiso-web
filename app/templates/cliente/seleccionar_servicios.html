@@ -1,6 +1,14 @@
 {% extends "base.html" %}
 {% block title %}Candy | Cine Paradiso{% endblock %}
 {% block content %}
+<nav class="purchase-steps" aria-label="Progreso de la compra">
+    <span class="completed">1. Función</span>
+    <span class="completed">2. Butacas</span>
+    <span class="active" aria-current="step">3. Candy</span>
+    <span>4. Resumen</span>
+    <span>5. QR</span>
+</nav>
+
 <section class="candy-heading" aria-labelledby="candy-title"> 
     <div>
         <p class="eyebrow">Candy Cine Paradiso</p>
