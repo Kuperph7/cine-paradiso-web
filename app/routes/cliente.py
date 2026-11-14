@@ -798,6 +798,11 @@ def preguntas_frecuentes():
     return render_template("cliente/preguntas_frecuentes.html")
 
 
+@cliente_bp.get("/terminos-y-condiciones")
+def terminos_condiciones():
+    return render_template("cliente/terminos_condiciones.html")
+
+
 @cliente_bp.get("/peliculas-vistas")
 def peliculas_vistas():
     return render_template("cliente/peliculas_vistas.html")
