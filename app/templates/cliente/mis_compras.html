@@ -23,7 +23,8 @@
                 <span class="compra-estado estado-{{ compra.estado | lower }}">{{ compra.estado }}</span>
             </div>
             <div class="compra-acciones">
-                <a href="{{ url_for('cliente.detalle_entrada', entrada_id=compra.id) }}" class="btn-ver-ticket">
+
+                <a href="{{ url_for('cliente.confirmacion_compra', compra_id=compra.id) }}" class="btn-ver-ticket">
                     Ver Ticket / QR
                 </a>
             </div>

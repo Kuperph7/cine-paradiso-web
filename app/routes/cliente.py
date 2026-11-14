@@ -1,3 +1,4 @@
+import secrets
 from collections import defaultdict
 from datetime import datetime
 
@@ -16,6 +17,34 @@ from flask import (
 from app.services.api_client import api_get, api_patch, api_post
 
 cliente_bp = Blueprint("cliente", __name__) 
+
+# Pantallas del proceso de compra que el navegador no debe guardar en su
+# historial: al volver atrás, Flask tiene que revalidar la selección.
+PANTALLAS_DE_COMPRA = {
+    "cliente.seleccionar_butacas",
+    "cliente.seleccionar_servicios",
+    "cliente.resumen_compra",
+}
+
+
+@cliente_bp.after_request
+def evitar_cache_en_compra(respuesta):
+    if request.endpoint in PANTALLAS_DE_COMPRA:
+        respuesta.headers["Cache-Control"] = "no-store"
+    return respuesta
+
+
+def _compra_ya_confirmada(funcion_id, butaca_ids):
+    """Devuelve la compra de esta sesión que ya incluye esas butacas."""
+    ultima = session.get("ultima_compra")
+    if (
+        ultima
+        and ultima["funcion_id"] == funcion_id
+        and ultima["butaca_ids"] == sorted(butaca_ids)
+    ):
+        return ultima["compra_id"]
+    return None
+
 
 def _mensaje_error_api(respuesta, mensaje_predeterminado):
     """Extrae la descripción pública del formato de errores del backend."""
@@ -233,6 +262,20 @@ def seleccionar_butacas(funcion_id):
     butacas_libres = 0
     error = None
 
+    ultima = session.get("ultima_compra")
+
+    if ultima and ultima.get("funcion_id") == funcion_id:
+        if request.args.get("nueva_compra") == "1":
+            session.pop("ultima_compra", None)
+        else:
+            return redirect(
+                url_for(
+                    "cliente.confirmacion_compra",
+                    compra_id=ultima["compra_id"]
+                )
+            )
+
+
     try:
         funcion = _cargar_contexto_funcion(funcion_id)
         respuesta = api_get(f"/funciones/{funcion_id}/butacas")
@@ -363,6 +406,14 @@ def resumen_compra():
             )
         return redirect(url_for("cliente.cartelera"))
 
+    # Si el usuario vuelve atrás después de comprar, no se le muestra de
+    # nuevo el carrito como si la compra estuviera pendiente.
+    compra_id = _compra_ya_confirmada(funcion_id, butaca_ids)
+    if compra_id is not None:
+        return redirect(
+            url_for("cliente.confirmacion_compra", compra_id=compra_id)
+        )
+
     try:
         funcion = _cargar_contexto_funcion(funcion_id)
         respuesta_butacas = api_get(f"/funciones/{funcion_id}/butacas")
@@ -470,6 +521,10 @@ def resumen_compra():
         for servicio in compra["servicios"]
     )
 
+    # Cada resumen habilita una sola confirmación. Un formulario viejo
+    # (doble clic, o "atrás" después de comprar) no puede crear otra compra.
+    session["checkout_id"] = secrets.token_urlsafe(16)
+
     return render_template(
         "cliente/resumen_compra.html",
         compra=compra,
@@ -477,6 +532,7 @@ def resumen_compra():
         total_servicios=total_servicios,
         total=total_entradas + total_servicios,
         candy_url=candy_url,
+        checkout_id=session["checkout_id"],
     )
 
 
@@ -510,6 +566,18 @@ def confirmar_compra():
     if not token:
         return redirect(url_for("auth.login", next=resumen_url))
 
+    checkout_id = request.form.get("checkout_id", "")
+    ultima = session.get("ultima_compra") or {}
+    if checkout_id and checkout_id == ultima.get("checkout_id"):
+        # Este formulario ya generó una compra: se muestra esa compra en
+        # lugar de enviar otra a la API.
+        return redirect(
+            url_for("cliente.confirmacion_compra", compra_id=ultima["compra_id"])
+        )
+    if not checkout_id or checkout_id != session.get("checkout_id"):
+        flash("Revisá tu compra y confirmala nuevamente.", "error")
+        return redirect(resumen_url)
+
     try:
         respuesta = api_post(
             "/compras",
@@ -527,6 +595,13 @@ def confirmar_compra():
 
     if respuesta.status_code == 201:
         compra = respuesta.json()
+        session.pop("checkout_id", None)
+        session["ultima_compra"] = {
+            "checkout_id": checkout_id,
+            "compra_id": compra["id"],
+            "funcion_id": funcion_id,
+            "butaca_ids": sorted(butaca_ids),
+        }
         return redirect(
             url_for("cliente.confirmacion_compra", compra_id=compra["id"])
         )

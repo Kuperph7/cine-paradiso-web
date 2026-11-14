@@ -57,7 +57,8 @@
             </div>
             <div class="showtime-list">
                 <a class="showtime-card"
-                   href="{{ url_for('cliente.seleccionar_butacas', funcion_id=funcion.id) }}">
+                    href="{{ url_for('cliente.seleccionar_butacas', funcion_id=funcion.id, nueva_compra=1) }}">
+
                     <span class="showtime-date">{{ funcion.fecha }}</span>
                     <strong>{{ funcion.hora }}</strong>
                     <span>${{ "%.0f" | format(funcion.precio) }}</span>
