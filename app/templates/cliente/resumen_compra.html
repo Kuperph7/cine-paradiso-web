@@ -110,6 +110,7 @@
         </dl>
 
         <form action="{{ url_for('cliente.confirmar_compra') }}" method="post">
+            <input type="hidden" name="checkout_id" value="{{ checkout_id }}">
             <input type="hidden" name="funcion_id" value="{{ compra.funcion.id }}">
             {% for butaca in compra.butacas %}
             <input type="hidden" name="butaca_ids" value="{{ butaca.id }}">
@@ -128,3 +129,14 @@
 </div>
 {% endblock %}
 
+{% block extra_scripts %}
+<script>
+    // Si el navegador restaura este carrito desde su caché al volver atrás,
+    // se recarga para que Flask valide si la compra ya fue confirmada.
+    window.addEventListener("pageshow", (evento) => {
+        if (evento.persisted) {
+            window.location.reload();
+        }
+    });
+</script>
+{% endblock %}
