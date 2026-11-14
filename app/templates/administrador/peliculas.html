@@ -113,6 +113,7 @@
                         data-duracion="{{ pelicula.duracion_minutos }}"
                         data-clasificacion="{{ pelicula.clasificacion }}"
                         data-genero="{{ pelicula.genero }}"
+                        data-categoria-ids='{{ pelicula.categoria_ids|default([])|tojson }}'
                         data-action="{{ url_for('admin.modificar_pelicula', pelicula_id=pelicula.id, titulo=titulo, titulo_externo=titulo_externo) }}"
                     >Editar</button>
                     {% if pelicula.activa %}
@@ -208,6 +209,31 @@
             <input type="text" name="genero" id="pelicula-genero"
                 value="{{ formulario.get('genero', '') }}" required>
         </label>
+
+                <fieldset class="pelicula-categorias">
+            <legend>Categorías</legend>
+
+            {% if errores_categorias %}
+            <div role="alert">
+                {% for error in errores_categorias %}
+                <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% else %}
+            <input type="hidden" name="categorias_cargadas" value="1">
+            {% set seleccionadas = formulario.get('categoria_ids', [])|map('int')|list %}
+
+            {% for categoria in categorias %}
+            <label>
+                <input type="checkbox" name="categoria_ids" value="{{ categoria.id }}"
+                    {% if categoria.id in seleccionadas %}checked{% endif %}>
+                <span>{{ categoria.nombre }}</span>
+            </label>
+            {% else %}
+            <p>No hay categorías disponibles.</p>
+            {% endfor %}
+            {% endif %}
+        </fieldset>
 
         <div class="dialog-actions">
             <button class="pelicula-button" type="submit">Guardar</button>

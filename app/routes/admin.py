@@ -53,6 +53,34 @@ def obtener_errores_api(respuesta):
     return ["No fue posible completar la operación."]
 
 
+def cargar_categorias_pelicula():
+    try:
+        respuesta = api_get("/categorias")
+        if respuesta.status_code != 200:
+            return [], obtener_errores_api(respuesta)
+
+        datos = respuesta.json()
+        categorias = datos.get("categorias") if isinstance(datos, dict) else None
+
+        if not isinstance(categorias, list):
+            return [], ["La API devolvió un listado de categorías inválido."]
+
+        for categoria in categorias:
+            if (
+                not isinstance(categoria, dict)
+                or type(categoria.get("id")) is not int
+                or categoria["id"] <= 0
+                or not isinstance(categoria.get("nombre"), str)
+            ):
+                return [], ["La API devolvió una categoría inválida."]
+
+        return categorias, []
+    except requests.RequestException:
+        return [], ["No se pudieron cargar las categorías. Intentá nuevamente."]
+    except ValueError:
+        return [], ["La API devolvió una respuesta de categorías inválida."]
+
+
 def preparar_datos_pelicula(formulario):
     datos = {}
     errores = []
@@ -77,6 +105,15 @@ def preparar_datos_pelicula(formulario):
         except ValueError:
             errores.append("El identificador externo debe ser un número entero.")
 
+    if formulario.get("categorias_cargadas") == "1":
+        datos["categoria_ids"] = []
+        for valor in formulario.get("categoria_ids", []):
+            if not valor.isdecimal() or int(valor) <= 0:
+                errores.append("Las categorías seleccionadas no son válidas.")
+                break
+            categoria_id = int(valor)
+            if categoria_id not in datos["categoria_ids"]:
+                datos["categoria_ids"].append(categoria_id)
     return datos, errores
 
 
@@ -145,6 +182,8 @@ def renderizar_peliculas(formulario=None, errores_formulario=None):
             peliculas_externas = []
             errores_externos = ["El catálogo externo devolvió un listado inválido."]
 
+    categorias, errores_categorias = cargar_categorias_pelicula()
+
     return render_template(
         "administrador/peliculas.html",
         peliculas=peliculas_sistema,
@@ -155,6 +194,8 @@ def renderizar_peliculas(formulario=None, errores_formulario=None):
         titulo_externo=titulo_externo,
         formulario=formulario or {},
         errores_formulario=errores_formulario or [],
+        categorias=categorias,
+        errores_categorias=errores_categorias,
     )
 
 
@@ -165,6 +206,7 @@ def crear_pelicula():
         return redirect(url_for("auth.login"))
 
     formulario = request.form.to_dict()
+    formulario["categoria_ids"] = request.form.getlist("categoria_ids")
     datos, errores_formulario = preparar_datos_pelicula(formulario)
 
     if errores_formulario:
@@ -203,6 +245,7 @@ def modificar_pelicula(pelicula_id):
         return redirect(url_for("auth.login"))
 
     formulario = request.form.to_dict()
+    formulario["categoria_ids"] = request.form.getlist("categoria_ids")
     formulario["pelicula_id"] = str(pelicula_id)
     formulario.pop("id_externo", None)
     datos, errores_formulario = preparar_datos_pelicula(formulario)

@@ -27,7 +27,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
             form.reset();
             form.querySelectorAll("input, textarea").forEach((campo) => {
-                campo.value = "";
+                if (campo.type === "checkbox") {
+                    campo.checked = false;
+                } else if (campo.name !== "categorias_cargadas") {
+                    campo.value = "";
+                }
             });
             if (erroresPanel) {
                 erroresPanel.hidden = true;
@@ -42,6 +46,13 @@ document.addEventListener("DOMContentLoaded", () => {
             duracionInput.value = editar ? button.dataset.duracion || "" : "";
             clasificacionInput.value = editar ? button.dataset.clasificacion || "" : "";
             generoInput.value = editar ? button.dataset.genero || "" : "";
+            const categoriasSeleccionadas = editar
+                ? JSON.parse(button.dataset.categoriaIds || "[]").map(String)
+                : [];
+
+            form.querySelectorAll('input[name="categoria_ids"]').forEach((campo) => {
+                campo.checked = categoriasSeleccionadas.includes(campo.value);
+            });
             dialogTitle.textContent = editar ? "Editar película" : "Añadir película";
 
             dialog.showModal();
