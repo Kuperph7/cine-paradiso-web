@@ -42,6 +42,13 @@ def _mensaje_error_api(respuesta):
 
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
+    if session.get("access_token"):
+        usuario = session.get("usuario", {})
+
+        if usuario.get("rol") == "administrador":
+            return redirect(url_for("admin.peliculas"))
+
+        return redirect(url_for("cliente.cartelera"))
     error = None
     error_titulo = None
     destino = request.values.get("next", "")
