@@ -93,15 +93,6 @@
         </select>
     </label>
 
-    <label>
-        <span>Fecha</span>
-        <input
-            type="date"
-            name="fecha"
-            value="{{ fecha }}"
-        >
-    </label>
-
     <button type="submit">Aplicar filtros</button>
 
 </form>
@@ -116,7 +107,7 @@
                {% if pelicula.poster_url %}
                style="background-image: url('{{ pelicula.poster_url }}');"
                {% endif %}
-               href="{{ url_con_filtros('cliente.detalle_pelicula', pelicula_id=pelicula.id) }}">
+               href="{{ url_con_filtros('cliente.detalle_pelicula', pelicula_id=pelicula.id), local_id=local_id if local_id else none}}">
                 <span class="rating">{{ pelicula.clasificacion }}</span>
                 <span class="poster-mark" aria-hidden="true">CP</span>
                 <span class="poster-title">{{ pelicula.titulo }}</span>
@@ -129,7 +120,7 @@
                     · {{ pelicula.duracion_minutos }} min
                 </p>
                 <h3>{{ pelicula.titulo }}</h3>
-                <a href="{{ url_con_filtros('cliente.detalle_pelicula', pelicula_id=pelicula.id) }}">
+                <a href="{{ url_con_filtros('cliente.detalle_pelicula', pelicula_id=pelicula.id), local_id=local_id if local_id else none }}">
                     Ver funciones <span aria-hidden="true">→</span>
                 </a>
             </div>
