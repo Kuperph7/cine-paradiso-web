@@ -7,8 +7,12 @@
     {% endif %}
     | Cine Paradiso
 {% endblock %}
+{% block extra_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/seleccion_pelicula.css') }}">
+{% endblock %}
 {% block content %}
-<a class="movie-detail-back" href="{{ url_for('cliente.cartelera') }}">
+<div class="movie-selection-page">
+<a class="movie-detail-back" href="{{ url_con_filtros('cliente.cartelera') }}">
     <span aria-hidden="true">←</span> Volver a cartelera
 </a>
 {% if error %}
@@ -48,7 +52,34 @@
         </div>
         <p>Seleccioná una sucursal y un horario para continuar con las butacas.</p>
     </div>
+    <form class="movie-filters showtime-filters" action="{{ url_for('cliente.detalle_pelicula', pelicula_id=pelicula.id) }}" method="get">
+        {% for campo in ['categoria', 'genero'] %}
+        {% for valor in request.args.getlist(campo) %}
+        <input type="hidden" name="{{ campo }}" value="{{ valor }}">
+        {% endfor %}
+        {% endfor %}
+      
+        {% for campo, titulo, opciones in [
+            ('formato', 'Formato', ['2D', '3D', '4D', 'Confort']),
+            ('idioma', 'Idioma', ['Castellano', 'Subtitulada'])
+        ] %}
+        <fieldset>
+            <legend>{{ titulo }}</legend>
+            {% for opcion in opciones %}
+              <label class="showtime-filter-option">
+                <input type="checkbox" name="{{ campo }}" value="{{ opcion }}"{% if opcion in filtros[campo] %} checked{% endif %}>
+                {{ opcion }}
+              </label>
+            {% endfor %}
+        </fieldset>
+        {% endfor %}
 
+        <div class="showtime-filter-footer">
+            <p class="showtime-filter-help">Sin seleccionar formato o idioma, se muestran todas sus opciones disponibles.</p>
+            <button type="submit">Aplicar filtros</button>
+        </div>
+    </form>
+    
     {% if fechas_disponibles %}
 
     <form class="movie-date-filter"
@@ -107,7 +138,8 @@
                     <span class="showtime-date">{{ funcion.fecha }}</span>
 
                     <strong>{{ funcion.hora }}</strong>
-
+                    <span>{{ funcion.formato or 'Formato sin especificar' }}</span>
+                    <span>{{ funcion.idioma or 'Idioma sin especificar' }}</span>
                     <span>${{ "%.0f" | format(funcion.precio) }}</span>
 
                 </a>
@@ -126,14 +158,15 @@
 
         {% if fechas_disponibles %}
         <p class="empty-showtimes">
-            No hay funciones disponibles para esta fecha.
+            No hay funciones con los filtros seleccionados. Probá otra fecha, formato, idioma o sucursal.
         </p>
         {% endif %}
 
         {% endfor %}
-
+        {% endif %}
     </div>
 
 </section>
 {% endif %}
+</div>
 {% endblock %}

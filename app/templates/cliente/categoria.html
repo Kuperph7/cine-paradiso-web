@@ -9,14 +9,22 @@
 
 <aside class="config-sidebar category-sidebar" aria-labelledby="categoria-title">
     <h2 id="categoria-title">Categoría</h2>
-    <nav aria-label="Seleccionar categoría">
+
+    <form class="config-filter-form" action="{{ url_for('cliente.cartelera') }}" method="get" aria-labelledby="categoria-title">
+        {% for campo in ['local_id', 'fecha', 'genero'] %}
+        {% if request.args.get(campo) %}
+        <input type="hidden" name="{{ campo }}" value="{{ request.args.get(campo) }}">
+        {% endif %}
+        {% endfor %}
+
+        {% for campo in ['formato', 'idioma'] %}
+        {% for valor in request.args.getlist(campo) %}
+        <input type="hidden" name="{{ campo }}" value="{{ valor }}">
+        {% endfor %}
+        {% endfor %}
+
         {% for categoria in [
-            'Clásicos de los 80s',
-            'Joyas de los 90s',
-            'Éxitos de los 2000s',
             'Cine de Culto',
-            'Premiadas',
-            'Los Más Vistos',
             'Drama',
             'Acción',
             'Aventura',
@@ -26,10 +34,20 @@
             'Suspenso / Thriller',
             'Animación / Infantil',
             'Documental',
-            'Romance'
+            'Romance',
+            'Clásicos'
         ] %}
-        <a href="{{ url_con_filtros('cliente.cartelera', categoria=categoria) }}">{{ categoria }}</a>
+        <label class="config-filter-option">
+            <input type="checkbox" name="categoria" value="{{ categoria }}"
+                {% if categoria in request.args.getlist('categoria') %}checked{% endif %}>
+            <span>{{ categoria }}</span>
+        </label>
         {% endfor %}
-    </nav>
+
+        <div class="config-filter-actions">
+            <button class="config-trigger" type="submit">Aplicar</button>
+            <a href="{{ url_con_filtros('cliente.cartelera', categoria=[]) }}">Limpiar categoría</a>
+        </div>
+    </form>
 </aside>
 {% endblock %}

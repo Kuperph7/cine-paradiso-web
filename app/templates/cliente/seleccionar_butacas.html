@@ -5,9 +5,8 @@
     Flask consulta mediante api_client:
     GET /funciones/{funcion_id}/butacas
 
-    El backend devuelve el estado real de cada butaca. Al continuar, Flask
-    deberá conservar funcion_id y butaca_ids durante Candy y el resumen. La
-    disponibilidad se volverá a validar al confirmar POST /compras.
+    El backend devuelve el estado real de cada butaca y Flask crea la reserva
+    temporal antes de avanzar al resto del checkout.
 #}
 <a class="movie-detail-back" href="{{ url_for('cliente.detalle_pelicula', pelicula_id=funcion.pelicula_id) }}">
     <span aria-hidden="true">←</span> Cambiar función
@@ -16,8 +15,9 @@
 <nav class="purchase-steps" aria-label="Progreso de la compra">
     <span class="completed">1. Función</span>
     <span class="active" aria-current="step">2. Butacas</span>
-    <span>3. Carrito</span>
-    <span>4. QR</span>
+    <span>3. Candy</span>
+    <span>4. Resumen</span>
+    <span>5. QR</span>
 </nav>
 
 <header class="seats-heading">
@@ -25,14 +25,22 @@
         <p class="eyebrow">Elegí tu lugar</p>
         <h1>Seleccioná tus butacas</h1>
     </div>
-    <p>Las butacas que no están disponibles no pueden seleccionarse. La disponibilidad se confirmará al finalizar la compra.</p>
+    <p>Al continuar, tus lugares quedan retenidos durante cinco minutos. El contador visual nunca reemplaza la validación del servidor.</p>
 </header>
 
+{% with mensajes = get_flashed_messages(category_filter=['error']) %}
+{% if mensajes %}<p class="seats-selection-help" role="alert">{{ mensajes[0] }}</p>{% endif %}
+{% endwith %}
 {% if error %}
 <p class="seats-selection-help" role="alert">{{ error }}</p>
 {% else %}
-<form class="seats-layout" action="{{ url_for('cliente.resumen_compra') }}" method="get">
-    <input type="hidden" name="funcion_id" value="{{ funcion.id }}">
+<form
+    class="seats-layout"
+    action="{{ url_for('cliente.retener_butacas', funcion_id=funcion.id) }}"
+    method="post"
+    data-seat-map
+    data-availability-url="{{ url_for('cliente.disponibilidad_butacas', funcion_id=funcion.id) }}"
+>
 
     <section class="seats-room" aria-labelledby="seats-map-title">
         <div class="seats-function-summary">
@@ -63,11 +71,13 @@
                         name="butaca_ids"
                         type="checkbox"
                         value="{{ butaca.id }}"
+                        data-seat-id="{{ butaca.id }}"
                         {% if not butaca.disponible %}disabled{% endif %}
                     >
                     <label
-                        class="seat{% if not butaca.disponible %} occupied{% endif %}"
+                        class="seat state-{{ butaca.estado }}{% if not butaca.disponible %} occupied{% endif %}"
                         for="butaca-{{ butaca.id }}"
+                        data-seat-label="{{ butaca.id }}"
                         title="Butaca {{ butaca.fila }}{{ butaca.numero }}: {{ butaca.estado }}"
                     >
                         <span>{{ butaca.numero }}</span>
@@ -83,7 +93,9 @@
         <div class="seat-legend" aria-label="Referencias del mapa">
             <span><i class="available" aria-hidden="true"></i>Disponible</span>
             <span><i class="selected" aria-hidden="true"></i>Seleccionada</span>
-            <span><i class="occupied" aria-hidden="true"></i>Ocupada</span>
+            <span><i class="held" aria-hidden="true"></i>Retenida</span>
+            <span><i class="payment" aria-hidden="true"></i>Pago en proceso</span>
+            <span><i class="occupied" aria-hidden="true"></i>Vendida</span>
         </div>
     </section>
 
@@ -110,21 +122,19 @@
             </div>
         </dl>
 
-        <p class="seats-selection-help">Marcá una o más butacas disponibles para continuar.</p>
+        <p class="seats-selection-help" data-seat-status>La disponibilidad se actualiza cada 8 segundos.</p>
 
         {#
-            Estos submits solo permiten recorrer el mockup. Más adelante, las
-            rutas deberán conservar los butaca_ids seleccionados en el carrito
-            tanto si el usuario continúa directamente como si pasa por Candy.
+            La selección continúa siempre por Candy. Allí el usuario puede
+            agregar productos o avanzar al resumen sin elegir ninguno.
         #}
-        <button class="seats-continue" type="submit">Continuar al carrito</button>
-        <button
-            class="seats-skip-candy"
-            type="submit"
-            formaction="{{ url_for('cliente.seleccionar_servicios') }}"
-        >Agregar productos de Candy</button>
+        <button class="seats-continue" type="submit">Continuar</button>
     </aside>
 </form>
 {% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/seat_availability.js') }}" defer></script>
 {% endblock %}
 
