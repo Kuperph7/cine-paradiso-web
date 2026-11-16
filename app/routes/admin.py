@@ -579,7 +579,51 @@ def servicios():
 @admin_bp.get("/estadisticas")
 @admin_required
 def estadisticas():
-    return render_template("administrador/estadisticas.html")
+
+    error_estadisticas = False
+    ocupacion_por_funcion = []
+    ocupacion_por_pelicula = []
+    ventas_por_genero = []
+    franjas_horarias = []
+    cancelaciones = 0
+
+    token = session.get("access_token")
+    
+    try:
+
+        if not token:
+            return redirect(url_for("auth.login"))
+    
+        respuesta = api_get(
+            "/admin/estadisticas",
+            headers={"Authorization": f"Bearer {token}"}
+            )
+
+        
+        respuesta.raise_for_status()
+
+        estadisticas = respuesta.json()
+
+        ocupacion_por_funcion = estadisticas["ocupacion_por_funcion"]
+        ocupacion_por_pelicula = estadisticas["ocupacion_por_pelicula"]
+        ventas_por_genero = estadisticas["ventas_por_genero"]
+        franjas_horarias = estadisticas["franjas_horarias"]
+        cancelaciones = estadisticas["cancelaciones"]
+        error_estadisticas = False
+
+        
+    except requests.RequestException:
+        error_estadisticas = True
+
+    return render_template(
+        "administrador/estadisticas.html",
+        ocupacion_por_funcion = ocupacion_por_funcion,
+        ocupacion_por_pelicula = ocupacion_por_pelicula,
+        ventas_por_genero = ventas_por_genero,
+        franjas_horarias = franjas_horarias,
+        cancelaciones = cancelaciones,
+        error_estadisticas = error_estadisticas
+        )
 
 
 @admin_bp.get("/entradas/validar")

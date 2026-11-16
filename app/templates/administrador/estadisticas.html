@@ -7,8 +7,10 @@
 
 <section class="estadisticas-page" aria-labelledby="estadisticas-title">
     <h1 id="estadisticas-title">Estadísticas</h1>
-
+    
     <div class="estadisticas-list">
+
+        <!-- Ventas por genero-->
         <section class="stat-panel stat-genero">
             <h2>Ventas por género</h2>
             <div class="stat-card">
@@ -16,23 +18,36 @@
                     <span>Género</span>
                     <span>Número de ventas</span>
                 </div>
+
                 <label class="stat-search">
                     <span aria-hidden="true">⌕</span>
-                    <input type="search" placeholder="Buscar por género" aria-label="Buscar por género">
+                    <input
+                        type="search"
+                        placeholder="Buscar por género"
+                        aria-label="Buscar por género"
+                    >
                 </label>
-                {% for i in range(1, 6) %}
+                {% set datos_genero = ventas_por_genero|default([], true) %}
+
+                {% for item in datos_genero %}
                 <div class="stat-row">
-                    <span>Género {{ i }}</span>
-                    <span>Número de ventas</span>
+                    <span>{{ item.genero }}</span>
+                    <span>{{ item.total_ventas }}</span>
+                </div>
+                {% else %}
+                <div class="stat-row">
+                    <span colspan="2">No hay ventas por género para mostrar.</span>
                 </div>
                 {% endfor %}
+
                 <div class="stat-footer">
-                    <span>5 géneros listados</span>
+                    <span>{{ datos_genero|length }} géneros listados</span>
                     <span class="stat-pages">‹ &nbsp; 1 &nbsp; ›</span>
                 </div>
             </div>
         </section>
 
+        <!-- Ocupacion por pelicula-->
         <section class="stat-panel">
             <h2>Ocupación por película</h2>
             <div class="stat-card">
@@ -43,11 +58,15 @@
                     <span aria-hidden="true">⌕</span>
                     <input type="search" placeholder="Buscar por película" aria-label="Buscar por película">
                 </label>
-                {% for i in range(1, 6) %}
+                {% for pelicula in ocupacion_por_pelicula|default([], true) %}
                 <div class="stat-row movie-row">
-                    <span>Película {{ i }}</span>
-                    <span>Número de funciones</span>
-                    <span>Número de ocupación</span>
+                    <span>Película {{ pelicula.pelicula_id }}</span>
+                    <span>{{ pelicula.butacas_vendidas }} / {{ pelicula.capacidad_total_funciones }}</span>
+                    <span>{{ pelicula.porcentaje }}%</span>
+                </div>
+                {% else %}
+                <div class="stat-row movie-row">
+                    <span>No hay datos de ocupación por película.</span>
                 </div>
                 {% endfor %}
                 <div class="stat-footer">
@@ -57,6 +76,7 @@
             </div>
         </section>
 
+        <!-- Ocupacion por funcion-->
         <section class="stat-panel">
             <h2>Ocupación por función</h2>
             <div class="stat-card">
@@ -67,9 +87,17 @@
                     <span aria-hidden="true">⌕</span>
                     <input type="search" placeholder="Buscar por función" aria-label="Buscar por función">
                 </label>
-                {% for i in range(1, 6) %}
+                {% for funcion in ocupacion_por_funcion|default([], true) %}
                 <div class="stat-row function-row">
-                    <span>Función {{ i }}</span><span>Número de ocupación</span>
+                    <span>Función {{ funcion.funcion_id }}</span>
+                    <span>
+                        {{ funcion.butacas_vendidas }} / {{ funcion.capacidad }}
+                        ({{ funcion.porcentaje }}%)
+                    </span>
+                </div>
+                {% else %}
+                <div class="stat-row function-row">
+                    <span>No hay datos de ocupación por función.</span>
                 </div>
                 {% endfor %}
                 <div class="stat-footer">
@@ -79,33 +107,41 @@
             </div>
         </section>
 
+        <!-- Distribucion horaria-->
         <section class="stat-panel">
             <h2>Distribución por franja horaria</h2>
             <div class="stat-card schedule-card">
                 <div class="stat-table-head">Ventas por franja · Últimos 7 días</div>
+                {% set franjas = franjas_horarias|default([], true) %}
+                {% set max_entradas = franjas|map(attribute="entradas_vendidas")|max|default(0) %}
+
                 <div class="schedule-list">
-                    {% for hora, porcentaje, entradas in [
-                        ("18:00–20:00", 75, 320),
-                        ("20:00–22:00", 69, 210),
-                        ("10:00–18:00", 54, 170),
-                        ("14:00–16:00", 16, 180),
-                        ("12:00–14:00", 16, 160),
-                        ("10:00–12:00", 42, 150),
-                        ("08:00–10:00", 12, 125),
-                        ("06:00–11:00", 10, 100)
-                    ] %}
-                    <div class="schedule-row">
-                        <span class="schedule-time">{{ hora }}</span>
-                        <span class="schedule-bar">
-                            <span style="width: {{ porcentaje }}%"></span>
-                        </span>
-                        <span class="schedule-value">{{ porcentaje }}% · {{ entradas }} entradas</span>
-                    </div>
+                    {% for item in franjas %}
+                        {% if max_entradas > 0 %}
+                            {% set porcentaje_barra = (item.entradas_vendidas / max_entradas * 100)|round(1) %}
+                        {% else %}
+                            {% set porcentaje_barra = 0 %}
+                        {% endif %}
+
+                        <div class="schedule-row">
+                            <span class="schedule-time">{{ item.franja }}</span>
+
+                            <span class="schedule-bar" aria-hidden="true">
+                                <span style="width: {{ porcentaje_barra }}%"></span>
+                            </span>
+
+                            <span class="schedule-value">
+                                {{ item.entradas_vendidas }} entradas
+                            </span>
+                        </div>
+                    {% else %}
+                        <p class="schedule-empty">No hay ventas por franja horaria.</p>
                     {% endfor %}
                 </div>
             </div>
         </section>
 
+        <!-- Cancelaciones -->
         <section class="stat-panel">
             <h2>Lista de cancelaciones</h2>
             <div class="stat-card">
