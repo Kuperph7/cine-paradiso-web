@@ -696,8 +696,46 @@ def estadisticas():
     return render_template("administrador/estadisticas.html")
 
 
-@admin_bp.get("/entradas/validar")
+
+@admin_bp.route("/entradas/validar", methods=["GET", "POST"])
 @admin_required
 def validar_entrada():
-    return render_template("administrador/validar_entrada.html")
+    resultado = None
+    error = None
+    codigo_qr = ""
+    funcion_id = ""
 
+    if request.method == "POST":
+        codigo_qr = request.form.get("codigo_qr", "").strip()
+        funcion_id = request.form.get("funcion_id", "").strip()
+
+        if not codigo_qr or not funcion_id.isdigit() or int(funcion_id) <= 0:
+            error = "Ingresá un código QR y un ID de función válido."
+        else:
+            try:
+                respuesta = api_post(
+                    "/admin/entradas/validar",
+                    json={
+                        "codigo_qr": codigo_qr,
+                        "funcion_id": int(funcion_id),
+                    },
+                    headers={
+                        "Authorization": f"Bearer {session['access_token']}"
+                    },
+                )
+
+                if respuesta.status_code == 200:
+                    resultado = respuesta.json()
+                else:
+                    error = " ".join(obtener_errores_api(respuesta))
+
+            except (requests.exceptions.RequestException, ValueError):
+                error = "No fue posible validar la entrada con la API."
+
+    return render_template(
+        "administrador/validar_entrada.html",
+        resultado=resultado,
+        error=error,
+        codigo_qr=codigo_qr,
+        funcion_id=funcion_id,
+    )
