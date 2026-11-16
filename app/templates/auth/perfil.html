@@ -19,10 +19,17 @@
             <span aria-hidden="true">→</span>
         </a>
 
+        {% if session.get('usuario', {}).get('rol') == 'administrador' %}
+        <a href="{{ url_for('admin.peliculas') }}">
+            <span>Panel de administración</span>
+            <span aria-hidden="true">→</span>
+        </a>
+        {% else %}
         <a href="{{ url_for('cliente.peliculas_vistas') }}">
             <span>Películas vistas</span>
             <span aria-hidden="true">→</span>
         </a>
+        {% endif %}
     </nav>
 
     {% if session.get('usuario') %}
