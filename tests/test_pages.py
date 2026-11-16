@@ -1,4 +1,5 @@
 import re
+from datetime import datetime, timedelta
 from unittest.mock import Mock
 
 import requests
@@ -920,6 +921,7 @@ def test_nueva_compra_permite_elegir_butacas(monkeypatch):
 
 
 def test_elegir_funcion_desde_cartelera_inicia_compra_nueva(monkeypatch):
+    fecha_funcion = (datetime.now().date() + timedelta(days=1)).isoformat()
     respuesta_api = Mock()
     respuesta_api.status_code = 200
     respuesta_api.json.return_value = {
@@ -934,7 +936,7 @@ def test_elegir_funcion_desde_cartelera_inicia_compra_nueva(monkeypatch):
             {
                 "id": 7,
                     "local_id": 1,
-                "fecha_hora": "2026-12-10T20:00:00-03:00",
+                "fecha_hora": f"{fecha_funcion}T20:00:00-03:00",
                 "local_nombre": "Centro",
                 "sala_nombre": "Sala 1",
                 "precio": 6500,

@@ -121,6 +121,7 @@
 
     <div class="cinema-list">
 
+        {% if funciones %}
         {% for funcion in funciones %}
 
         <article class="cinema-showtimes">
@@ -148,21 +149,11 @@
 
         </article>
 
-        {% else %}
-
-            <p class="empty-showtimes">
-                No hay funciones disponibles para la fecha seleccionada.
-            </p>
-
         {% endfor %}
-
-        {% if fechas_disponibles %}
+        {% else %}
         <p class="empty-showtimes">
             No hay funciones con los filtros seleccionados. Probá otra fecha, formato, idioma o sucursal.
         </p>
-        {% endif %}
-
-        {% endfor %}
         {% endif %}
     </div>
 

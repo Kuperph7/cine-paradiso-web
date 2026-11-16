@@ -305,9 +305,9 @@ def detalle_pelicula(pelicula_id):
 
         locales_por_id = {}
         for funcion in funciones_disponibles:
-            local_id = funcion["local_id"]
-            locales_por_id[local_id] = {
-                "id": local_id,
+            funcion_local_id = funcion["local_id"]
+            locales_por_id[funcion_local_id] = {
+                "id": funcion_local_id,
                 "nombre": funcion["local_nombre"],
             }
 
@@ -320,11 +320,19 @@ def detalle_pelicula(pelicula_id):
             ):
                 continue
 
-        if local_id:
-            funciones = [
-                funcion for funcion in funciones
-                if str(funcion.get("local_id")) == local_id
-            ]
+            if (
+                filtros["formato"]
+                and funcion.get("formato") not in filtros["formato"]
+            ):
+                continue
+
+            if (
+                filtros["idioma"]
+                and funcion.get("idioma") not in filtros["idioma"]
+            ):
+                continue
+
+            funciones.append(funcion)
         
         hoy = datetime.now().date()
         limite = hoy + timedelta(days=7)
