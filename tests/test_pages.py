@@ -655,6 +655,60 @@ def test_perfil_muestra_boton_para_cerrar_sesion(monkeypatch):
     assert "Cerrar sesión" in html
 
 
+def test_perfil_administrador_enlaza_panel_en_lugar_de_peliculas_vistas(
+    monkeypatch,
+):
+    respuesta_api = Mock(status_code=200, ok=True)
+    respuesta_api.json.return_value = {
+        "id": 2,
+        "nombre": "Administrador Demo",
+        "email": "admin@cineparadiso.local",
+        "rol": "administrador",
+    }
+    monkeypatch.setattr("app.routes.auth.api_get", Mock(return_value=respuesta_api))
+    app = create_app()
+    app.config.update(TEST_CONFIG)
+
+    with app.test_client() as client:
+        with client.session_transaction() as sesion:
+            sesion["access_token"] = "jwt-de-prueba"
+            sesion["usuario"] = respuesta_api.json.return_value
+
+        respuesta = client.get("/perfil")
+
+    html = respuesta.get_data(as_text=True)
+    assert respuesta.status_code == 200
+    assert 'href="/admin/peliculas"' in html
+    assert "Panel de administración" in html
+    assert "Películas vistas" not in html
+
+
+def test_perfil_cliente_conserva_acceso_a_peliculas_vistas(monkeypatch):
+    respuesta_api = Mock(status_code=200, ok=True)
+    respuesta_api.json.return_value = {
+        "id": 1,
+        "nombre": "Cliente Demo",
+        "email": "cliente@cineparadiso.local",
+        "rol": "cliente",
+    }
+    monkeypatch.setattr("app.routes.auth.api_get", Mock(return_value=respuesta_api))
+    app = create_app()
+    app.config.update(TEST_CONFIG)
+
+    with app.test_client() as client:
+        with client.session_transaction() as sesion:
+            sesion["access_token"] = "jwt-de-prueba"
+            sesion["usuario"] = respuesta_api.json.return_value
+
+        respuesta = client.get("/perfil")
+
+    html = respuesta.get_data(as_text=True)
+    assert respuesta.status_code == 200
+    assert 'href="/peliculas-vistas"' in html
+    assert "Películas vistas" in html
+    assert "Panel de administración" not in html
+
+
 def test_logout_limpia_la_sesion_y_redirige_a_cartelera():
     app = create_app()
     app.config.update(TEST_CONFIG)
