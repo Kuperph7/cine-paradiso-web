@@ -48,29 +48,92 @@
         </div>
         <p>Seleccioná una sucursal y un horario para continuar con las butacas.</p>
     </div>
+
+    {% if fechas_disponibles %}
+
+    <form class="movie-date-filter"
+          method="GET"
+          action="{{ url_for('cliente.detalle_pelicula', pelicula_id=pelicula.id) }}">
+
+        {% if local_id %}
+        <input type="hidden" name="local_id" value="{{ local_id }}">
+        {% endif %}
+
+        <label for="fecha">Seleccioná el día de tu función</label>
+
+        <select name="fecha"
+                id="fecha"
+                onchange="this.form.submit()">
+
+            {% for fecha in fechas_disponibles %}
+
+            <option value="{{ fecha }}"
+                {% if fecha == fecha_seleccionada %}selected{% endif %}>
+
+                {{ fecha[8:10] }}/{{ fecha[5:7] }}/{{ fecha[0:4] }}
+
+            </option>
+
+            {% endfor %}
+
+        </select>
+
+    </form>
+
+    {% else %}
+
+    <p class="empty-showtimes">
+        No hay funciones disponibles durante los próximos siete días.
+    </p>
+
+    {% endif %}
+
     <div class="cinema-list">
+
         {% for funcion in funciones %}
+
         <article class="cinema-showtimes">
+
             <div class="cinema-info">
                 <h3>{{ funcion.local_nombre }}</h3>
                 <p>{{ funcion.sala_nombre }}</p>
             </div>
+
             <div class="showtime-list">
+
                 <a class="showtime-card"
-                    href="{{ url_for('cliente.seleccionar_butacas', funcion_id=funcion.id, nueva_compra=1) }}">
+                   href="{{ url_for('cliente.seleccionar_butacas', funcion_id=funcion.id, nueva_compra=1) }}">
 
                     <span class="showtime-date">{{ funcion.fecha }}</span>
+
                     <strong>{{ funcion.hora }}</strong>
+
                     <span>${{ "%.0f" | format(funcion.precio) }}</span>
+
                 </a>
+
             </div>
+
         </article>
+
         {% else %}
-        <p class="empty-showtimes">
-            No hay funciones disponibles para esta película.
-        </p>
+
+            <p class="empty-showtimes">
+                No hay funciones disponibles para la fecha seleccionada.
+            </p>
+
         {% endfor %}
+
+        {% if fechas_disponibles %}
+        <p class="empty-showtimes">
+            No hay funciones disponibles para esta fecha.
+        </p>
+        {% endif %}
+
+        {% endfor %}
+
     </div>
+
 </section>
 {% endif %}
 {% endblock %}

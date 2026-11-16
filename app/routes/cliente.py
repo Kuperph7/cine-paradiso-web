@@ -1,6 +1,6 @@
 import secrets
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import requests
 from flask import (
@@ -169,23 +169,21 @@ def cartelera():
     error = None
 
     local_id = request.args.get("local_id", "").strip()
-    fecha = request.args.get("fecha", "").strip()
 
     locales = [
         {"id": 1, "nombre": "Cine Paradiso Centro"},
         {"id": 2, "nombre": "Cine Paradiso Norte"},
         {"id": 3, "nombre": "Cine Paradiso Puerto"}
     ]
+
     parametros = {}
 
     if local_id:
         parametros["local_id"] = local_id
 
-    if fecha:
-        parametros["fecha"] = fecha
-
+    
     try:
-        respuesta = api_get("/cartelera", params=parametros)
+        respuesta = api_get("/cartelera")
         respuesta.raise_for_status()
 
         datos = respuesta.json()
@@ -211,7 +209,6 @@ def cartelera():
         generos=generos,
         error=error,
         local_id=local_id,
-        fecha=fecha,
         locales=locales,
     )
 
@@ -220,7 +217,11 @@ def cartelera():
 def detalle_pelicula(pelicula_id):
     pelicula = None
     funciones = []
+    fechas_disponibles = []
     error = None
+
+    local_id = request.args.get("local_id", "").strip()
+    fecha_seleccionada = request.args.get("fecha", "").strip()
 
     try:
         respuesta = api_get(f"/cartelera/{pelicula_id}")
@@ -229,11 +230,54 @@ def detalle_pelicula(pelicula_id):
         pelicula = respuesta.json()
         funciones = pelicula.get("funciones_disponibles", [])
 
-        for funcion in funciones:
-            fecha_hora = funcion["fecha_hora"]
-            funcion["fecha"] = fecha_hora[0:10]
-            funcion["hora"] = fecha_hora[11:16]
+        if local_id:
+            funciones = [
+                funcion for funcion in funciones
+                if str(funcion.get("local_id")) == local_id
+            ]
+        
+        hoy = datetime.now().date()
+        limite = hoy + timedelta(days=7)
 
+        funciones_filtradas = []
+
+        for funcion in funciones:
+            fecha_hora = datetime.fromisoformat(
+                funcion["fecha_hora"]
+            )
+
+            fecha_funcion = fecha_hora.date()
+
+            if hoy <= fecha_funcion <= limite:
+                funcion["fecha"] = fecha_hora.strftime("%d/%m/%Y")
+                funcion["hora"] = fecha_hora.strftime("%H:%M")
+
+                funciones_filtradas.append(funcion)
+
+                fecha_iso = fecha_funcion.isoformat()
+
+                if fecha_iso not in fechas_disponibles:
+                    fechas_disponibles.append(fecha_iso)
+
+        funciones = funciones_filtradas
+
+        fechas_disponibles.sort()
+
+        if not fecha_seleccionada:
+            fecha_seleccionada = hoy.isoformat()
+
+        if fecha_seleccionada not in fechas_disponibles:
+            if fechas_disponibles:
+                fecha_seleccionada = fechas_disponibles[0]
+            else:
+                fecha_seleccionada = ""
+
+        if fecha_seleccionada:
+            funciones = [
+                funcion for funcion in funciones
+                if funcion["fecha_hora"][:10] == fecha_seleccionada
+            ]
+            
     except requests.exceptions.HTTPError as error_api:
         current_app.logger.exception(
             "Error al consultar el detalle de la película"
@@ -254,6 +298,9 @@ def detalle_pelicula(pelicula_id):
         "cliente/detalle_pelicula.html",
         pelicula=pelicula,
         funciones=funciones,
+        fechas_disponibles=fechas_disponibles,
+        fecha_seleccionada=fecha_seleccionada,
+        local_id=local_id,
         error=error,
     )
 
