@@ -82,3 +82,68 @@
         flex-direction: column;
     }
 }
+
+.terminos-accordion {
+    max-width: 1000px;
+    margin: 2rem auto;
+    padding: 2rem 2.5rem;
+    background: #0b1630;
+    color: #ffffff;
+    border-radius: 18px;
+}
+
+.terminos-accordion h1 {
+    margin: 0 0 1.5rem;
+    font-size: 1.8rem;
+    color: #ffffff;
+}
+
+.termino-item {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.termino-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem 0;
+    cursor: pointer;
+    list-style: none;
+    font-size: 1.15rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #ffffff;
+    user-select: none;
+}
+
+.termino-header::-webkit-details-marker {
+    display: none;
+}
+
+.termino-icon::before {
+    content: "+";
+    font-size: 1.6rem;
+    font-weight: 400;
+    line-height: 1;
+    color: #ffffff;
+}
+
+.termino-item[open] .termino-icon::before {
+    content: "−";
+}
+
+.termino-body {
+    padding: 0 0 1.5rem;
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
+.termino-body p {
+    margin: 0 0 0.75rem;
+}
+
+.termino-body p:last-child {
+    margin-bottom: 0;
+}
