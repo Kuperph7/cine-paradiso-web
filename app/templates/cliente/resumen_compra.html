@@ -95,9 +95,9 @@
                 <a href="{{ candy_url }}">Modificar</a>
             </div>
 
-            {% if compra.servicios %}
+            {% if compra.productos_candy %}
             <ul class="checkout-line-list">
-                {% for servicio in compra.servicios %}
+                {% for servicio in compra.productos_candy %}
                 <li>
                     <span>{{ servicio.cantidad }} × {{ servicio.nombre }}</span>
                     <strong>${{ "{:,.0f}".format(servicio.cantidad * servicio.precio_unitario).replace(",", ".") }}</strong>
@@ -106,6 +106,61 @@
             </ul>
             {% else %}
             <p class="checkout-empty">No agregaste productos de Candy.</p>
+            {% endif %}
+        </div>
+
+        <div class="checkout-group">
+            <div class="checkout-group-heading">
+                <div>
+                    <p class="checkout-item-label">Estacionamiento</p>
+                    <h3>Lugar para tu vehículo</h3>
+                </div>
+                {% if compra.estacionamiento %}
+                <a href="{{ quitar_estacionamiento_url }}">Quitar</a>
+                {% endif %}
+            </div>
+
+            {% if compra.estacionamiento %}
+            <ul class="checkout-line-list">
+                <li>
+                    <span>Reservaste {{ compra.estacionamiento.cantidad }} {{ "plaza" if compra.estacionamiento.cantidad == 1 else "plazas" }} de estacionamiento</span>
+                    <strong>${{ "{:,.0f}".format(compra.estacionamiento.cantidad * compra.estacionamiento.precio_unitario).replace(",", ".") }}</strong>
+                </li>
+            </ul>
+            <p class="checkout-empty">
+                Horario reservado: {{ compra.funcion.fecha }} de {{ compra.funcion.hora }} a {{ compra.funcion.hora_fin_estacionamiento }} hs (3 hs)
+            </p>
+            {% else %}
+            <ul class="checkout-line-list">
+                <li>
+                    <span>No reservaste estacionamiento ({{ estacionamiento_catalogo.disponibles }} de {{ estacionamiento_catalogo.capacidad_maxima }} lugares disponibles)</span>
+                    <strong>${{ "{:,.0f}".format(estacionamiento_catalogo.precio).replace(",", ".") }}</strong>
+                </li>
+            </ul>
+            <p class="checkout-empty">
+                Horario disponible: {{ compra.funcion.fecha }} de {{ compra.funcion.hora }} a {{ compra.funcion.hora_fin_estacionamiento }} hs (3 hs)
+            </p>
+            <form action="{{ url_for('cliente.resumen_compra') }}" method="get" class="parking-controls">
+                <input type="hidden" name="reserva_id" value="{{ reserva_id }}">
+                {% for servicio in compra.productos_candy %}
+                <input type="hidden" name="servicio_ids" value="{{ servicio.servicio_id }}">
+                <input type="hidden" name="cantidad_{{ servicio.servicio_id }}" value="{{ servicio.cantidad }}">
+                {% endfor %}
+                <input type="hidden" name="servicio_ids" value="{{ estacionamiento_catalogo.id }}">
+                <label for="resumen-cantidad-estacionamiento">Cantidad de lugares</label>
+                <input
+                    id="resumen-cantidad-estacionamiento"
+                    name="cantidad_{{ estacionamiento_catalogo.id }}"
+                    type="number"
+                    min="1"
+                    max="{{ estacionamiento_catalogo.disponibles if estacionamiento_catalogo.disponibles > 0 else 1 }}"
+                    value="1"
+                    {% if estacionamiento_catalogo.disponibles == 0 %}disabled{% endif %}
+                >
+                <button class="parking-button" type="submit" {% if estacionamiento_catalogo.disponibles == 0 %}disabled{% endif %}>
+                    {{ "Sin lugares disponibles" if estacionamiento_catalogo.disponibles == 0 else "Reservar" }}
+                </button>
+            </form>
             {% endif %}
         </div>
     </section>
@@ -122,6 +177,10 @@
             <div>
                 <dt>Productos</dt>
                 <dd>${{ "{:,.0f}".format(total_servicios).replace(",", ".") }}</dd>
+            </div>
+            <div>
+                <dt>Reserva de estacionamiento</dt>
+                <dd>${{ "{:,.0f}".format(total_estacionamiento).replace(",", ".") }}</dd>
             </div>
             <div class="checkout-total-final">
                 <dt>Total</dt>

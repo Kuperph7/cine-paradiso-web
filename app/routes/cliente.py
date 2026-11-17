@@ -83,6 +83,9 @@ def _cargar_contexto_funcion(funcion_id):
         "poster_url": pelicula.get("poster_url"),
         "fecha": fecha_hora.strftime("%d/%m/%Y"),
         "hora": fecha_hora.strftime("%H:%M"),
+        "hora_fin_estacionamiento": (
+            fecha_hora + timedelta(hours=3)
+        ).strftime("%H:%M"),
         "sucursal": funcion_publicada.get("local_nombre", "Cine Paradiso"),
         "sala": funcion_publicada.get(
             "sala_nombre", f"Sala {funcion_api['sala_id']}"
@@ -508,9 +511,15 @@ def retener_butacas(funcion_id):
 
     if respuesta.status_code in {200, 201}:
         reserva = respuesta.json()
+        preseleccion = session.pop("servicios_preseleccionados", None) or {}
+        parametros_servicios = {"reserva_id": reserva["id"]}
+        if preseleccion.get("servicio_ids"):
+            parametros_servicios["servicio_ids"] = preseleccion["servicio_ids"]
+            for sid, cant in (preseleccion.get("cantidades") or {}).items():
+                parametros_servicios[f"cantidad_{sid}"] = cant
         continuar_url = url_for(
             "cliente.seleccionar_servicios",
-            reserva_id=reserva["id"],
+            **parametros_servicios,
         )
         _recordar_reserva_activa(reserva, "servicios", continuar_url)
         return redirect(continuar_url)
@@ -554,6 +563,7 @@ def seleccionar_servicios():
         for servicio_id in servicio_ids
     }
     productos = []
+    estacionamiento = None
     error = None
     reserva = None
     estilos = (
@@ -569,23 +579,53 @@ def seleccionar_servicios():
 
     # El navegador no consulta el backend. Flask frontend usa requests en
     # api_get(), recibe el JSON y recién entonces renderiza el HTML con Jinja.
+    if not reserva_id:
+        reserva_recordada = session.get("reserva_activa") or {}
+        reserva_id = reserva_recordada.get("id", "").strip()
+    if not reserva_id:
+        pendiente = _cargar_compra_pendiente()
+        if pendiente:
+            reserva_id = pendiente.get("id", "").strip()
+
     try:
-        respuesta_reserva = _consultar_reserva(reserva_id)
-        if respuesta_reserva is None:
-            return redirect(url_for("auth.login", next=request.full_path))
-        if respuesta_reserva.status_code == 410:
-            flash("Tu reserva venció. Elegí las butacas nuevamente.", "error")
-            return redirect(url_for("cliente.cartelera"))
-        respuesta_reserva.raise_for_status()
-        reserva = respuesta_reserva.json()
-        _recordar_reserva_activa(
-            reserva,
-            "servicios",
-            request.full_path.rstrip("?"),
-        )
+        if reserva_id:
+            respuesta_reserva = _consultar_reserva(reserva_id)
+            if respuesta_reserva is None:
+                return redirect(url_for("auth.login", next=request.full_path))
+            if respuesta_reserva.status_code == 410:
+                session.pop("reserva_activa", None)
+                flash("Tu reserva venció. Elegí las butacas nuevamente.", "error")
+                return redirect(url_for("cliente.cartelera"))
+            if respuesta_reserva.status_code == 404:
+                session.pop("reserva_activa", None)
+                reserva_id = ""
+            else:
+                respuesta_reserva.raise_for_status()
+                reserva = respuesta_reserva.json()
+                _recordar_reserva_activa(
+                    reserva,
+                    "servicios",
+                    request.full_path.rstrip("?"),
+                )
         respuesta = api_get("/servicios")
         respuesta.raise_for_status()
         servicios = respuesta.json().get("servicios", [])
+        servicios_candy = []
+        for servicio in servicios:
+            if (
+                int(servicio["id"]) == 9
+                or servicio["nombre"].strip().lower() == "estacionamiento"
+            ):
+                estacionamiento = {
+                    **servicio,
+                    "id": int(servicio["id"]),
+                    "precio": int(servicio["precio"]),
+                    "disponibles": int(servicio.get("disponibles", 20)),
+                    "capacidad_maxima": int(servicio.get("capacidad_maxima", 20)),
+                }
+            else:
+                servicios_candy.append(servicio)
+
         productos = [
             {
                 **servicio,
@@ -595,7 +635,7 @@ def seleccionar_servicios():
                 )[:4].upper(),
                 "estilo": estilos[indice % len(estilos)],
             }
-            for indice, servicio in enumerate(servicios)
+            for indice, servicio in enumerate(servicios_candy)
         ]
     except requests.exceptions.RequestException:
         current_app.logger.exception("No fue posible cargar el catálogo de Candy")
@@ -613,6 +653,7 @@ def seleccionar_servicios():
         "cliente/seleccionar_servicios.html",
         categorias=["Todos los productos"],
         productos=productos,
+        estacionamiento=estacionamiento,
         resumen_url=resumen_url,
         reserva_id=reserva_id,
         reserva=reserva,
@@ -629,7 +670,28 @@ def resumen_compra():
     funcion_id = None
 
     if not reserva_id:
-        flash("Seleccioná y retené tus butacas para continuar.", "error")
+        reserva_recordada = session.get("reserva_activa") or {}
+        reserva_id = reserva_recordada.get("id", "").strip()
+    if not reserva_id:
+        pendiente = _cargar_compra_pendiente()
+        if pendiente:
+            reserva_id = pendiente.get("id", "").strip()
+
+    if not reserva_id:
+        if servicio_ids:
+            session["servicios_preseleccionados"] = {
+                "servicio_ids": servicio_ids,
+                "cantidades": {
+                    str(sid): max(1, request.args.get(f"cantidad_{sid}", 1, type=int))
+                    for sid in servicio_ids
+                },
+            }
+            flash(
+                "Guardamos tus productos de Candy. Elegí una película, función y butacas para continuar al resumen.",
+                "error",
+            )
+        else:
+            flash("Seleccioná una función y retené tus butacas para continuar al resumen.", "error")
         return redirect(url_for("cliente.cartelera"))
 
     try:
@@ -650,7 +712,10 @@ def resumen_compra():
             )
         funcion_id = int(reserva["funcion_id"])
         funcion = _cargar_contexto_funcion(funcion_id)
-        respuesta_servicios = api_get("/servicios")
+        respuesta_servicios = api_get(
+            "/servicios",
+            params={"funcion_id": funcion_id},
+        )
         respuesta_servicios.raise_for_status()
         servicios_api = respuesta_servicios.json().get("servicios", [])
     except requests.exceptions.RequestException:
@@ -700,6 +765,21 @@ def resumen_compra():
                 )
             )
         servicio = servicios_disponibles[servicio_id]
+        if (
+            "disponibles" in servicio
+            and cantidad > int(servicio["disponibles"])
+        ):
+            flash(
+                f"Solo quedan {int(servicio['disponibles'])} lugares de "
+                "estacionamiento disponibles en este momento.",
+                "error",
+            )
+            return redirect(
+                url_for(
+                    "cliente.seleccionar_servicios",
+                    reserva_id=reserva_id,
+                )
+            )
         servicios_seleccionados.append(
             {
                 "servicio_id": servicio_id,
@@ -709,6 +789,42 @@ def resumen_compra():
             }
         )
 
+    estacionamiento_catalogo = next(
+        (
+            {
+                "id": int(servicio["id"]),
+                "nombre": servicio["nombre"],
+                "precio": int(servicio["precio"]),
+                "disponibles": int(servicio.get("disponibles", 20)),
+                "capacidad_maxima": int(servicio.get("capacidad_maxima", 20)),
+            }
+            for servicio in servicios_api
+            if int(servicio["id"]) == 9
+            or servicio["nombre"].strip().lower() == "estacionamiento"
+        ),
+        {
+            "id": 9,
+            "nombre": "Estacionamiento",
+            "precio": 5000,
+            "disponibles": 20,
+            "capacidad_maxima": 20,
+        },
+    )
+
+    productos_candy = [
+        servicio
+        for servicio in servicios_seleccionados
+        if servicio["servicio_id"] != estacionamiento_catalogo["id"]
+    ]
+    estacionamiento_seleccionado = next(
+        (
+            servicio
+            for servicio in servicios_seleccionados
+            if servicio["servicio_id"] == estacionamiento_catalogo["id"]
+        ),
+        None,
+    )
+
     compra = {
         "pelicula": funcion["pelicula"],
         "clasificacion": funcion["clasificacion"],
@@ -716,6 +832,8 @@ def resumen_compra():
         "funcion": funcion,
         "butacas": butacas_seleccionadas,
         "servicios": servicios_seleccionados,
+        "productos_candy": productos_candy,
+        "estacionamiento": estacionamiento_seleccionado,
     }
 
     candy_url = url_for(
@@ -727,13 +845,30 @@ def resumen_compra():
             for servicio in servicios_seleccionados
         },
     )
+    quitar_estacionamiento_url = url_for(
+        "cliente.resumen_compra",
+        reserva_id=reserva_id,
+        servicio_ids=[
+            servicio["servicio_id"] for servicio in productos_candy
+        ],
+        **{
+            f"cantidad_{servicio['servicio_id']}": servicio["cantidad"]
+            for servicio in productos_candy
+        },
+    )
 
     total_entradas = sum(
         butaca["precio"] for butaca in compra["butacas"]
     )
     total_servicios = sum(
         servicio["cantidad"] * servicio["precio_unitario"]
-        for servicio in compra["servicios"]
+        for servicio in compra["productos_candy"]
+    )
+    total_estacionamiento = (
+        compra["estacionamiento"]["cantidad"]
+        * compra["estacionamiento"]["precio_unitario"]
+        if compra["estacionamiento"]
+        else 0
     )
 
     # Cada resumen habilita una sola confirmación. Un formulario viejo
@@ -748,9 +883,12 @@ def resumen_compra():
     return render_template(
         "cliente/resumen_compra.html",
         compra=compra,
+        estacionamiento_catalogo=estacionamiento_catalogo,
+        quitar_estacionamiento_url=quitar_estacionamiento_url,
         total_entradas=total_entradas,
         total_servicios=total_servicios,
-        total=total_entradas + total_servicios,
+        total_estacionamiento=total_estacionamiento,
+        total=total_entradas + total_servicios + total_estacionamiento,
         candy_url=candy_url,
         checkout_id=session["checkout_id"],
         reserva=reserva,
@@ -1017,9 +1155,23 @@ def confirmacion_compra(compra_id):
     session.pop("reserva_activa", None)
     session.pop("ultimo_pago", None)
 
+    servicios_compra = compra.get("servicios", [])
+    total_estacionamiento = sum(
+        int(s.get("subtotal", int(s.get("cantidad", 0)) * int(s.get("precio_unitario", 0))))
+        for s in servicios_compra
+        if int(s.get("servicio_id", 0)) == 9
+        or str(s.get("nombre", "")).strip().lower() == "estacionamiento"
+    )
+    total_productos = max(
+        0,
+        int(compra.get("total_servicios", 0)) - total_estacionamiento,
+    )
+
     return render_template(
         "cliente/confirmacion_compra.html",
         compra=compra,
+        total_productos=total_productos,
+        total_estacionamiento=total_estacionamiento,
     )
 
 
