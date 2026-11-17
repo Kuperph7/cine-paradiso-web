@@ -8,7 +8,7 @@ from flask import (
     url_for,
 )
 
-from app.services.api_client import api_post
+from app.services.api_client import api_post, api_get
 
 
 auth_bp = Blueprint("auth", __name__)
@@ -131,7 +131,7 @@ def registro():
 
 @auth_bp.get("/perfil")
 def perfil():
-    token = session.get("token")
+    token = session.get("access_token")
     
     if not token:
         return redirect(url_for("cliente.cartelera"))
