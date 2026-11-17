@@ -573,6 +573,8 @@ def funciones():
 @admin_bp.route("/salas", methods=["GET", "POST"])
 def salas():
 
+    token = session.get("access_token")
+
     if request.method == "POST":
             datos = {
                 "local_id": request.form.get("local", type=int),
@@ -584,6 +586,7 @@ def salas():
                 respuesta = api_post(
                     "/salas",
                     json=datos,
+                    headers={"Authorization": f"Bearer {token}"}
                 )
                 respuesta.raise_for_status()
                 
@@ -593,7 +596,10 @@ def salas():
 
     salas = []
     try:
-        respuesta = api_get("/salas")
+        respuesta = api_get(
+            "/salas",
+            headers={"Authorization": f"Bearer {token}"}
+            )
         
         salas = respuesta.json()["salas"]
         error_salas = False
@@ -605,6 +611,8 @@ def salas():
 @admin_bp.route("/servicios", methods=["GET", "POST"])
 def servicios():
     error_servicios = False
+
+    token = session.get("access_token")
 
     if request.method == "POST":
         accion = request.form.get("accion", "crear")
@@ -619,6 +627,7 @@ def servicios():
                 respuesta = api_patch(
                     f"/servicios/{servicio_id}",
                     json={"activo": activo},
+                    headers={"Authorization": f"Bearer {token}"}
                 )
 
             #Edicion del servicio
@@ -628,12 +637,13 @@ def servicios():
                 datos = {
                     "nombre": request.form.get("nombre", "").strip(),
                     "descripcion": request.form.get("descripcion", "").strip(),
-                    "precio": request.form.get("precio", type=float),
+                    "precio": request.form.get("precio", type=int),
                 }
 
                 respuesta = api_patch(
                     f"/servicios/{servicio_id}",
                     json=datos,
+                    headers={"Authorization": f"Bearer {token}"}
                 )
 
             #Eliminacion del servicio
@@ -642,6 +652,7 @@ def servicios():
 
                 respuesta = api_delete(
                     f"/servicios/{servicio_id}",
+                    headers={"Authorization": f"Bearer {token}"}
                 )
                 respuesta.raise_for_status()
                 return redirect(url_for("admin.servicios"))
@@ -651,14 +662,15 @@ def servicios():
                 datos = {
                     "nombre": request.form.get("nombre", "").strip(),
                     "descripcion": request.form.get("descripcion", "").strip(),
-                    "precio": request.form.get("precio", type=float),
+                    "precio": request.form.get("precio", type=int),
                 }
 
                 respuesta = api_post(
                     "/servicios",
                     json=datos,
+                    headers={"Authorization": f"Bearer {token}"}
                     )
-
+                print("fin de la peticion:", datos)
             respuesta.raise_for_status()
             return redirect(url_for("admin.servicios"))
 
