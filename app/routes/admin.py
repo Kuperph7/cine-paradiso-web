@@ -366,6 +366,7 @@ def desactivar_pelicula(pelicula_id):
 
 
 @admin_bp.route("/funciones", methods=["GET", "POST"])
+@admin_required
 def funciones():
     funciones = []
     peliculas = []
@@ -571,6 +572,7 @@ def funciones():
 
 
 @admin_bp.route("/salas", methods=["GET", "POST"])
+@admin_required
 def salas():
 
     token = session.get("access_token")
@@ -609,9 +611,9 @@ def salas():
 
 
 @admin_bp.route("/servicios", methods=["GET", "POST"])
+@admin_required
 def servicios():
     error_servicios = False
-
     token = session.get("access_token")
 
     if request.method == "POST":
@@ -670,7 +672,6 @@ def servicios():
                     json=datos,
                     headers={"Authorization": f"Bearer {token}"}
                     )
-                print("fin de la peticion:", datos)
             respuesta.raise_for_status()
             return redirect(url_for("admin.servicios"))
 
