@@ -4,6 +4,11 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/configuracion.css') }}">
 {% endblock %}
 {% block content %}
+{% with mensajes = get_flashed_messages() %}
+{% if mensajes %}
+<p class="checkout-empty" role="alert">{{ mensajes[0] }}</p>
+{% endif %}
+{% endwith %}
 {% if compra_pendiente %}
 <section
     class="active-purchase-banner"

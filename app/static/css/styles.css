@@ -2802,6 +2802,87 @@
     min-width: 0;
     flex: 1 1 auto;
   }
+  .parking-panel {
+    margin: 2rem 0;
+    padding: 2rem;
+    border: 1px solid rgba(20, 35, 60, 0.12);
+    border-radius: 22px;
+    background: #f1f4f6;
+}
+
+.parking-eyebrow {
+    margin: 0 0 0.75rem;
+    color: #b98500;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+}
+
+.parking-panel h2 {
+    margin: 0 0 1rem;
+    color: #102246;
+}
+
+.parking-panel strong,
+.checkout-empty strong {
+    color: #0b1630;
+    font-weight: 700;
+}
+
+.parking-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+}
+
+.parking-controls input[type="number"] {
+    width: 90px;
+    padding: 0.7rem;
+    border: 1px solid #ccd4dc;
+    border-radius: 10px;
+}
+
+/* Checkbox oculto visualmente, pero sigue siendo accesible */
+.parking-checkbox {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+}
+
+.parking-button {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.8rem 1.6rem;
+    border: none;
+    border-radius: 999px;
+    background: #102246;
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.parking-checkbox:checked + .parking-button {
+    background: #b98500;
+}
+
+.reserved-text {
+    display: none;
+}
+
+.parking-checkbox:checked + .parking-button .reserve-text {
+    display: none;
+}
+
+.parking-checkbox:checked + .parking-button .reserved-text {
+    display: inline;
+}
+
+.parking-checkbox:focus-visible + .parking-button {
+    outline: 3px solid #5276b5;
+    outline-offset: 3px;
+}
   /* ==================== FIN COMPONENTES GENERALES ==================== */
 }
 

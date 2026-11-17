@@ -79,8 +79,12 @@
         El formulario envía la selección con GET a otra ruta de Flask. No usa
         JavaScript ni fetch: Jinja ya recibió el catálogo desde el servidor.
     #}
-    <form class="candy-selection-form" action="{{ url_for('cliente.resumen_compra') }}" method="get">
+    <form id="candy-selection-form" class="candy-selection-form" action="{{ url_for('cliente.resumen_compra') }}" method="get">
         <input type="hidden" name="reserva_id" value="{{ reserva_id }}">
+        {% if estacionamiento and estacionamiento.id in servicio_ids %}
+        <input type="hidden" name="servicio_ids" value="{{ estacionamiento.id }}">
+        <input type="hidden" name="cantidad_{{ estacionamiento.id }}" value="{{ cantidades.get(estacionamiento.id, 1) }}">
+        {% endif %}
         <div class="candy-list">
         {% for producto in productos %}
         <article class="candy-card">
