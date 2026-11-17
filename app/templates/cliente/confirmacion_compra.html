@@ -6,6 +6,14 @@
     entrada persistida por el backend. La imagen QR podrá generarse en el
     backend a partir de ese código sin cambiar el flujo de esta pantalla.
 #}
+<nav class="purchase-steps" aria-label="Progreso de la compra">
+    <span class="completed">1. Función</span>
+    <span class="completed">2. Butacas</span>
+    <span class="completed">3. Candy</span>
+    <span class="completed">4. Resumen</span>
+    <span class="active" aria-current="step">5. QR</span>
+</nav>
+
 <header class="checkout-heading">
     <div>
         <p class="eyebrow">Compra #{{ compra.id }}</p>

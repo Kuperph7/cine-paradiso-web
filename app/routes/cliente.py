@@ -1,12 +1,13 @@
 import secrets
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import requests
 from flask import (
     Blueprint,
     current_app,
     flash,
+    jsonify,
     redirect,
     render_template,
     request,
@@ -14,7 +15,7 @@ from flask import (
     url_for,
 )
 
-from app.services.api_client import api_get, api_patch, api_post
+from app.services.api_client import api_delete, api_get, api_patch, api_post
 
 cliente_bp = Blueprint("cliente", __name__) 
 
@@ -24,6 +25,7 @@ PANTALLAS_DE_COMPRA = {
     "cliente.seleccionar_butacas",
     "cliente.seleccionar_servicios",
     "cliente.resumen_compra",
+    "cliente.pago_pendiente",
 }
 
 
@@ -32,18 +34,6 @@ def evitar_cache_en_compra(respuesta):
     if request.endpoint in PANTALLAS_DE_COMPRA:
         respuesta.headers["Cache-Control"] = "no-store"
     return respuesta
-
-
-def _compra_ya_confirmada(funcion_id, butaca_ids):
-    """Devuelve la compra de esta sesión que ya incluye esas butacas."""
-    ultima = session.get("ultima_compra")
-    if (
-        ultima
-        and ultima["funcion_id"] == funcion_id
-        and ultima["butaca_ids"] == sorted(butaca_ids)
-    ):
-        return ultima["compra_id"]
-    return None
 
 
 def _mensaje_error_api(respuesta, mensaje_predeterminado):
@@ -123,22 +113,92 @@ def _agrupar_butacas_por_fila(butacas):
     ]
 
 
-def obtener_filtros():
-    # Conserva los filtros elegidos al navegar entre la cartelera y las
-    # pantallas de preferencias. Más adelante Flask enviará estos valores al
-    # backend mediante api_client; el navegador no consultará la API con fetch.
-    nombres_filtros = (
-        "local_id",
-        "fecha",
-        "genero",
-        "idioma",
-        "formato",
-        "categoria",
+def _consultar_reserva(reserva_id):
+    token = session.get("access_token")
+    if not token:
+        return None
+    return api_get(
+        f"/reservas/{reserva_id}",
+        headers={"Authorization": f"Bearer {token}"},
     )
-    return {
-        nombre: request.args.get(nombre, "")
-        for nombre in nombres_filtros
+
+
+def _recordar_reserva_activa(reserva, etapa, continuar_url):
+    recordada = {
+        "id": reserva["id"],
+        "etapa": etapa,
+        "continuar_url": continuar_url,
     }
+    if reserva.get("funcion_id") is not None:
+        recordada["funcion_id"] = reserva["funcion_id"]
+    session["reserva_activa"] = recordada
+
+
+def _cargar_compra_pendiente():
+    token = session.get("access_token")
+    if not token:
+        return None
+
+    try:
+        respuesta = api_get(
+            "/reservas/activa",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+    except requests.exceptions.RequestException:
+        current_app.logger.exception("No fue posible consultar la reserva activa")
+        return None
+
+    if respuesta.status_code == 401:
+        session.clear()
+        return None
+    if not respuesta.ok:
+        return None
+
+    reserva = respuesta.json().get("reserva")
+    if not reserva:
+        session.pop("reserva_activa", None)
+        session.pop("ultimo_pago", None)
+        return None
+
+    if reserva["estado"] == "pago_en_proceso":
+        continuar_url = url_for(
+            "cliente.pago_pendiente",
+            reserva_id=reserva["id"],
+        )
+        etapa = "pago"
+    else:
+        recordada = session.get("reserva_activa") or {}
+        continuar_url = recordada.get("continuar_url")
+        if (
+            recordada.get("id") != reserva["id"]
+            or not isinstance(continuar_url, str)
+            or not continuar_url.startswith("/")
+        ):
+            continuar_url = url_for(
+                "cliente.seleccionar_servicios",
+                reserva_id=reserva["id"],
+            )
+        etapa = recordada.get("etapa", "servicios")
+
+    _recordar_reserva_activa(reserva, etapa, continuar_url)
+    return {**reserva, "continuar_url": continuar_url}
+
+
+# Conserva los filtros seleccionados al navegar entre las pantallas.
+def obtener_filtros():
+    filtros = {
+        nombre: request.args.get(nombre, "").strip()
+        for nombre in ("local_id", "fecha", "genero")
+    }
+
+    for campo in ("formato", "idioma", "categoria"):
+        filtros[campo] = [
+            valor.strip()
+            for valor in request.args.getlist(campo)
+            if valor.strip()
+        ]
+
+    return filtros
 
 def obtener_headers():
     token = session.get("access_token", "")
@@ -165,27 +225,33 @@ def contexto_filtros():
 
 @cliente_bp.get("/")
 def cartelera():
+    return renderizar_cartelera("cliente/cartelera.html")
+
+
+def renderizar_cartelera(template):
     peliculas = []
     error = None
 
     local_id = request.args.get("local_id", "").strip()
-    fecha = request.args.get("fecha", "").strip()
 
     locales = [
         {"id": 1, "nombre": "Cine Paradiso Centro"},
         {"id": 2, "nombre": "Cine Paradiso Norte"},
         {"id": 3, "nombre": "Cine Paradiso Puerto"}
     ]
+
     parametros = {}
 
     if local_id:
         parametros["local_id"] = local_id
 
-    if fecha:
-        parametros["fecha"] = fecha
+    filtros = obtener_filtros()
+    for campo in ("formato", "idioma", "categoria"):
+        if filtros[campo]:
+            parametros[campo] = filtros[campo]
 
     try:
-        respuesta = api_get("/cartelera", params=parametros)
+        respuesta = api_get("/cartelera")
         respuesta.raise_for_status()
 
         datos = respuesta.json()
@@ -204,15 +270,17 @@ def cartelera():
             if genero not in generos:
                 generos.append(genero)
 
+    compra_pendiente = _cargar_compra_pendiente()
+
     return render_template(
-        "cliente/cartelera.html",
+        template,
         peliculas=peliculas,
         estrenos=[],
         generos=generos,
         error=error,
         local_id=local_id,
-        fecha=fecha,
         locales=locales,
+        compra_pendiente=compra_pendiente,
     )
 
 
@@ -220,20 +288,94 @@ def cartelera():
 def detalle_pelicula(pelicula_id):
     pelicula = None
     funciones = []
+    fechas_disponibles = []
     error = None
+    filtros = obtener_filtros()
+    locales = []
+
+    local_id = request.args.get("local_id", "").strip()
+    fecha_seleccionada = request.args.get("fecha", "").strip()
 
     try:
         respuesta = api_get(f"/cartelera/{pelicula_id}")
         respuesta.raise_for_status()
 
         pelicula = respuesta.json()
-        funciones = pelicula.get("funciones_disponibles", [])
+        funciones_disponibles = pelicula.get("funciones_disponibles", [])
+
+        locales_por_id = {}
+        for funcion in funciones_disponibles:
+            funcion_local_id = funcion["local_id"]
+            locales_por_id[funcion_local_id] = {
+                "id": funcion_local_id,
+                "nombre": funcion["local_nombre"],
+            }
+
+        locales = sorted(locales_por_id.values(), key=lambda local: local["nombre"])
+
+        for funcion in funciones_disponibles:
+            if (
+                filtros["local_id"]
+                and str(funcion["local_id"]) != filtros["local_id"]
+            ):
+                continue
+
+            if (
+                filtros["formato"]
+                and funcion.get("formato") not in filtros["formato"]
+            ):
+                continue
+
+            if (
+                filtros["idioma"]
+                and funcion.get("idioma") not in filtros["idioma"]
+            ):
+                continue
+
+            funciones.append(funcion)
+        
+        hoy = datetime.now().date()
+        limite = hoy + timedelta(days=7)
+
+        funciones_filtradas = []
 
         for funcion in funciones:
-            fecha_hora = funcion["fecha_hora"]
-            funcion["fecha"] = fecha_hora[0:10]
-            funcion["hora"] = fecha_hora[11:16]
+            fecha_hora = datetime.fromisoformat(
+                funcion["fecha_hora"]
+            )
 
+            fecha_funcion = fecha_hora.date()
+
+            if hoy <= fecha_funcion <= limite:
+                funcion["fecha"] = fecha_hora.strftime("%d/%m/%Y")
+                funcion["hora"] = fecha_hora.strftime("%H:%M")
+
+                funciones_filtradas.append(funcion)
+
+                fecha_iso = fecha_funcion.isoformat()
+
+                if fecha_iso not in fechas_disponibles:
+                    fechas_disponibles.append(fecha_iso)
+
+        funciones = funciones_filtradas
+
+        fechas_disponibles.sort()
+
+        if not fecha_seleccionada:
+            fecha_seleccionada = hoy.isoformat()
+
+        if fecha_seleccionada not in fechas_disponibles:
+            if fechas_disponibles:
+                fecha_seleccionada = fechas_disponibles[0]
+            else:
+                fecha_seleccionada = ""
+
+        if fecha_seleccionada:
+            funciones = [
+                funcion for funcion in funciones
+                if funcion["fecha_hora"][:10] == fecha_seleccionada
+            ]
+            
     except requests.exceptions.HTTPError as error_api:
         current_app.logger.exception(
             "Error al consultar el detalle de la película"
@@ -254,7 +396,12 @@ def detalle_pelicula(pelicula_id):
         "cliente/detalle_pelicula.html",
         pelicula=pelicula,
         funciones=funciones,
+        fechas_disponibles=fechas_disponibles,
+        fecha_seleccionada=fecha_seleccionada,
+        local_id=local_id,
         error=error,
+        filtros=filtros,
+        locales=locales,
     )
 
 
@@ -328,10 +475,76 @@ def seleccionar_butacas(funcion_id):
     )
 
 
+@cliente_bp.post("/funciones/<int:funcion_id>/reservas")
+def retener_butacas(funcion_id):
+    butaca_ids = request.form.getlist("butaca_ids", type=int)
+    if not butaca_ids:
+        flash("Seleccioná al menos una butaca para continuar.", "error")
+        return redirect(
+            url_for("cliente.seleccionar_butacas", funcion_id=funcion_id)
+        )
+
+    token = session.get("access_token")
+    if not token:
+        flash("Iniciá sesión para retener tus butacas durante cinco minutos.", "error")
+        return redirect(
+            url_for(
+                "auth.login",
+                next=url_for("cliente.seleccionar_butacas", funcion_id=funcion_id),
+            )
+        )
+
+    try:
+        respuesta = api_post(
+            f"/funciones/{funcion_id}/reservas",
+            json={"butaca_ids": butaca_ids},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+    except requests.exceptions.RequestException:
+        flash("No se pudo conectar con el servidor para retener las butacas.", "error")
+        return redirect(
+            url_for("cliente.seleccionar_butacas", funcion_id=funcion_id)
+        )
+
+    if respuesta.status_code in {200, 201}:
+        reserva = respuesta.json()
+        continuar_url = url_for(
+            "cliente.seleccionar_servicios",
+            reserva_id=reserva["id"],
+        )
+        _recordar_reserva_activa(reserva, "servicios", continuar_url)
+        return redirect(continuar_url)
+    if respuesta.status_code == 401:
+        session.clear()
+        return redirect(
+            url_for(
+                "auth.login",
+                next=url_for("cliente.seleccionar_butacas", funcion_id=funcion_id),
+            )
+        )
+
+    flash(
+        _mensaje_error_api(
+            respuesta,
+            "Otra persona retuvo una de esas butacas. Elegí nuevamente.",
+        ),
+        "error",
+    )
+    return redirect(url_for("cliente.seleccionar_butacas", funcion_id=funcion_id))
+
+
+@cliente_bp.get("/funciones/<int:funcion_id>/butacas/disponibilidad")
+def disponibilidad_butacas(funcion_id):
+    try:
+        respuesta = api_get(f"/funciones/{funcion_id}/butacas")
+        return jsonify(respuesta.json()), respuesta.status_code
+    except (requests.exceptions.RequestException, ValueError):
+        return jsonify({"mensaje": "No se pudo actualizar la disponibilidad."}), 503
+
+
 @cliente_bp.get("/compras/servicios")
 def seleccionar_servicios():
-    funcion_id = request.args.get("funcion_id", type=int)
-    butaca_ids = request.args.getlist("butaca_ids", type=int)
+    reserva_id = request.args.get("reserva_id", "").strip()
     servicio_ids = request.args.getlist("servicio_ids", type=int)
     cantidades = {
         servicio_id: max(
@@ -342,6 +555,7 @@ def seleccionar_servicios():
     }
     productos = []
     error = None
+    reserva = None
     estilos = (
         "candy-combo",
         "candy-duo",
@@ -356,6 +570,19 @@ def seleccionar_servicios():
     # El navegador no consulta el backend. Flask frontend usa requests en
     # api_get(), recibe el JSON y recién entonces renderiza el HTML con Jinja.
     try:
+        respuesta_reserva = _consultar_reserva(reserva_id)
+        if respuesta_reserva is None:
+            return redirect(url_for("auth.login", next=request.full_path))
+        if respuesta_reserva.status_code == 410:
+            flash("Tu reserva venció. Elegí las butacas nuevamente.", "error")
+            return redirect(url_for("cliente.cartelera"))
+        respuesta_reserva.raise_for_status()
+        reserva = respuesta_reserva.json()
+        _recordar_reserva_activa(
+            reserva,
+            "servicios",
+            request.full_path.rstrip("?"),
+        )
         respuesta = api_get("/servicios")
         respuesta.raise_for_status()
         servicios = respuesta.json().get("servicios", [])
@@ -379,8 +606,7 @@ def seleccionar_servicios():
 
     resumen_url = url_for(
         "cliente.resumen_compra",
-        funcion_id=funcion_id,
-        butaca_ids=butaca_ids,
+        reserva_id=reserva_id,
     )
 
     return render_template(
@@ -388,8 +614,8 @@ def seleccionar_servicios():
         categorias=["Todos los productos"],
         productos=productos,
         resumen_url=resumen_url,
-        funcion_id=funcion_id,
-        butaca_ids=butaca_ids,
+        reserva_id=reserva_id,
+        reserva=reserva,
         servicio_ids=servicio_ids,
         cantidades=cantidades,
         error=error,
@@ -398,33 +624,32 @@ def seleccionar_servicios():
 
 @cliente_bp.get("/compras/resumen")
 def resumen_compra():
-    # Los identificadores llegan desde el formulario de butacas, pero Flask los
-    # vuelve a contrastar con la disponibilidad actual informada por la API.
-    funcion_id = request.args.get("funcion_id", type=int)
-    butaca_ids = request.args.getlist("butaca_ids", type=int)
+    reserva_id = request.args.get("reserva_id", "").strip()
     servicio_ids = request.args.getlist("servicio_ids", type=int)
+    funcion_id = None
 
-    if funcion_id is None or not butaca_ids:
-        flash("Seleccioná al menos una butaca para continuar.", "error")
-        if funcion_id is not None:
-            return redirect(
-                url_for("cliente.seleccionar_butacas", funcion_id=funcion_id)
-            )
+    if not reserva_id:
+        flash("Seleccioná y retené tus butacas para continuar.", "error")
         return redirect(url_for("cliente.cartelera"))
 
-    # Si el usuario vuelve atrás después de comprar, no se le muestra de
-    # nuevo el carrito como si la compra estuviera pendiente.
-    compra_id = _compra_ya_confirmada(funcion_id, butaca_ids)
-    if compra_id is not None:
-        return redirect(
-            url_for("cliente.confirmacion_compra", compra_id=compra_id)
-        )
-
     try:
+        respuesta_reserva = _consultar_reserva(reserva_id)
+        if respuesta_reserva is None:
+            return redirect(url_for("auth.login", next=request.full_path))
+        if respuesta_reserva.status_code == 410:
+            flash("Tu reserva venció. Elegí las butacas nuevamente.", "error")
+            return redirect(url_for("cliente.cartelera"))
+        respuesta_reserva.raise_for_status()
+        reserva = respuesta_reserva.json()
+        if reserva["estado"] == "vendida" and reserva.get("compra_id"):
+            return redirect(
+                url_for(
+                    "cliente.confirmacion_compra",
+                    compra_id=reserva["compra_id"],
+                )
+            )
+        funcion_id = int(reserva["funcion_id"])
         funcion = _cargar_contexto_funcion(funcion_id)
-        respuesta_butacas = api_get(f"/funciones/{funcion_id}/butacas")
-        respuesta_butacas.raise_for_status()
-        butacas_api = respuesta_butacas.json().get("butacas", [])
         respuesta_servicios = api_get("/servicios")
         respuesta_servicios.raise_for_status()
         servicios_api = respuesta_servicios.json().get("servicios", [])
@@ -432,37 +657,24 @@ def resumen_compra():
         flash("No se pudo validar la selección con el servidor.", "error")
         return redirect(
             url_for("cliente.seleccionar_butacas", funcion_id=funcion_id)
+            if funcion_id is not None
+            else url_for("cliente.cartelera")
         )
     except (KeyError, TypeError, ValueError):
         flash("La información de la función no tiene el formato esperado.", "error")
         return redirect(
             url_for("cliente.seleccionar_butacas", funcion_id=funcion_id)
-        )
-
-    disponibles = {
-        int(butaca["id"]): butaca
-        for butaca in butacas_api
-        if butaca.get("estado") == "disponible"
-    }
-    if any(butaca_id not in disponibles for butaca_id in butaca_ids):
-        flash(
-            "Una de las butacas elegidas ya no está disponible.",
-            "error",
-        )
-        return redirect(
-            url_for("cliente.seleccionar_butacas", funcion_id=funcion_id)
+            if funcion_id is not None
+            else url_for("cliente.cartelera")
         )
 
     butacas_seleccionadas = [
         {
-            "id": butaca_id,
-            "codigo": (
-                f"{disponibles[butaca_id]['fila']}"
-                f"{disponibles[butaca_id]['numero']}"
-            ),
+            "id": int(butaca["id"]),
+            "codigo": f"{butaca['fila']}{butaca['numero']}",
             "precio": funcion["precio"],
         }
-        for butaca_id in butaca_ids
+        for butaca in reserva["butacas"]
     ]
     servicios_disponibles = {
         int(servicio["id"]): servicio for servicio in servicios_api
@@ -472,8 +684,7 @@ def resumen_compra():
         return redirect(
             url_for(
                 "cliente.seleccionar_servicios",
-                funcion_id=funcion_id,
-                butaca_ids=butaca_ids,
+                reserva_id=reserva_id,
             )
         )
 
@@ -485,8 +696,7 @@ def resumen_compra():
             return redirect(
                 url_for(
                     "cliente.seleccionar_servicios",
-                    funcion_id=funcion_id,
-                    butaca_ids=butaca_ids,
+                    reserva_id=reserva_id,
                 )
             )
         servicio = servicios_disponibles[servicio_id]
@@ -510,8 +720,7 @@ def resumen_compra():
 
     candy_url = url_for(
         "cliente.seleccionar_servicios",
-        funcion_id=funcion_id,
-        butaca_ids=butaca_ids,
+        reserva_id=reserva_id,
         servicio_ids=servicio_ids,
         **{
             f"cantidad_{servicio['servicio_id']}": servicio["cantidad"]
@@ -530,6 +739,11 @@ def resumen_compra():
     # Cada resumen habilita una sola confirmación. Un formulario viejo
     # (doble clic, o "atrás" después de comprar) no puede crear otra compra.
     session["checkout_id"] = secrets.token_urlsafe(16)
+    _recordar_reserva_activa(
+        reserva,
+        "resumen",
+        request.full_path.rstrip("?"),
+    )
 
     return render_template(
         "cliente/resumen_compra.html",
@@ -539,14 +753,15 @@ def resumen_compra():
         total=total_entradas + total_servicios,
         candy_url=candy_url,
         checkout_id=session["checkout_id"],
+        reserva=reserva,
+        reserva_id=reserva_id,
     )
 
 
 @cliente_bp.post("/compras/confirmar")
 def confirmar_compra():
-    """Envía la compra a la API usando el JWT guardado por Flask."""
-    funcion_id = request.form.get("funcion_id", type=int)
-    butaca_ids = request.form.getlist("butaca_ids", type=int)
+    """Inicia el intento que luego resuelve la pasarela simulada."""
+    reserva_id = request.form.get("reserva_id", "").strip()
     servicio_ids = request.form.getlist("servicio_ids", type=int)
     servicios = [
         {
@@ -559,8 +774,7 @@ def confirmar_compra():
     ]
     resumen_url = url_for(
         "cliente.resumen_compra",
-        funcion_id=funcion_id,
-        butaca_ids=butaca_ids,
+        reserva_id=reserva_id,
         servicio_ids=servicio_ids,
         **{
             f"cantidad_{servicio['servicio_id']}": servicio["cantidad"]
@@ -573,12 +787,10 @@ def confirmar_compra():
         return redirect(url_for("auth.login", next=resumen_url))
 
     checkout_id = request.form.get("checkout_id", "")
-    ultima = session.get("ultima_compra") or {}
-    if checkout_id and checkout_id == ultima.get("checkout_id"):
-        # Este formulario ya generó una compra: se muestra esa compra en
-        # lugar de enviar otra a la API.
+    ultimo_pago = session.get("ultimo_pago") or {}
+    if checkout_id and checkout_id == ultimo_pago.get("checkout_id"):
         return redirect(
-            url_for("cliente.confirmacion_compra", compra_id=ultima["compra_id"])
+            url_for("cliente.pago_pendiente", reserva_id=reserva_id)
         )
     if not checkout_id or checkout_id != session.get("checkout_id"):
         flash("Revisá tu compra y confirmala nuevamente.", "error")
@@ -586,31 +798,40 @@ def confirmar_compra():
 
     try:
         respuesta = api_post(
-            "/compras",
+            f"/reservas/{reserva_id}/pagos",
             json={
-                "funcion_id": funcion_id,
-                "butaca_ids": butaca_ids,
                 "servicios": servicios,
                 "medio_pago": request.form.get("medio_pago", "tarjeta"),
             },
-            headers={"Authorization": f"Bearer {token}"},
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Idempotency-Key": checkout_id,
+            },
         )
     except requests.exceptions.RequestException:
-        flash("No se pudo conectar con el servidor para confirmar la compra.", "error")
+        flash("No se pudo conectar con el servidor para iniciar el pago.", "error")
         return redirect(resumen_url)
 
-    if respuesta.status_code == 201:
-        compra = respuesta.json()
+    if respuesta.status_code in {200, 202}:
+        reserva = respuesta.json()
         session.pop("checkout_id", None)
-        session["ultima_compra"] = {
+        if reserva.get("estado") == "vendida" and reserva.get("compra_id"):
+            return redirect(
+                url_for(
+                    "cliente.confirmacion_compra",
+                    compra_id=reserva["compra_id"],
+                )
+            )
+        session["ultimo_pago"] = {
             "checkout_id": checkout_id,
-            "compra_id": compra["id"],
-            "funcion_id": funcion_id,
-            "butaca_ids": sorted(butaca_ids),
+            "reserva_id": reserva_id,
         }
-        return redirect(
-            url_for("cliente.confirmacion_compra", compra_id=compra["id"])
+        continuar_url = url_for(
+            "cliente.pago_pendiente",
+            reserva_id=reserva_id,
         )
+        _recordar_reserva_activa(reserva, "pago", continuar_url)
+        return redirect(continuar_url)
 
     if respuesta.status_code == 401:
         session.clear()
@@ -620,11 +841,154 @@ def confirmar_compra():
     flash(
         _mensaje_error_api(
             respuesta,
-            "No fue posible confirmar la compra.",
+            "No fue posible iniciar el pago.",
         ),
         "error",
     )
     return redirect(resumen_url)
+
+
+@cliente_bp.get("/reservas/<string:reserva_id>/pago-pendiente")
+def pago_pendiente(reserva_id):
+    respuesta = _consultar_reserva(reserva_id)
+    if respuesta is None:
+        return redirect(url_for("auth.login", next=request.path))
+    if respuesta.status_code == 410:
+        flash("El tiempo de pago venció y no se emitieron entradas.", "error")
+        return redirect(url_for("cliente.cartelera"))
+    if respuesta.status_code == 401:
+        session.clear()
+        return redirect(url_for("auth.login", next=request.path))
+    if not respuesta.ok:
+        flash("No se pudo consultar el estado del pago.", "error")
+        return redirect(url_for("cliente.cartelera"))
+    reserva = respuesta.json()
+    if reserva["estado"] == "vendida" and reserva.get("compra_id"):
+        session["ultima_compra"] = {
+            "compra_id": reserva["compra_id"],
+            "funcion_id": reserva["funcion_id"],
+            "butaca_ids": sorted(item["id"] for item in reserva["butacas"]),
+        }
+        return redirect(
+            url_for(
+                "cliente.confirmacion_compra",
+                compra_id=reserva["compra_id"],
+            )
+        )
+    if reserva["estado"] != "pago_en_proceso":
+        session.pop("reserva_activa", None)
+        session.pop("ultimo_pago", None)
+        flash("El intento de pago ya no está activo.", "error")
+        return redirect(url_for("cliente.cartelera"))
+    _recordar_reserva_activa(
+        reserva,
+        "pago",
+        url_for("cliente.pago_pendiente", reserva_id=reserva_id),
+    )
+    return render_template("cliente/pago_pendiente.html", reserva=reserva)
+
+
+@cliente_bp.post("/reservas/<string:reserva_id>/pago-simulado")
+def resolver_pago_simulado(reserva_id):
+    token = session.get("access_token")
+    if not token:
+        return redirect(url_for("auth.login", next=request.referrer or "/"))
+
+    resultado = request.form.get("resultado", "").strip()
+    if resultado not in {"aprobado", "cancelado"}:
+        flash("Elegí una acción de pago válida.", "error")
+        return redirect(
+            url_for("cliente.pago_pendiente", reserva_id=reserva_id)
+        )
+
+    try:
+        respuesta = api_post(
+            f"/reservas/{reserva_id}/pagos/simular",
+            json={"resultado": resultado},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+    except requests.exceptions.RequestException:
+        flash("No se pudo resolver el pago con el servidor.", "error")
+        return redirect(
+            url_for("cliente.pago_pendiente", reserva_id=reserva_id)
+        )
+
+    if respuesta.status_code == 401:
+        session.clear()
+        return redirect(url_for("auth.login", next=request.path))
+
+    if respuesta.ok:
+        session.pop("checkout_id", None)
+        session.pop("ultimo_pago", None)
+        session.pop("reserva_activa", None)
+        if resultado == "cancelado":
+            flash(
+                "Cancelaste la compra. Las butacas volvieron a estar disponibles.",
+                "success",
+            )
+            return redirect(url_for("cliente.cartelera"))
+
+        compra = respuesta.json()
+        session["ultima_compra"] = {
+            "compra_id": compra["id"],
+            "funcion_id": compra["funcion_id"],
+            "butaca_ids": sorted(
+                entrada.get("butaca", {}).get("id")
+                for entrada in compra.get("entradas", [])
+                if entrada.get("butaca", {}).get("id") is not None
+            ),
+        }
+        return redirect(
+            url_for(
+                "cliente.confirmacion_compra",
+                compra_id=compra["id"],
+            )
+        )
+
+    flash(
+        _mensaje_error_api(respuesta, "No fue posible resolver el pago."),
+        "error",
+    )
+    if respuesta.status_code == 410:
+        session.pop("reserva_activa", None)
+        session.pop("ultimo_pago", None)
+        return redirect(url_for("cliente.cartelera"))
+    return redirect(
+        url_for("cliente.pago_pendiente", reserva_id=reserva_id)
+    )
+
+
+@cliente_bp.get("/reservas/<string:reserva_id>/estado")
+def estado_reserva(reserva_id):
+    respuesta = _consultar_reserva(reserva_id)
+    if respuesta is None:
+        return jsonify({"estado": "sin_sesion"}), 401
+    try:
+        return jsonify(respuesta.json()), respuesta.status_code
+    except ValueError:
+        return jsonify({"mensaje": "Respuesta inválida del servidor."}), 502
+
+
+@cliente_bp.post("/reservas/<string:reserva_id>/cancelar")
+def cancelar_reserva(reserva_id):
+    token = session.get("access_token")
+    if not token:
+        return redirect(url_for("auth.login", next=url_for("cliente.cartelera")))
+    try:
+        respuesta = api_delete(
+            f"/reservas/{reserva_id}",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+    except requests.exceptions.RequestException:
+        flash("No se pudo cancelar la reserva.", "error")
+        return redirect(url_for("cliente.cartelera"))
+    if respuesta.ok:
+        session.pop("reserva_activa", None)
+        session.pop("ultimo_pago", None)
+        flash("La reserva fue cancelada y las butacas quedaron disponibles.", "success")
+    else:
+        flash(_mensaje_error_api(respuesta, "No se pudo cancelar la reserva."), "error")
+    return redirect(url_for("cliente.cartelera"))
 
 
 @cliente_bp.get("/compras/<int:compra_id>/confirmacion")
@@ -649,6 +1013,9 @@ def confirmacion_compra(compra_id):
     except requests.exceptions.RequestException:
         flash("No se pudo recuperar la compra confirmada.", "error")
         return redirect(url_for("cliente.cartelera"))
+
+    session.pop("reserva_activa", None)
+    session.pop("ultimo_pago", None)
 
     return render_template(
         "cliente/confirmacion_compra.html",
@@ -798,6 +1165,11 @@ def preguntas_frecuentes():
     return render_template("cliente/preguntas_frecuentes.html")
 
 
+@cliente_bp.get("/terminos-y-condiciones")
+def terminos_condiciones():
+    return render_template("cliente/terminos_condiciones.html")
+
+
 @cliente_bp.get("/peliculas-vistas")
 def peliculas_vistas():
     return render_template("cliente/peliculas_vistas.html")
@@ -805,14 +1177,14 @@ def peliculas_vistas():
 
 @cliente_bp.get("/configuracion/idioma")
 def configurar_idioma():
-    return render_template("cliente/idioma.html")
+    return renderizar_cartelera("cliente/idioma.html")
 
 
 @cliente_bp.get("/configuracion/formato")
 def configurar_formato():
-    return render_template("cliente/formato.html")
+    return renderizar_cartelera("cliente/formato.html")
 
 
 @cliente_bp.get("/configuracion/categoria")
 def configurar_categoria():
-    return render_template("cliente/categoria.html")
+    return renderizar_cartelera("cliente/categoria.html")

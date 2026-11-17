@@ -61,8 +61,11 @@ def login():
                 session["access_token"] = datos["token"]
                 session["usuario"] = datos["usuario"]
 
+                if datos["usuario"].get("rol") == "administrador":
+                    return redirect(url_for("admin.peliculas"))
                 if destino.startswith("/") and not destino.startswith("//"):
                     return redirect(destino)
+
                 return redirect(url_for("cliente.cartelera"))
 
             mensaje_api = _mensaje_error_api(respuesta)

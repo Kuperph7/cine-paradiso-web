@@ -33,6 +33,10 @@ catalogo = [{
 @app.before_request
 def sesion_de_prueba():
     session["access_token"] = "credencial-simulada"
+    session["usuario"] = {
+        "nombre": "Administrador de prueba",
+        "rol": "administrador",
+    }
 
 
 def respuesta_simulada(estado, datos):
