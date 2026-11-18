@@ -3,40 +3,61 @@
 {% block title %}Términos y condiciones | Cine Paradiso{% endblock %}
 
 {% block content %}
-<section class="preguntas-frecuentes">
-    <h1>Términos y condiciones</h1>
+<section class="terminos-accordion" aria-labelledby="terminos-title">
+    <h1 id="terminos-title">Términos y condiciones</h1>
 
-    <div class="pregunta">
-        <h2>Uso del sitio</h2>
-        <p>
-            Cine Paradiso permite consultar películas, funciones, salas y
-            realizar compras de entradas y servicios desde este sitio.
-        </p>
-    </div>
+    <details class="termino-item">
+        <summary class="termino-header">
+            <span>ENTRADAS</span>
+            <span class="termino-icon" aria-hidden="true"></span>
+        </summary>
+        <div class="termino-body">
+            <p>
+                La compra de entradas se realiza seleccionando función y butacas disponibles. Cada butaca queda retenida temporalmente durante el proceso de compra y, una vez confirmado el pago, se emite un código QR único por entrada que será validado en el ingreso a la sala.
+            </p>
+            <p>
+                Las cancelaciones solo están permitidas hasta 1 hora antes del horario de inicio de la función desde la sección "Mis compras", siempre que la entrada no haya sido utilizada.
+            </p>
+        </div>
+    </details>
 
-    <div class="pregunta">
-        <h2>Cuenta de usuario</h2>
-        <p>
-            Cada persona es responsable de mantener segura su cuenta y de
-            utilizar datos verdaderos al registrarse.
-        </p>
-    </div>
+    <details class="termino-item">
+        <summary class="termino-header">
+            <span>CANDY</span>
+            <span class="termino-icon" aria-hidden="true"></span>
+        </summary>
+        <div class="termino-body">
+            <p>
+                Los productos de Candy seleccionados durante la compra se abonan junto con las entradas y se retiran directamente en el sector de confitería del complejo presentando el comprobante de la compra.
+            </p>
+        </div>
+    </details>
 
-    <div class="pregunta">
-        <h2>Compras y cancelaciones</h2>
-        <p>
-            Las compras quedan sujetas a la disponibilidad de entradas y
-            servicios. Las condiciones de cancelación se informan durante
-            el proceso de compra.
-        </p>
-    </div>
+    <details class="termino-item">
+        <summary class="termino-header">
+            <span>ESTACIONAMIENTO</span>
+            <span class="termino-icon" aria-hidden="true"></span>
+        </summary>
+        <div class="termino-body">
+            <p>
+                El servicio de estacionamiento cuenta con un cupo máximo de 20 plazas disponibles por franja horaria. Cada plaza reservada tiene una validez de 3 horas asociadas al horario de la función seleccionada, liberándose automáticamente una vez cumplido dicho plazo.
+            </p>
+        </div>
+    </details>
 
-    <div class="pregunta">
-        <h2>Contacto</h2>
-        <p>
-            Ante cualquier duda, el usuario puede comunicarse con Cine
-            Paradiso a través de los canales de atención disponibles.
-        </p>
-    </div>
+    <details class="termino-item">
+        <summary class="termino-header">
+            <span>USO DEL SITIO Y CUENTA DE USUARIO</span>
+            <span class="termino-icon" aria-hidden="true"></span>
+        </summary>
+        <div class="termino-body">
+            <p>
+                Cine Paradiso permite consultar películas, funciones, salas y realizar compras de entradas y servicios desde este sitio. Cada persona es responsable de mantener segura su cuenta y de utilizar datos verdaderos al registrarse.
+            </p>
+            <p>
+                Ante cualquier duda o inconveniente, el usuario puede comunicarse con Cine Paradiso a través de los canales de atención publicados en el pie de página.
+            </p>
+        </div>
+    </details>
 </section>
 {% endblock %}

@@ -366,6 +366,7 @@ def desactivar_pelicula(pelicula_id):
 
 
 @admin_bp.route("/funciones", methods=["GET", "POST"])
+@admin_required
 def funciones():
     funciones = []
     peliculas = []
@@ -571,7 +572,10 @@ def funciones():
 
 
 @admin_bp.route("/salas", methods=["GET", "POST"])
+@admin_required
 def salas():
+
+    token = session.get("access_token")
 
     if request.method == "POST":
             datos = {
@@ -584,6 +588,7 @@ def salas():
                 respuesta = api_post(
                     "/salas",
                     json=datos,
+                    headers={"Authorization": f"Bearer {token}"}
                 )
                 respuesta.raise_for_status()
                 
@@ -593,7 +598,10 @@ def salas():
 
     salas = []
     try:
-        respuesta = api_get("/salas")
+        respuesta = api_get(
+            "/salas",
+            headers={"Authorization": f"Bearer {token}"}
+            )
         
         salas = respuesta.json()["salas"]
         error_salas = False
@@ -603,8 +611,10 @@ def salas():
 
 
 @admin_bp.route("/servicios", methods=["GET", "POST"])
+@admin_required
 def servicios():
     error_servicios = False
+    token = session.get("access_token")
 
     if request.method == "POST":
         accion = request.form.get("accion", "crear")
@@ -619,6 +629,7 @@ def servicios():
                 respuesta = api_patch(
                     f"/servicios/{servicio_id}",
                     json={"activo": activo},
+                    headers={"Authorization": f"Bearer {token}"}
                 )
 
             #Edicion del servicio
@@ -628,12 +639,13 @@ def servicios():
                 datos = {
                     "nombre": request.form.get("nombre", "").strip(),
                     "descripcion": request.form.get("descripcion", "").strip(),
-                    "precio": request.form.get("precio", type=float),
+                    "precio": request.form.get("precio", type=int),
                 }
 
                 respuesta = api_patch(
                     f"/servicios/{servicio_id}",
                     json=datos,
+                    headers={"Authorization": f"Bearer {token}"}
                 )
 
             #Eliminacion del servicio
@@ -642,6 +654,7 @@ def servicios():
 
                 respuesta = api_delete(
                     f"/servicios/{servicio_id}",
+                    headers={"Authorization": f"Bearer {token}"}
                 )
                 respuesta.raise_for_status()
                 return redirect(url_for("admin.servicios"))
@@ -651,14 +664,14 @@ def servicios():
                 datos = {
                     "nombre": request.form.get("nombre", "").strip(),
                     "descripcion": request.form.get("descripcion", "").strip(),
-                    "precio": request.form.get("precio", type=float),
+                    "precio": request.form.get("precio", type=int),
                 }
 
                 respuesta = api_post(
                     "/servicios",
                     json=datos,
+                    headers={"Authorization": f"Bearer {token}"}
                     )
-
             respuesta.raise_for_status()
             return redirect(url_for("admin.servicios"))
 
@@ -693,11 +706,93 @@ def servicios():
 @admin_bp.get("/estadisticas")
 @admin_required
 def estadisticas():
-    return render_template("administrador/estadisticas.html")
+
+    error_estadisticas = False
+    ocupacion_por_funcion = []
+    ocupacion_por_pelicula = []
+    ventas_por_genero = []
+    franjas_horarias = []
+    cancelaciones = 0
+
+    token = session.get("access_token")
+    
+    try:
+
+        if not token:
+            return redirect(url_for("auth.login"))
+    
+        respuesta = api_get(
+            "/admin/estadisticas",
+            headers={"Authorization": f"Bearer {token}"}
+            )
+
+        
+        respuesta.raise_for_status()
+
+        estadisticas = respuesta.json()
+
+        ocupacion_por_funcion = estadisticas["ocupacion_por_funcion"]
+        ocupacion_por_pelicula = estadisticas["ocupacion_por_pelicula"]
+        ventas_por_genero = estadisticas["ventas_por_genero"]
+        franjas_horarias = estadisticas["franjas_horarias"]
+        cancelaciones = estadisticas["cancelaciones"]
+        error_estadisticas = False
+
+        
+    except requests.RequestException:
+        error_estadisticas = True
+
+    return render_template(
+        "administrador/estadisticas.html",
+        ocupacion_por_funcion = ocupacion_por_funcion,
+        ocupacion_por_pelicula = ocupacion_por_pelicula,
+        ventas_por_genero = ventas_por_genero,
+        franjas_horarias = franjas_horarias,
+        cancelaciones = cancelaciones,
+        error_estadisticas = error_estadisticas
+        )
 
 
-@admin_bp.get("/entradas/validar")
+
+@admin_bp.route("/entradas/validar", methods=["GET", "POST"])
 @admin_required
 def validar_entrada():
-    return render_template("administrador/validar_entrada.html")
+    resultado = None
+    error = None
+    codigo_qr = ""
+    funcion_id = ""
 
+    if request.method == "POST":
+        codigo_qr = request.form.get("codigo_qr", "").strip()
+        funcion_id = request.form.get("funcion_id", "").strip()
+
+        if not codigo_qr or not funcion_id.isdigit() or int(funcion_id) <= 0:
+            error = "Ingresá un código QR y un ID de función válido."
+        else:
+            try:
+                respuesta = api_post(
+                    "/admin/entradas/validar",
+                    json={
+                        "codigo_qr": codigo_qr,
+                        "funcion_id": int(funcion_id),
+                    },
+                    headers={
+                        "Authorization": f"Bearer {session['access_token']}"
+                    },
+                )
+
+                if respuesta.status_code == 200:
+                    resultado = respuesta.json()
+                else:
+                    error = " ".join(obtener_errores_api(respuesta))
+
+            except (requests.exceptions.RequestException, ValueError):
+                error = "No fue posible validar la entrada con la API."
+
+    return render_template(
+        "administrador/validar_entrada.html",
+        resultado=resultado,
+        error=error,
+        codigo_qr=codigo_qr,
+        funcion_id=funcion_id,
+    )

@@ -47,7 +47,11 @@
             </div>
             <div>
                 <dt>Productos</dt>
-                <dd>${{ "{:,.0f}".format(compra.total_servicios).replace(",", ".") }}</dd>
+                <dd>${{ "{:,.0f}".format(total_productos if total_productos is defined else compra.total_servicios).replace(",", ".") }}</dd>
+            </div>
+            <div>
+                <dt>Reserva de estacionamiento</dt>
+                <dd>${{ "{:,.0f}".format(total_estacionamiento if total_estacionamiento is defined else 0).replace(",", ".") }}</dd>
             </div>
             <div class="checkout-total-final">
                 <dt>Total</dt>

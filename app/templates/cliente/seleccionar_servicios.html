@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Candy | Cine Paradiso{% endblock %}
 {% block content %}
+{% if en_compra %}
 <nav class="purchase-steps" aria-label="Progreso de la compra">
     <span class="completed">1. Función</span>
     <span class="completed">2. Butacas</span>
@@ -8,6 +9,7 @@
     <span>4. Resumen</span>
     <span>5. QR</span>
 </nav>
+{% endif %}
 
 {% if reserva %}
 <aside
@@ -79,8 +81,14 @@
         El formulario envía la selección con GET a otra ruta de Flask. No usa
         JavaScript ni fetch: Jinja ya recibió el catálogo desde el servidor.
     #}
-    <form class="candy-selection-form" action="{{ url_for('cliente.resumen_compra') }}" method="get">
+    <form id="candy-selection-form" class="candy-selection-form" action="{{ url_for('cliente.resumen_compra') }}" method="get">
+        {% if en_compra %}
         <input type="hidden" name="reserva_id" value="{{ reserva_id }}">
+        {% if estacionamiento and estacionamiento.id in servicio_ids %}
+        <input type="hidden" name="servicio_ids" value="{{ estacionamiento.id }}">
+        <input type="hidden" name="cantidad_{{ estacionamiento.id }}" value="{{ cantidades.get(estacionamiento.id, 1) }}">
+        {% endif %}
+        {% endif %}
         <div class="candy-list">
         {% for producto in productos %}
         <article class="candy-card">
@@ -93,6 +101,7 @@
                 <p>{{ producto.descripcion }}</p>
                 <div class="candy-card-actions">
                     <strong>${{ "{:,.0f}".format(producto.precio).replace(",", ".") }}</strong>
+                    {% if en_compra %}
                     <div class="candy-product-selection">
                         <label for="cantidad-{{ producto.id }}">Cantidad</label>
                         <input
@@ -114,21 +123,30 @@
                             Agregar
                         </label>
                     </div>
+                    {% endif %}
                 </div>
             </div>
         </article>
         {% endfor %}
         </div>
 
+        {% if en_compra %}
         <div class="candy-flow-actions">
             <a class="candy-secondary-action" href="{{ resumen_url }}">Continuar sin productos</a>
             <button class="candy-primary-action" type="submit">Revisar compra</button>
         </div>
+        {% else %}
+        <div class="candy-flow-actions">
+            <a class="candy-primary-action" href="{{ url_for('cliente.cartelera') }}">Ver cartelera</a>
+        </div>
+        {% endif %}
     </form>
 </section>
 {% endblock %}
 
 {% block extra_scripts %}
+{% if en_compra %}
 <script src="{{ url_for('static', filename='js/hold_timer.js') }}" defer></script>
+{% endif %}
 {% endblock %}
 

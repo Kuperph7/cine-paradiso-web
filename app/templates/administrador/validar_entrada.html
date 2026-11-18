@@ -1,0 +1,61 @@
+{% extends "administrador/base_admin.html" %}
+
+{% block title %}Validar entrada | Administración{% endblock %}
+
+{% block admin_content %}
+
+<h1>Validar entrada QR</h1>
+
+<p>
+    Ingresá el código QR y el ID de la función
+    para comprobar si la entrada permite el ingreso.
+</p>
+
+<form method="POST" action="{{ url_for('admin.validar_entrada') }}">
+
+    <div>
+        <label for="codigo_qr">Código QR</label>
+        <input
+            type="text"
+            id="codigo_qr"
+            name="codigo_qr"
+            value="{{ codigo_qr }}"
+            placeholder="QRCINE-..."
+            required
+        >
+    </div>
+
+    <div>
+        <label for="funcion_id">ID de la función</label>
+        <input
+            type="number"
+            id="funcion_id"
+            name="funcion_id"
+            value="{{ funcion_id }}"
+            min="1"
+            required
+        >
+    </div>
+
+    <button type="submit">Validar entrada</button>
+
+</form>
+
+{% if resultado %}
+    <section role="status">
+        <h2>Ingreso permitido</h2>
+        <p>{{ resultado.mensaje }}</p>
+        <p>Entrada: {{ resultado.entrada_id }}</p>
+        <p>Función: {{ resultado.funcion_id }}</p>
+        <p>Estado: {{ resultado.estado }}</p>
+    </section>
+{% endif %}
+
+{% if error %}
+    <section role="alert">
+        <h2>No se pudo validar la entrada</h2>
+        <p>{{ error }}</p>
+    </section>
+{% endif %}
+
+{% endblock %}

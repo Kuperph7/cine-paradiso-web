@@ -38,7 +38,16 @@ def _api_get(path, **kwargs):
                         "descripcion": "Pochoclos y gaseosas",
                         "precio": 14800,
                         "activo": True,
-                    }
+                    },
+                    {
+                        "id": 9,
+                        "nombre": "Estacionamiento",
+                        "descripcion": "Lugar de estacionamiento por 3 horas.",
+                        "precio": 5000,
+                        "activo": True,
+                        "disponibles": 18,
+                        "capacidad_maxima": 20,
+                    },
                 ]
             }
         )
@@ -100,11 +109,52 @@ def test_candy_renderiza_catalogo_obtenido_del_backend(monkeypatch):
     html = respuesta.get_data(as_text=True)
     assert respuesta.status_code == 200
     assert "Combo Paradiso" in html
+    assert "Progreso de la compra" in html
+    assert "1. Función" in html
+    assert "3. Candy" in html
     assert 'name="servicio_ids"' in html
+    assert 'href="/compras/servicios?reserva_id=reserva-1"' in html
     assert [llamada.args[0] for llamada in api_get.call_args_list] == [
         "/reservas/reserva-1",
         "/servicios",
     ]
+
+
+def test_candy_desde_navbar_muestra_catalogo_sin_flujo_de_compra(monkeypatch):
+    api_get = Mock(side_effect=_api_get)
+    monkeypatch.setattr("app.routes.cliente.api_get", api_get)
+    app = create_app()
+    app.config.update(TEST_CONFIG)
+
+    client = app.test_client()
+    with client.session_transaction() as sesion:
+        sesion["access_token"] = "token-prueba"
+        sesion["reserva_activa"] = {"id": "reserva-1"}
+
+    respuesta = client.get("/compras/servicios?vista=catalogo")
+
+    html = respuesta.get_data(as_text=True)
+    assert respuesta.status_code == 200
+    assert "Combo Paradiso" in html
+    assert "Progreso de la compra" not in html
+    assert 'name="servicio_ids"' not in html
+    assert "Continuar sin productos" not in html
+    assert "Revisar compra" not in html
+    assert "Ver cartelera" in html
+    assert [llamada.args[0] for llamada in api_get.call_args_list] == [
+        "/servicios",
+    ]
+
+
+def test_enlaces_generales_abren_candy_como_catalogo(monkeypatch):
+    monkeypatch.setattr("app.routes.cliente.api_get", Mock(side_effect=_api_get))
+    app = create_app()
+    app.config.update(TEST_CONFIG)
+
+    respuesta = app.test_client().get("/compras/servicios?vista=catalogo")
+
+    html = respuesta.get_data(as_text=True)
+    assert 'href="/compras/servicios?vista=catalogo"' in html
 
 
 def test_butacas_continua_a_candy_y_candy_permite_omitir(monkeypatch):
@@ -149,6 +199,37 @@ def test_resumen_conserva_candy_y_calcula_total(monkeypatch):
     assert "2 × Combo Paradiso" in html
     assert "$29.600" in html
     assert 'name="cantidad_1" value="2"' in html
+
+
+def test_estacionamiento_se_separa_de_candy_y_se_suma_en_resumen(monkeypatch):
+    monkeypatch.setattr("app.routes.cliente.api_get", Mock(side_effect=_api_get))
+    app = create_app()
+    app.config.update(TEST_CONFIG)
+
+    client = app.test_client()
+    with client.session_transaction() as sesion:
+        sesion["access_token"] = "token-prueba"
+
+    respuesta_servicios = client.get("/compras/servicios?reserva_id=reserva-1")
+    html_servicios = respuesta_servicios.get_data(as_text=True)
+    assert respuesta_servicios.status_code == 200
+    assert "Estacionamiento" not in html_servicios
+    assert "1 opciones disponibles" in html_servicios
+
+    respuesta_resumen_sin_est = client.get("/compras/resumen?reserva_id=reserva-1")
+    html_resumen_sin_est = respuesta_resumen_sin_est.get_data(as_text=True)
+    assert respuesta_resumen_sin_est.status_code == 200
+    assert "18 de 20 lugares disponibles" in html_resumen_sin_est
+
+    respuesta_resumen = client.get(
+        "/compras/resumen?reserva_id=reserva-1"
+        "&servicio_ids=9&cantidad_9=2"
+    )
+    html_resumen = respuesta_resumen.get_data(as_text=True)
+    assert respuesta_resumen.status_code == 200
+    assert "Reservaste 2 plazas de estacionamiento" in html_resumen
+    assert "$10.000" in html_resumen
+    assert 'name="cantidad_9" value="2"' in html_resumen
 
 
 def test_continuar_retiene_butacas_antes_de_ir_a_candy(monkeypatch):
