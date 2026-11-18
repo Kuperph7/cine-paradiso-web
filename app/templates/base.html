@@ -20,7 +20,8 @@
             </a>
             <nav class="main-nav" aria-label="Navegación principal">
                 <a{% if request.endpoint == 'cliente.cartelera' %} class="active"{% endif %} href="{{ url_for('cliente.cartelera') }}">Cartelera</a>
-                <a{% if request.endpoint == 'cliente.seleccionar_servicios' %} class="active"{% endif %} href="{{ url_for('cliente.seleccionar_servicios') }}">Candy</a>
+                {% set reserva_compra_id = reserva_id|default('', true) %}
+                <a{% if request.endpoint == 'cliente.seleccionar_servicios' %} class="active"{% endif %} href="{{ url_for('cliente.seleccionar_servicios', reserva_id=reserva_compra_id) if reserva_compra_id else url_for('cliente.seleccionar_servicios', vista='catalogo') }}">Candy</a>
                 <a{% if request.endpoint == 'cliente.sucursales' %} class="active"{% endif %} href="{{ url_for('cliente.sucursales') }}">Sucursales</a>
                 <a href="{{ url_for('cliente.mis_entradas') }}">Mis entradas</a>
                 {% if session.get('usuario') %}

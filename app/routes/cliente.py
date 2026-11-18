@@ -553,7 +553,12 @@ def disponibilidad_butacas(funcion_id):
 
 @cliente_bp.get("/compras/servicios")
 def seleccionar_servicios():
-    reserva_id = request.args.get("reserva_id", "").strip()
+    vista_catalogo = request.args.get("vista") == "catalogo"
+    reserva_id = (
+        ""
+        if vista_catalogo
+        else request.args.get("reserva_id", "").strip()
+    )
     servicio_ids = request.args.getlist("servicio_ids", type=int)
     cantidades = {
         servicio_id: max(
@@ -579,10 +584,10 @@ def seleccionar_servicios():
 
     # El navegador no consulta el backend. Flask frontend usa requests en
     # api_get(), recibe el JSON y recién entonces renderiza el HTML con Jinja.
-    if not reserva_id:
+    if not vista_catalogo and not reserva_id:
         reserva_recordada = session.get("reserva_activa") or {}
         reserva_id = reserva_recordada.get("id", "").strip()
-    if not reserva_id:
+    if not vista_catalogo and not reserva_id:
         pendiente = _cargar_compra_pendiente()
         if pendiente:
             reserva_id = pendiente.get("id", "").strip()
@@ -660,6 +665,7 @@ def seleccionar_servicios():
         servicio_ids=servicio_ids,
         cantidades=cantidades,
         error=error,
+        en_compra=reserva is not None,
     )
 
 
