@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="admin-layout">
+    <aside class="admin-nav">
+        <h2>Administración</h2>
+        <a href="{{ url_for('admin.peliculas') }}">Películas</a>
+        <a href="{{ url_for('admin.funciones') }}">Funciones</a>
+        <a href="{{ url_for('admin.salas') }}">Salas</a>
+        <a href="{{ url_for('admin.servicios') }}">Servicios</a>
+        <a href="{{ url_for('admin.estadisticas') }}">Estadísticas</a>
+        <a href="{{ url_for('admin.validar_entrada') }}">Validar entrada</a>
+    </aside>
+    <section class="panel admin-content">{% block admin_content %}{% endblock %}</section>
+</div>
+{% endblock %}
+
