@@ -109,11 +109,52 @@ def test_candy_renderiza_catalogo_obtenido_del_backend(monkeypatch):
     html = respuesta.get_data(as_text=True)
     assert respuesta.status_code == 200
     assert "Combo Paradiso" in html
+    assert "Progreso de la compra" in html
+    assert "1. Función" in html
+    assert "3. Candy" in html
     assert 'name="servicio_ids"' in html
+    assert 'href="/compras/servicios?reserva_id=reserva-1"' in html
     assert [llamada.args[0] for llamada in api_get.call_args_list] == [
         "/reservas/reserva-1",
         "/servicios",
     ]
+
+
+def test_candy_desde_navbar_muestra_catalogo_sin_flujo_de_compra(monkeypatch):
+    api_get = Mock(side_effect=_api_get)
+    monkeypatch.setattr("app.routes.cliente.api_get", api_get)
+    app = create_app()
+    app.config.update(TEST_CONFIG)
+
+    client = app.test_client()
+    with client.session_transaction() as sesion:
+        sesion["access_token"] = "token-prueba"
+        sesion["reserva_activa"] = {"id": "reserva-1"}
+
+    respuesta = client.get("/compras/servicios?vista=catalogo")
+
+    html = respuesta.get_data(as_text=True)
+    assert respuesta.status_code == 200
+    assert "Combo Paradiso" in html
+    assert "Progreso de la compra" not in html
+    assert 'name="servicio_ids"' not in html
+    assert "Continuar sin productos" not in html
+    assert "Revisar compra" not in html
+    assert "Ver cartelera" in html
+    assert [llamada.args[0] for llamada in api_get.call_args_list] == [
+        "/servicios",
+    ]
+
+
+def test_enlaces_generales_abren_candy_como_catalogo(monkeypatch):
+    monkeypatch.setattr("app.routes.cliente.api_get", Mock(side_effect=_api_get))
+    app = create_app()
+    app.config.update(TEST_CONFIG)
+
+    respuesta = app.test_client().get("/compras/servicios?vista=catalogo")
+
+    html = respuesta.get_data(as_text=True)
+    assert 'href="/compras/servicios?vista=catalogo"' in html
 
 
 def test_butacas_continua_a_candy_y_candy_permite_omitir(monkeypatch):
