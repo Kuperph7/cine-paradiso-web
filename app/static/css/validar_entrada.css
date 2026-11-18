@@ -1,0 +1,22 @@
+.validar-entrada-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    max-width: 600px;
+}
+
+.validar-entrada-field {
+    display: grid;
+    grid-template-columns: 150px minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+}
+
+.validar-entrada-field label {
+    font-weight: 600;
+}
+
+.validar-entrada-field input {
+    width: 100%;
+    box-sizing: border-box;
+}
