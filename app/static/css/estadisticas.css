@@ -291,3 +291,35 @@
         flex-basis: 84px;
     }
 }
+
+.stat-panel > summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    list-style: none;
+}
+
+.stat-panel > summary::-webkit-details-marker {
+    display: none;
+}
+
+.stat-panel > summary::marker {
+    content: "";
+}
+
+.stat-panel > summary h2 {
+    margin: 0;
+}
+
+.stat-panel > summary::after {
+    content: "⌄";
+    font-size: 20px;
+    color: #203047;
+}
+
+.stat-panel:not([open]) > summary::after {
+    content: "›";
+}
