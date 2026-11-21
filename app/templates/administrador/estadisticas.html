@@ -11,8 +11,10 @@
     <div class="estadisticas-list">
 
         <!-- Ventas por genero-->
-        <section class="stat-panel stat-genero">
-            <h2>Ventas por género</h2>
+        <details class="stat-panel stat-genero" open>
+            <summary>
+                <h2>Ventas por género</h2>
+            </summary>
             <div class="stat-card">
                 <div class="stat-table-head">
                     <span>Género</span>
@@ -45,11 +47,13 @@
                     <span class="stat-pages">‹ &nbsp; 1 &nbsp; ›</span>
                 </div>
             </div>
-        </section>
+        </details>
 
         <!-- Ocupacion por pelicula-->
-        <section class="stat-panel">
-            <h2>Ocupación por película</h2>
+        <details class="stat-panel" open>
+            <summary>
+                <h2>Ocupación por película</h2>
+            </summary>
             <div class="stat-card">
                 <div class="stat-table-head movie-head">
                     <span>Película</span><span>Funciones</span><span>Ocupación</span>
@@ -74,11 +78,13 @@
                     <span class="stat-pages">‹ &nbsp; 1 &nbsp; ›</span>
                 </div>
             </div>
-        </section>
+        </details>
 
         <!-- Ocupacion por funcion-->
-        <section class="stat-panel">
-            <h2>Ocupación por función</h2>
+        <details class="stat-panel" open>
+            <summary>
+                <h2>Ocupación por función</h2>
+            </summary>
             <div class="stat-card">
                 <div class="stat-table-head function-head">
                     <span>Función</span><span>Ocupación</span>
@@ -105,11 +111,13 @@
                     <span class="stat-pages">‹ &nbsp; 1 &nbsp; ›</span>
                 </div>
             </div>
-        </section>
+        </details>
 
         <!-- Distribucion horaria-->
-        <section class="stat-panel">
-            <h2>Distribución por franja horaria</h2>
+        <details class="stat-panel" open>
+            <summary>
+                <h2>Distribución por franja horaria</h2>
+            </summary>
             <div class="stat-card schedule-card">
                 <div class="stat-table-head">Ventas por franja · Últimos 7 días</div>
                 {% set franjas = franjas_horarias|default([], true) %}
@@ -139,11 +147,13 @@
                     {% endfor %}
                 </div>
             </div>
-        </section>
+        </details>
 
         <!-- Cancelaciones -->
-        <section class="stat-panel">
-            <h2>Lista de cancelaciones</h2>
+        <details class="stat-panel" open>
+            <summary>
+                <h2>Lista de cancelaciones</h2>
+            </summary>
             <div class="stat-card">
                 <div class="stat-table-head cancellation-head">
                     <span>Función</span><span>Fecha de cancelación</span><span>Motivo</span>
@@ -160,7 +170,7 @@
                     <span class="stat-pages">‹ &nbsp; 1 &nbsp; ›</span>
                 </div>
             </div>
-        </section>
+        </details>
     </div>
 </section>
 {% endblock %}

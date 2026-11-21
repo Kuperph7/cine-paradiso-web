@@ -2,6 +2,14 @@
 
 {% block title %}Validar entrada | Administración{% endblock %}
 
+{% block extra_styles %}
+
+<link rel="stylesheet"
+
+      href="{{ url_for('static', filename='css/validar_entrada.css') }}">
+
+{% endblock %}
+
 {% block admin_content %}
 
 <h1>Validar entrada QR</h1>
@@ -11,9 +19,11 @@
     para comprobar si la entrada permite el ingreso.
 </p>
 
-<form method="POST" action="{{ url_for('admin.validar_entrada') }}">
+<form class="validar-entrada-form"
+      method="POST"
+      action="{{ url_for('admin.validar_entrada') }}">
 
-    <div>
+    <div class="validar-entrada-field">
         <label for="codigo_qr">Código QR</label>
         <input
             type="text"
@@ -25,7 +35,7 @@
         >
     </div>
 
-    <div>
+    <div class="validar-entrada-field">
         <label for="funcion_id">ID de la función</label>
         <input
             type="number"
