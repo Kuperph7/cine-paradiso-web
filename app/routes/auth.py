@@ -110,6 +110,13 @@ def logout():
 
 @auth_bp.route("/registro", methods=["GET", "POST"])
 def registro():
+    if session.get("access_token"):
+        usuario = session.get("usuario", {})
+
+        if usuario.get("rol") == "administrador":
+            return redirect(url_for("admin.peliculas"))
+
+        return redirect(url_for("cliente.cartelera"))
     if request.method == "GET":
         return render_template("auth/registro.html")
     
