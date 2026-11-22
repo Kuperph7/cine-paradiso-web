@@ -126,110 +126,22 @@
                                                 Cancelar
                                             </button>
                                         {% endif %}
-                                    </form>
-
-                                    <!-- Editar los datos de una función -->
-                                    <details>
-                                        <summary>Editar función</summary>
-
-                                        <form method="post" class="funcion-edicion">
-                                            <input type="hidden" name="accion" value="editar">
-                                            <input type="hidden" name="funcion_id" value="{{ funcion.id }}">
-
-                                            <label>
-                                                Película
-                                                <select name="pelicula_id" required>
-                                                    {% for pelicula in peliculas %}
-                                                        <option
-                                                            value="{{ pelicula.id }}"
-                                                            {% if pelicula.id == funcion.pelicula_id %}selected{% endif %}
-                                                        >
-                                                            {{ pelicula.titulo }}
-                                                        </option>
-                                                    {% endfor %}
-                                                </select>
-                                            </label>
-
-                                            <label>
-                                                Sala
-                                                <select name="sala_id" required>
-                                                    {% for sala in salas %}
-                                                        <option
-                                                            value="{{ sala.id }}"
-                                                            {% if sala.id == funcion.sala_id %}selected{% endif %}
-                                                        >
-                                                            {{ sala.nombre }}
-                                                        </option>
-                                                    {% endfor %}
-                                                </select>
-                                            </label>
-
-                                            <label>
-                                                Fecha
-                                                <input
-                                                    type="date"
-                                                    name="fecha"
-                                                    value="{{ funcion.fecha_hora[:10] }}"
-                                                    required
-                                                >
-                                            </label>
-
-                                            <label>
-                                                Horario
-                                                <input
-                                                    type="time"
-                                                    name="horario"
-                                                    value="{{ funcion.fecha_hora[11:16] }}"
-                                                    required
-                                                >
-                                            </label>
-
-                                            <label>
-                                                Precio
-                                                <input
-                                                    type="number"
-                                                    name="precio"
-                                                    value="{{ funcion.precio }}"
-                                                    min="0"
-                                                    step="1"
-                                                    required
-                                                >
-                                            </label>
-
-                                            {% set edicion_enviada = request.form.get('accion') == 'editar' and request.form.get('funcion_id') == (funcion.id|string) %}
-                                            {% set formato_actual = request.form.get('formato', '') if edicion_enviada else funcion.formato %}
-                                            {% set idioma_actual = request.form.get('idioma', '') if edicion_enviada else funcion.idioma %}
-
-                                            <label>
-                                                Formato
-                                                <select name="formato" required>
-                                                    <option value="">Seleccione un formato</option>
-                                                    {% for formato in formatos_funcion %}
-                                                    <option value="{{ formato }}"
-                                                        {% if formato_actual == formato %}selected{% endif %}>
-                                                        {{ formato }}
-                                                    </option>
-                                                    {% endfor %}
-                                                </select>
-                                            </label>
-
-                                            <label>
-                                                Idioma
-                                                <select name="idioma" required>
-                                                    <option value="">Seleccione un idioma</option>
-                                                    {% for idioma in idiomas_funcion %}
-                                                    <option value="{{ idioma }}"
-                                                        {% if idioma_actual == idioma %}selected{% endif %}>
-                                                        {{ idioma }}
-                                                    </option>
-                                                    {% endfor %}
-                                                </select>
-                                            </label>
-
-                                            <button type="submit">Guardar cambios</button>
-                                        </form>
-                                    </details>
-
+                                    </form>       
+                                    <button
+                                        type="button"
+                                        class="funcion-button"
+                                        data-editar-funcion
+                                        data-funcion-id="{{ funcion.id }}"
+                                        data-pelicula-id="{{ funcion.pelicula_id }}"
+                                        data-sala-id="{{ funcion.sala_id }}"
+                                        data-fecha="{{ funcion.fecha_hora[:10] }}"
+                                        data-horario="{{ funcion.fecha_hora[11:16] }}"
+                                        data-precio="{{ funcion.precio }}"
+                                        data-formato="{{ funcion.formato or '' }}"
+                                        data-idioma="{{ funcion.idioma or '' }}"
+                                    >
+                                        Editar
+                                    </button>
                                 {% else %}
                                     Iniciá sesión como administrador
                                 {% endif %}
@@ -261,4 +173,110 @@
         </section>
     </div>
 </section>
+
+<dialog class="funcion-dialog" id="funcion-dialog">
+
+    <form
+        method="post"
+        action="{{ url_for('admin.funciones') }}"
+        class="funcion-dialog-form"
+    >
+
+        <div class="funcion-dialog-header">
+            <h2>Editar función</h2>
+
+            <button
+                type="button"
+                data-cerrar-dialog
+                class="funcion-dialog-close"
+            >
+                ×
+            </button>
+        </div>
+
+        <input type="hidden" name="accion" value="editar">
+
+        <input
+            type="hidden"
+            name="funcion_id"
+            id="funcion-id-edicion"
+        >
+
+        <label for="pelicula-edicion">Película</label>
+        <select name="pelicula_id" id="pelicula-edicion" required>
+            {% for pelicula in peliculas %}
+                <option value="{{ pelicula.id }}">
+                    {{ pelicula.titulo }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <label for="sala-edicion">Sala</label>
+        <select name="sala_id" id="sala-edicion" required>
+            {% for sala in salas %}
+                <option value="{{ sala.id }}">
+                    {{ sala.nombre }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <label for="fecha-edicion">Fecha</label>
+        <input type="date" name="fecha" id="fecha-edicion" required>
+
+        <label for="horario-edicion">Horario</label>
+        <input type="time" name="horario" id="horario-edicion" required>
+
+        <label for="precio-edicion">Precio</label>
+        <input
+            type="number"
+            name="precio"
+            id="precio-edicion"
+            min="0"
+            step="1"
+            required
+        >
+
+        <label for="formato-edicion">Formato</label>
+        <select name="formato" id="formato-edicion" required>
+            <option value="">Seleccione un formato</option>
+            {% for formato in formatos_funcion %}
+                <option value="{{ formato }}">
+                    {{ formato }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <label for="idioma-edicion">Idioma</label>
+        <select name="idioma" id="idioma-edicion" required>
+            <option value="">Seleccione un idioma</option>
+            {% for idioma in idiomas_funcion %}
+                <option value="{{ idioma }}">
+                    {{ idioma }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <div class="funcion-dialog-actions">
+            <button type="submit">
+                Guardar cambios
+            </button>
+
+            <button
+                type="button"
+                data-cerrar-dialog
+                class="funcion-dialog-cancel"
+            >
+                Cancelar
+            </button>
+        </div>
+
+    </form>
+
+</dialog>
+
+<script
+    src="{{ url_for('static', filename='js/funciones.js') }}"
+    defer
+></script>
+
 {% endblock %}

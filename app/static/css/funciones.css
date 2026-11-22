@@ -298,3 +298,91 @@
         font-size: 0.58rem;
     }
 }
+
+.funcion-form select,
+.funcion-form input {
+    height: 36px;
+    padding: 6px 8px;
+    border-radius: 4px;
+}
+
+.funcion-dialog {
+    width: min(92vw, 460px);
+    max-height: 90vh;
+    padding: 0;
+    overflow: auto;
+    border: 1px solid #607f91;
+    border-radius: 6px;
+    background: #edf2f6;
+    color: #17212b;
+}
+
+.funcion-dialog::backdrop {
+    background: rgba(0, 0, 0, 0.55);
+}
+
+.funcion-dialog-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 20px;
+}
+
+.funcion-dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.funcion-dialog-header h2 {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+.funcion-dialog-close {
+    border: none;
+    background: transparent;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.funcion-dialog-form label {
+    font-size: 0.9rem;
+}
+
+.funcion-dialog-form input,
+.funcion-dialog-form select {
+    width: 100%;
+    min-height: 36px;
+    padding: 6px 8px;
+    border: 1px solid #a3b0b8;
+    border-radius: 4px;
+    background: #fff;
+    color: #17212b;
+    font: inherit;
+}
+
+.funcion-dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.funcion-dialog-actions button {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 4px;
+    background: #e8c45c;
+    cursor: pointer;
+}
+
+.funcion-dialog-actions .funcion-dialog-cancel {
+    background: #d5dce1;
+}
+
+.funcion-dialog,
+.funcion-dialog * {
+    box-sizing: border-box;
+}
