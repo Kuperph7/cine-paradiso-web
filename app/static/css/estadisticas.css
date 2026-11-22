@@ -35,7 +35,7 @@
 
 .stat-panel h2 {
     margin: 0 0 6px;
-    font-size: 0.75rem;
+    font-size: 0.95rem;
     font-weight: 400;
 }
 
@@ -64,11 +64,11 @@
 }
 
 .stat-table-head {
-    min-height: 22px;
-    padding: 5px 9px;
+    min-height: 30px;
+    padding: 7px 12px;
     background: #607f91;
     color: #fff;
-    font-size: 0.5rem;
+    font-size: 0.65rem;
     font-weight: 700;
 }
 
@@ -81,7 +81,7 @@
 
 .stat-search {
     display: flex;
-    min-height: 22px;
+    min-height: 30px;
     align-items: center;
     gap: 5px;
     padding: 3px 9px;
@@ -99,7 +99,7 @@
     background: transparent;
     color: #17212b;
     font: inherit;
-    font-size: 0.52rem;
+    font-size: 0.65rem;
 }
 
 .stat-search input::placeholder {
@@ -109,13 +109,13 @@
 
 .stat-footer {
     display: flex;
-    min-height: 17px;
+    min-height: 24px;
     align-items: center;
     justify-content: space-between;
-    padding: 3px 8px;
+    padding: 4px 10px;
     background: #607f91;
     color: #fff;
-    font-size: 0.45rem;
+    font-size: 0.58rem;
 }
 
 .stat-pages {
@@ -162,7 +162,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 0.48rem;
+    font-size: 0.58rem;
 }
 
 .schedule-time {
@@ -290,4 +290,36 @@
     .schedule-value {
         flex-basis: 84px;
     }
+}
+
+.stat-panel > summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    list-style: none;
+}
+
+.stat-panel > summary::-webkit-details-marker {
+    display: none;
+}
+
+.stat-panel > summary::marker {
+    content: "";
+}
+
+.stat-panel > summary h2 {
+    margin: 0;
+}
+
+.stat-panel > summary::after {
+    content: "⌄";
+    font-size: 20px;
+    color: #203047;
+}
+
+.stat-panel:not([open]) > summary::after {
+    content: "›";
 }

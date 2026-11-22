@@ -52,6 +52,12 @@
 }
 
 .config-trigger span {
+    display: inline-flex;
+    width: 24px;
+    height: 24px;
+    flex: 0 0 24px;
+    align-items: center;
+    justify-content: center;
     font-size: 24px;
     line-height: 1;
 }
