@@ -1,5 +1,5 @@
 (() => {
-    const panel = document.querySelector("[data-payment-poll]");
+    const panel = document.querySelector("[data-payment-expiry]");
     if (!panel) return;
     const countdown = panel.querySelector("[data-payment-countdown]");
     const message = panel.querySelector("[data-payment-message]");
@@ -25,26 +25,6 @@
         }
     };
 
-    const poll = async () => {
-        try {
-            const response = await fetch(panel.dataset.paymentPoll, {
-                headers: { Accept: "application/json" },
-                cache: "no-store",
-            });
-            const data = await response.json();
-            if (data.estado === "vendida" && data.compra_id) {
-                window.location.replace(`/compras/${data.compra_id}/confirmacion`);
-                return;
-            }
-            if (response.status === 410 || data.estado === "pago_rechazado") {
-                message.textContent = "El pago no se confirmó a tiempo y no se emitieron entradas.";
-            }
-        } catch (_error) {
-            message.textContent = "No pudimos actualizar el estado. Podés intentar pagar o cancelar nuevamente.";
-        }
-    };
-
     tick();
     window.setInterval(tick, 1000);
-    window.setInterval(poll, 5000);
 })();

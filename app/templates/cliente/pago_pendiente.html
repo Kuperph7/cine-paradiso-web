@@ -11,7 +11,6 @@
 
 <section
     class="payment-checkout"
-    data-payment-poll="{{ url_for('cliente.estado_reserva', reserva_id=reserva.id) }}"
     data-payment-expiry="{{ reserva.expira_en }}"
 >
     <aside class="hold-status payment-hold payment-hold-top" role="status">

@@ -38,8 +38,6 @@
     class="seats-layout"
     action="{{ url_for('cliente.retener_butacas', funcion_id=funcion.id) }}"
     method="post"
-    data-seat-map
-    data-availability-url="{{ url_for('cliente.disponibilidad_butacas', funcion_id=funcion.id) }}"
 >
 
     <section class="seats-room" aria-labelledby="seats-map-title">
@@ -122,7 +120,10 @@
             </div>
         </dl>
 
-        <p class="seats-selection-help" data-seat-status>La disponibilidad se actualiza cada 8 segundos.</p>
+        <p class="seats-selection-help">
+            La disponibilidad se valida con el servidor al continuar.
+            <a href="{{ url_for('cliente.seleccionar_butacas', funcion_id=funcion.id) }}">Actualizar disponibilidad</a>
+        </p>
 
         {#
             La selección continúa siempre por Candy. Allí el usuario puede
@@ -132,9 +133,5 @@
     </aside>
 </form>
 {% endif %}
-{% endblock %}
-
-{% block extra_scripts %}
-<script src="{{ url_for('static', filename='js/seat_availability.js') }}" defer></script>
 {% endblock %}
 
