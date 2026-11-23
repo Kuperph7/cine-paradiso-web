@@ -51,8 +51,13 @@ def login():
         return redirect(url_for("cliente.cartelera"))
     error = None
     error_titulo = None
+    mensaje = request.args.get("mensaje", "").strip() or None
     destino = request.values.get("next", "")
     email = request.form.get("email", "") if request.method == "POST" else ""
+    token_recuperacion = request.values.get("token", "").strip()
+    mostrar_recuperacion = (
+        request.values.get("recuperar") == "1" or bool(token_recuperacion)
+    )
 
     if request.method == "POST":
         try:
@@ -104,8 +109,81 @@ def login():
         "auth/login.html",
         error=error,
         error_titulo=error_titulo,
+        mensaje=mensaje,
         next=destino,
         email=email,
+    )
+
+
+@auth_bp.route("/recuperar-password", methods=["GET", "POST"])
+def recuperar_password():
+    token_recuperacion = request.values.get("token", "").strip()
+    if request.method == "GET":
+        return render_template(
+            "auth/recuperar_password.html",
+            token_recuperacion=token_recuperacion,
+            email=request.args.get("email", "").strip(),
+        )
+
+    email = request.form.get("email", "").strip()
+    try:
+        respuesta = api_post(
+            "/auth/recuperar-password",
+            json={"email": email},
+        )
+        if respuesta.ok:
+            datos = respuesta.json()
+            mensaje = datos.get(
+                "mensaje",
+                "Se envió un correo con las instrucciones para restablecer tu contraseña.",
+            )
+            return render_template(
+                "auth/recuperar_password.html",
+                mensaje=mensaje,
+                email=email,
+                token_recuperacion="",
+            )
+        error = _mensaje_error_api(respuesta) or "No se pudo procesar la solicitud."
+    except requests.exceptions.RequestException:
+        error = "El servidor de autenticación no está disponible en este momento."
+
+    return render_template(
+        "auth/recuperar_password.html",
+        error=error,
+        error_titulo="No pudimos enviar el correo",
+        email=email,
+        token_recuperacion="",
+    )
+
+
+@auth_bp.post("/restablecer-password")
+def restablecer_password():
+    token = request.form.get("token", "").strip()
+    password = request.form.get("password", "")
+    try:
+        respuesta = api_post(
+            "/auth/restablecer-password",
+            json={"token": token, "password": password},
+        )
+        if respuesta.ok:
+            datos = respuesta.json()
+            mensaje = datos.get(
+                "mensaje",
+                "Tu contraseña ha sido actualizada correctamente. Ya podés iniciar sesión.",
+            )
+            return render_template(
+                "auth/login.html",
+                mensaje=mensaje,
+            )
+        error = _mensaje_error_api(respuesta) or "No se pudo restablecer la contraseña."
+    except requests.exceptions.RequestException:
+        error = "El servidor de autenticación no está disponible en este momento."
+
+    return render_template(
+        "auth/recuperar_password.html",
+        error=error,
+        error_titulo="No pudimos actualizar la contraseña",
+        token_recuperacion=token,
     )
 
 

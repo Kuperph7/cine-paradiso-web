@@ -6,6 +6,9 @@
 {% block content %}
 <section class="panel narrow">
     <h1>Iniciar sesión</h1>
+    {% if mensaje %}
+    <p class="login-success-banner" role="status">{{ mensaje }}</p>
+    {% endif %}
     {# Flask envía las credenciales al backend; el navegador no usa fetch. #}
     <form class="form-stack" method="post" action="{{ url_for('auth.login') }}">
         <input type="hidden" name="next" value="{{ next }}">
@@ -13,7 +16,10 @@
         <label>Contraseña <input type="password" name="password" required></label>
         <button type="submit">Ingresar</button>
     </form>
-    <a href="{{ url_for('auth.registro') }}">Crear una cuenta</a>
+    <div class="login-links">
+        <a href="{{ url_for('auth.registro') }}">Crear una cuenta</a>
+        <a href="{{ url_for('auth.recuperar_password') }}">¿Olvidaste tu contraseña?</a>
+    </div>
 </section>
 
 {% if error %}
