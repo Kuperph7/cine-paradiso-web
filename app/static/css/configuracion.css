@@ -100,6 +100,64 @@
     .category-sidebar h2 {
         margin-left: 0;
     }
+
+    .movie-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .movie-card {
+        min-width: 0;
+    }
+
+    .movie-info h3 {
+        font-size: 0.95rem;
+    }
+
+    .movie-info p {
+        font-size: 0.75rem;
+    }
+
+    .config-options {
+        display: flex;
+        flex-wrap: nowrap;
+        justify-content: space-between;
+        gap: 6px;
+        overflow-x: auto;
+    }
+
+    .config-options .config-trigger {
+        flex: 1 1 0;
+        min-width: 0;
+        margin: 0;
+        padding: 8px 10px;
+        gap: 4px;
+        font-size: 12px;
+        border-radius: 20px;
+        white-space: nowrap;
+    }
+
+    .config-options .config-trigger span {
+        width: 14px;
+        height: 14px;
+        flex: 0 0 14px;
+        font-size: 14px;
+    }
+
+    .banner-principal {
+        min-height: auto;
+        padding: 20px 16px;
+    }
+
+    .banner-principal h1 {
+        font-size: 1.5rem;
+        line-height: 1.2;
+    }
+
+    .banner-principal-art {
+        display: none;
+    }
 }
 
 .config-filter-form {

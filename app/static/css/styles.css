@@ -829,6 +829,119 @@
       transition: none !important;
     }
   }
+
+  /* Ajustes mobile para Candy (carrusel achicado + 2 productos por fila) */
+  @media (max-width: 720px) {
+    .candy-promo {
+      min-height: 220px;
+      padding: 1.35rem 2.6rem;
+      border-radius: 20px;
+    }
+
+    .candy-promo h2 {
+      font-size: 2.1rem;
+      line-height: 0.98;
+    }
+
+    .candy-promo-copy > p:not(.eyebrow) {
+      margin: 0.65rem 0 1rem;
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+
+    .candy-promo-art {
+      width: 40%;
+    }
+
+    .popcorn-box {
+      width: 105px;
+      height: 145px;
+      font-size: 1.5rem;
+    }
+
+    .drink-cup {
+      width: 85px;
+      height: 135px;
+      font-size: 1.5rem;
+    }
+
+    .candy-list {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 0.85rem;
+    }
+
+    .candy-card {
+      width: calc((100% - 0.85rem) / 2);
+      flex: 0 0 calc((100% - 0.85rem) / 2);
+      min-width: 0;
+    }
+
+    .candy-product-image {
+      min-height: 155px;
+    }
+
+    .candy-card-content {
+      padding: 0.85rem;
+    }
+
+    .candy-card-content h3 {
+      min-height: auto;
+      font-size: 1rem;
+    }
+
+    .candy-card-content > p:not(.candy-product-category) {
+      min-height: auto;
+      font-size: 0.76rem;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .candy-promo {
+      min-height: 240px;
+      padding: 1.25rem 2.3rem;
+    }
+
+    .candy-promo-copy {
+      align-self: center;
+      width: 100%;
+    }
+
+    .candy-promo-art {
+      display: none;
+    }
+
+    .candy-list {
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .candy-card {
+      width: calc((100% - 0.75rem) / 2);
+      flex: 0 0 calc((100% - 0.75rem) / 2);
+      max-width: none;
+      margin-inline: 0;
+    }
+  }
+
+  /*CANDY despues del seleccion butacas */
+  .candy-card-actions {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.65rem;
+    }
+
+    .candy-product-selection {
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+
+    .candy-add-product {
+      width: 100%;
+      margin-top: 0.25rem;
+    }
 }
 /* ===================== FIN MEDIA QUERIES ===================== */
 
