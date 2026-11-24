@@ -7,6 +7,12 @@
 
 <section class="servicios-page" aria-labelledby="servicios-title">
     <h1 id="servicios-title" class="servicios-title">Servicios</h1>
+    {% if error_servicios %}
+    <p role="alert">
+        No se pudo completar la operación.
+        Verificá los datos y que no exista un servicio con el mismo nombre.
+    </p>
+    {% endif %}
 
     <!-- Formulario POST-->
     <section class="servicio-form-section" aria-labelledby="crear-servicio-title">
