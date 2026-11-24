@@ -1221,7 +1221,31 @@ def mis_compras():
 
 @cliente_bp.get("/mis-entradas")
 def mis_entradas():
-    return render_template("cliente/mis_entradas.html")
+
+    entradas = []
+    error = None
+
+    if not session.get("access_token"):
+        return redirect(url_for("auth.login", next=request.path))
+
+    try:
+        respuesta = api_get("/mis-entradas")
+        respuesta.raise_for_status()
+
+        datos = respuesta.json()
+        entradas = datos.get("entradas", [])
+
+    except requests.exceptions.RequestException:
+        current_app.logger.exception(
+            "Error al consultar las entradas del cliente"
+        )
+        error = "No se pudieron cargar tus entradas."
+
+    return render_template(
+        "cliente/mis_entradas.html",
+        entradas=entradas,
+        error=error,
+    )
 
 
 @cliente_bp.get("/entradas/<int:entrada_id>")

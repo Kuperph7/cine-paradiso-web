@@ -1,4 +1,65 @@
+
 {% extends "base.html" %}
 {% block title %}Mis entradas | Cine Paradiso{% endblock %}
-{% block content %}<section class="panel"><h1>Mis entradas</h1><p>Entradas disponibles, utilizadas y canceladas.</p></section>{% endblock %}
+{% block content %}
+<section class="panel">
 
+    <h1>Mis entradas</h1>
+    <p>Consultá tus entradas y el estado de cada una.</p>
+
+    {% if error %}
+        <div class="alert alert-danger">
+            {{ error }}
+        </div>
+    {% elif entradas %}
+        <div class="entradas-lista">
+            {% for entrada in entradas %}
+                <article class="entrada-card">
+                    <div class="entrada-header">
+                        <h2>Entrada #{{ entrada.id }}</h2>
+                        {% if entrada.estado == "emitida" %}
+                            <span class="estado emitida">
+                                Disponible
+                            </span>
+                        {% elif entrada.estado == "utilizada" %}
+
+                            <span class="estado utilizada">
+                                Utilizada
+                            </span>
+                        {% elif entrada.estado == "cancelada" %}
+                            <span class="estado cancelada">
+                                Cancelada
+                            </span>
+                        {% else %}
+                            <span class="estado">
+                                {{ entrada.estado }}
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <div class="entrada-info">
+                        <p>
+                            <strong>Función:</strong>
+                            {{ entrada.funcion_id }}
+                        </p>
+                        <p>
+                            <strong>Butaca:</strong>
+                            Fila {{ entrada.fila }},
+                            Asiento {{ entrada.numero }}
+                        </p>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="sin-entradas">
+            <h2>No tenés entradas todavía</h2>
+            <p>
+                Cuando compres entradas, aparecerán
+                automáticamente en esta sección.
+            </p>
+        </div>
+    {% endif %}
+
+</section>
+{% endblock %}
