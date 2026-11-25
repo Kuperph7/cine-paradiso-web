@@ -153,6 +153,8 @@
 
 .funciones-table-footer {
     display: flex;
+    width: 100%;
+    min-width: 100%;
     min-height: 20px;
     align-items: center;
     justify-content: space-between;
@@ -254,6 +256,7 @@
     }
 
     .funciones-table {
+        min-width: 460px;
         font-size: 0.68rem;
     }
 
@@ -287,6 +290,7 @@
     }
 
     .funciones-table-footer {
+        min-width: 460px;
         min-height: 30px;
         padding: 5px 8px;
         font-size: 0.58rem;
@@ -296,6 +300,38 @@
         width: 19px;
         height: 17px;
         font-size: 0.58rem;
+    }
+    .funciones-table {
+        min-width: 460px;
+        font-size: 0.68rem;
+    }
+
+    .funciones-table th:nth-child(1),
+    .funciones-table td:nth-child(1) {
+        width: 28%;
+    }
+
+    .funciones-table th:nth-child(2),
+    .funciones-table td:nth-child(2) {
+        width: 34%;
+    }
+
+    .funciones-table th:nth-child(3),
+    .funciones-table td:nth-child(3) {
+        width: 18%;
+    }
+
+    .funciones-table th:nth-child(4),
+    .funciones-table td:nth-child(4) {
+        width: 20%;
+        text-align: right;
+    }
+
+    .funcion-button {
+        display: inline-block;
+        padding: 5px 8px;
+        font-size: 0.65rem;
+        white-space: nowrap;
     }
 }
 
@@ -385,4 +421,22 @@
 .funcion-dialog,
 .funcion-dialog * {
     box-sizing: border-box;
+}
+.funciones-table-wrap {
+    overflow-x: auto;
+    border-radius: 4px;
+    background: #edf2f6;
+    box-shadow: 0 2px 6px rgb(30 44 70 / 16%);
+}
+
+.funciones-table td {
+    height: 25px;
+    padding: 4px 7px;
+    border-bottom: 1px solid #cbd3d8;
+    overflow-wrap: anywhere;
+}
+
+.funciones-table td[data-label="Acciones"] form {
+    display: inline-block;
+    margin: 0 4px 4px 0;
 }
