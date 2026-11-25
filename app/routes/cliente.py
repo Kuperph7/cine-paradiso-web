@@ -618,8 +618,8 @@ def seleccionar_servicios():
         servicios_candy = []
         for servicio in servicios:
             if (
-                int(servicio["id"]) == 9
-                or servicio["nombre"].strip().lower() == "estacionamiento"
+                servicio.get("activo", True)
+                and servicio["nombre"].strip().lower() == "estacionamiento"
             ):
                 estacionamiento = {
                     **servicio,
@@ -628,7 +628,7 @@ def seleccionar_servicios():
                     "disponibles": int(servicio.get("disponibles", 20)),
                     "capacidad_maxima": int(servicio.get("capacidad_maxima", 20)),
                 }
-            else:
+            elif servicio.get("activo", True):
                 servicios_candy.append(servicio)
 
         productos = [
@@ -795,41 +795,35 @@ def resumen_compra():
             }
         )
 
-    estacionamiento_catalogo = next(
-        (
-            {
+    estacionamiento_catalogo = None
+    for servicio in servicios_api:
+        if (
+            estacionamiento_catalogo is None
+            and servicio.get("activo", True)
+            and servicio["nombre"].strip().lower() == "estacionamiento"
+        ):
+            estacionamiento_catalogo = {
                 "id": int(servicio["id"]),
                 "nombre": servicio["nombre"],
+                "descripcion": servicio.get("descripcion", ""),
                 "precio": int(servicio["precio"]),
                 "disponibles": int(servicio.get("disponibles", 20)),
                 "capacidad_maxima": int(servicio.get("capacidad_maxima", 20)),
             }
-            for servicio in servicios_api
-            if int(servicio["id"]) == 9
-            or servicio["nombre"].strip().lower() == "estacionamiento"
-        ),
-        {
-            "id": 9,
-            "nombre": "Estacionamiento",
-            "precio": 5000,
-            "disponibles": 20,
-            "capacidad_maxima": 20,
-        },
+
+    estacionamiento_id = (
+        estacionamiento_catalogo["id"]
+        if estacionamiento_catalogo is not None
+        else None
     )
 
-    productos_candy = [
-        servicio
-        for servicio in servicios_seleccionados
-        if servicio["servicio_id"] != estacionamiento_catalogo["id"]
-    ]
-    estacionamiento_seleccionado = next(
-        (
-            servicio
-            for servicio in servicios_seleccionados
-            if servicio["servicio_id"] == estacionamiento_catalogo["id"]
-        ),
-        None,
-    )
+    productos_candy = []
+    estacionamiento_seleccionado = None
+    for servicio in servicios_seleccionados:
+        if estacionamiento_id is not None and servicio["servicio_id"] == estacionamiento_id:
+            estacionamiento_seleccionado = servicio
+        else:
+            productos_candy.append(servicio)
 
     compra = {
         "pelicula": funcion["pelicula"],
@@ -1162,12 +1156,16 @@ def confirmacion_compra(compra_id):
     session.pop("ultimo_pago", None)
 
     servicios_compra = compra.get("servicios", [])
-    total_estacionamiento = sum(
-        int(s.get("subtotal", int(s.get("cantidad", 0)) * int(s.get("precio_unitario", 0))))
-        for s in servicios_compra
-        if int(s.get("servicio_id", 0)) == 9
-        or str(s.get("nombre", "")).strip().lower() == "estacionamiento"
-    )
+    total_estacionamiento = 0
+    for s in servicios_compra:
+        if str(s.get("nombre", "")).strip().lower() == "estacionamiento":
+            subtotal = int(
+                s.get(
+                    "subtotal",
+                    int(s.get("cantidad", 0)) * int(s.get("precio_unitario", 0)),
+                )
+            )
+            total_estacionamiento += subtotal
     total_productos = max(
         0,
         int(compra.get("total_servicios", 0)) - total_estacionamiento,

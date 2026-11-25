@@ -109,11 +109,12 @@
             {% endif %}
         </div>
 
+        {% if estacionamiento_catalogo %}
         <div class="checkout-group">
             <div class="checkout-group-heading">
                 <div>
                     <p class="checkout-item-label">Estacionamiento</p>
-                    <h3>Lugar para tu vehículo</h3>
+                    <h3>{{ estacionamiento_catalogo.descripcion or "Lugar para tu vehículo" }}</h3>
                 </div>
                 {% if compra.estacionamiento %}
                 <a href="{{ quitar_estacionamiento_url }}">Quitar</a>
@@ -163,6 +164,7 @@
             </form>
             {% endif %}
         </div>
+        {% endif %}
     </section>
 
     <aside class="checkout-summary" aria-labelledby="checkout-summary-title">
@@ -178,10 +180,12 @@
                 <dt>Productos</dt>
                 <dd>${{ "{:,.0f}".format(total_servicios).replace(",", ".") }}</dd>
             </div>
+            {% if estacionamiento_catalogo or total_estacionamiento > 0 %}
             <div>
                 <dt>Reserva de estacionamiento</dt>
                 <dd>${{ "{:,.0f}".format(total_estacionamiento).replace(",", ".") }}</dd>
             </div>
+            {% endif %}
             <div class="checkout-total-final">
                 <dt>Total</dt>
                 <dd>${{ "{:,.0f}".format(total).replace(",", ".") }}</dd>
