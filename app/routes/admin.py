@@ -965,21 +965,18 @@ def validar_entrada():
     resultado = None
     error = None
     codigo_qr = ""
-    funcion_id = ""
 
     if request.method == "POST":
         codigo_qr = request.form.get("codigo_qr", "").strip()
-        funcion_id = request.form.get("funcion_id", "").strip()
 
-        if not codigo_qr or not funcion_id.isdigit() or int(funcion_id) <= 0:
-            error = "Ingresá un código QR y un ID de función válido."
+        if not codigo_qr:
+            error = "Ingresá un código QR válido."
         else:
             try:
                 respuesta = api_post(
                     "/admin/entradas/validar",
                     json={
-                        "codigo_qr": codigo_qr,
-                        "funcion_id": int(funcion_id),
+                        "codigo_qr": codigo_qr
                     },
                     headers={
                         "Authorization": f"Bearer {session['access_token']}"
@@ -999,5 +996,5 @@ def validar_entrada():
         resultado=resultado,
         error=error,
         codigo_qr=codigo_qr,
-        funcion_id=funcion_id,
+      
     )

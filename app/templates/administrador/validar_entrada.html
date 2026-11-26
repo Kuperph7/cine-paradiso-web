@@ -15,8 +15,7 @@
 <h1>Validar entrada QR</h1>
 
 <p>
-    Ingresá el código QR y el ID de la función
-    para comprobar si la entrada permite el ingreso.
+    Ingresá el código QR de la función para comprobar si la entrada permite el ingreso.
 </p>
 
 <form class="validar-entrada-form"
@@ -31,18 +30,6 @@
             name="codigo_qr"
             value="{{ codigo_qr }}"
             placeholder="QRCINE-..."
-            required
-        >
-    </div>
-
-    <div class="validar-entrada-field">
-        <label for="funcion_id">ID de la función</label>
-        <input
-            type="number"
-            id="funcion_id"
-            name="funcion_id"
-            value="{{ funcion_id }}"
-            min="1"
             required
         >
     </div>
