@@ -254,7 +254,7 @@ def renderizar_cartelera(template):
             parametros[campo] = filtros[campo]
 
     try:
-        respuesta = api_get("/cartelera")
+        respuesta = api_get("/cartelera", params=parametros)
         respuesta.raise_for_status()
 
         datos = respuesta.json()
