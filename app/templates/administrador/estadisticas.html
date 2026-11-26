@@ -4,10 +4,103 @@
 
 {% block admin_content %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/estadisticas.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/estadisticas_extra.css') }}">
+
+{# Porcentaje con coma decimal: 67.89 -> "67,9 %" #}
+{% macro pct(valor) -%}
+    {{ "%.1f"|format(valor|float)|replace(".", ",") }} %
+{%- endmacro %}
+
+{# Barra de ocupación: verde (70 % o más), amarilla (35 % o más) o roja #}
+{% macro barra(valor) -%}
+    {% if valor|float >= 70 %}{% set nivel = "alto" %}{% elif valor|float >= 35 %}{% set nivel = "medio" %}{% else %}{% set nivel = "bajo" %}{% endif %}
+    <span class="stat-meter stat-meter-{{ nivel }}" aria-hidden="true">
+        <span style="width: {{ [valor|float, 100]|min }}%"></span>
+    </span>
+{%- endmacro %}
+
+{# Campos ocultos para que una búsqueda no pierda los demás filtros #}
+{% macro ocultos(excluir) -%}
+    {% for clave, valor in parametros.items() if clave not in excluir %}
+    <input type="hidden" name="{{ clave }}" value="{{ valor }}">
+    {% endfor %}
+{%- endmacro %}
+
+{# Pie con cantidad y paginación ‹ 1 / 2 › #}
+{% macro pie(texto, paginacion=none) -%}
+    <div class="stat-footer">
+        <span>{{ texto }}</span>
+        {% if paginacion %}
+        <span class="stat-pages">
+            {% if paginacion.anterior %}<a href="{{ paginacion.anterior }}" aria-label="Página anterior">‹</a>{% else %}‹{% endif %}
+            &nbsp; {{ paginacion.pagina }} / {{ paginacion.total_paginas }} &nbsp;
+            {% if paginacion.siguiente %}<a href="{{ paginacion.siguiente }}" aria-label="Página siguiente">›</a>{% else %}›{% endif %}
+        </span>
+        {% endif %}
+    </div>
+{%- endmacro %}
 
 <section class="estadisticas-page" aria-labelledby="estadisticas-title">
     <h1 id="estadisticas-title">Estadísticas</h1>
-    
+
+    <!-- Filtro por fechas -->
+    <form class="stat-filtros" method="get" action="{{ url_for('admin.estadisticas') }}">
+        {{ ocultos(["desde", "hasta"]) }}
+        <label>
+            <span>Desde</span>
+            <input type="date" name="desde" value="{{ desde }}">
+        </label>
+        <label>
+            <span>Hasta</span>
+            <input type="date" name="hasta" value="{{ hasta }}">
+        </label>
+        <button type="submit">Filtrar</button>
+    </form>
+
+    <nav class="stat-atajos" aria-label="Rangos de fechas">
+        {% for atajo in atajos %}
+        <a href="{{ atajo.url }}" {% if atajo.activo %}class="stat-atajo-activo" aria-current="true"{% endif %}>{{ atajo.etiqueta }}</a>
+        {% endfor %}
+    </nav>
+
+    <p class="stat-periodo">
+        Período: {{ periodo }}
+    </p>
+
+    {% if errores %}
+    <div role="alert" class="stat-error">
+        <ul>
+            {% for error in errores %}
+            <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <!-- Resumen general -->
+    <div class="stat-resumen">
+        <div class="stat-resumen-item">
+            <span>Entradas vendidas</span>
+            <strong>{{ resumen.entradas_vendidas|default(0) }}</strong>
+            <small>de {{ resumen.capacidad_total|default(0) }} butacas</small>
+        </div>
+        <div class="stat-resumen-item">
+            <span>Ocupación promedio</span>
+            <strong>{{ pct(resumen.ocupacion_promedio|default(0)) }}</strong>
+            {{ barra(resumen.ocupacion_promedio|default(0)) }}
+        </div>
+        <div class="stat-resumen-item">
+            <span>Funciones</span>
+            <strong>{{ resumen.total_funciones|default(0) }}</strong>
+            <small>{% if resumen.franja_mas_vendida %}Más ventas: {{ resumen.franja_mas_vendida }}{% else %}Sin ventas{% endif %}</small>
+        </div>
+        <div class="stat-resumen-item">
+            <span>Compras canceladas</span>
+            <strong>{{ resumen.compras_canceladas|default(0) }}</strong>
+            <small>{{ resumen.funciones_canceladas|default(0) }} funciones canceladas</small>
+        </div>
+    </div>
+
     <div class="estadisticas-list">
 
         <!-- Ventas por genero-->
@@ -18,34 +111,43 @@
             <div class="stat-card">
                 <div class="stat-table-head">
                     <span>Género</span>
-                    <span>Número de ventas</span>
+                    <span>Entradas vendidas</span>
                 </div>
 
-                <label class="stat-search">
-                    <span aria-hidden="true">⌕</span>
-                    <input
-                        type="search"
-                        placeholder="Buscar por género"
-                        aria-label="Buscar por género"
-                    >
-                </label>
-                {% set datos_genero = ventas_por_genero|default([], true) %}
+                <form method="get" action="{{ url_for('admin.estadisticas') }}">
+                    {{ ocultos(["buscar_genero"]) }}
+                    <label class="stat-search">
+                        <span aria-hidden="true">⌕</span>
+                        <input
+                            type="search"
+                            name="buscar_genero"
+                            value="{{ busquedas.genero }}"
+                            placeholder="Buscar por género"
+                            aria-label="Buscar por género"
+                        >
+                    </label>
+                </form>
 
-                {% for item in datos_genero %}
+                {% set total_entradas_genero = ventas_por_genero|sum(attribute="total_ventas") %}
+                {% for item in ventas_por_genero %}
                 <div class="stat-row">
                     <span>{{ item.genero }}</span>
-                    <span>{{ item.total_ventas }}</span>
+                    <span>
+                        {{ item.total_ventas }}
+                        <small class="stat-detalle">({{ pct(item.total_ventas / total_entradas_genero * 100 if total_entradas_genero else 0) }})</small>
+                    </span>
                 </div>
                 {% else %}
                 <div class="stat-row">
-                    <span colspan="2">No hay ventas por género para mostrar.</span>
+                    <span>{% if busquedas.genero %}Ningún género coincide con "{{ busquedas.genero }}".{% else %}No hay ventas por género para mostrar.{% endif %}</span>
                 </div>
                 {% endfor %}
 
-                <div class="stat-footer">
-                    <span>{{ datos_genero|length }} géneros listados</span>
-                    <span class="stat-pages">‹ &nbsp; 1 &nbsp; ›</span>
-                </div>
+                {% if busquedas.genero %}
+                {{ pie(encontrados.generos ~ " de " ~ totales.generos ~ " géneros listados") }}
+                {% else %}
+                {{ pie(totales.generos ~ " géneros listados") }}
+                {% endif %}
             </div>
         </details>
 
@@ -58,25 +160,40 @@
                 <div class="stat-table-head movie-head">
                     <span>Película</span><span>Funciones</span><span>Ocupación</span>
                 </div>
-                <label class="stat-search">
-                    <span aria-hidden="true">⌕</span>
-                    <input type="search" placeholder="Buscar por película" aria-label="Buscar por película">
-                </label>
-                {% for pelicula in ocupacion_por_pelicula|default([], true) %}
+
+                <form method="get" action="{{ url_for('admin.estadisticas') }}">
+                    {{ ocultos(["buscar_pelicula"]) }}
+                    <label class="stat-search">
+                        <span aria-hidden="true">⌕</span>
+                        <input type="search" name="buscar_pelicula" value="{{ busquedas.pelicula }}"
+                               placeholder="Buscar por película o género" aria-label="Buscar por película">
+                    </label>
+                </form>
+
+                {% for pelicula in ocupacion_por_pelicula %}
                 <div class="stat-row movie-row">
-                    <span>Película {{ pelicula.pelicula_id }}</span>
-                    <span>{{ pelicula.butacas_vendidas }} / {{ pelicula.capacidad_total_funciones }}</span>
-                    <span>{{ pelicula.porcentaje }}%</span>
+                    <span>
+                        {{ pelicula.titulo or ("Película " ~ pelicula.pelicula_id) }}
+                        {% if pelicula.genero %}<small class="stat-detalle">{{ pelicula.genero }}</small>{% endif %}
+                    </span>
+                    <span>{{ pelicula.cantidad_funciones|default("-") }}</span>
+                    <span>
+                        {{ pct(pelicula.porcentaje) }}
+                        <small class="stat-detalle">{{ pelicula.butacas_vendidas }} / {{ pelicula.capacidad_total_funciones }} butacas</small>
+                        {{ barra(pelicula.porcentaje) }}
+                    </span>
                 </div>
                 {% else %}
                 <div class="stat-row movie-row">
-                    <span>No hay datos de ocupación por película.</span>
+                    <span>{% if busquedas.pelicula %}Ninguna película coincide con "{{ busquedas.pelicula }}".{% else %}No hay datos de ocupación por película.{% endif %}</span>
                 </div>
                 {% endfor %}
-                <div class="stat-footer">
-                    <span>5 películas listadas</span>
-                    <span class="stat-pages">‹ &nbsp; 1 &nbsp; ›</span>
-                </div>
+
+                {% if busquedas.pelicula %}
+                {{ pie(encontrados.peliculas ~ " de " ~ totales.peliculas ~ " películas listadas", paginacion_peliculas) }}
+                {% else %}
+                {{ pie(totales.peliculas ~ " películas listadas", paginacion_peliculas) }}
+                {% endif %}
             </div>
         </details>
 
@@ -89,27 +206,40 @@
                 <div class="stat-table-head function-head">
                     <span>Función</span><span>Ocupación</span>
                 </div>
-                <label class="stat-search">
-                    <span aria-hidden="true">⌕</span>
-                    <input type="search" placeholder="Buscar por función" aria-label="Buscar por función">
-                </label>
-                {% for funcion in ocupacion_por_funcion|default([], true) %}
+
+                <form method="get" action="{{ url_for('admin.estadisticas') }}">
+                    {{ ocultos(["buscar_funcion"]) }}
+                    <label class="stat-search">
+                        <span aria-hidden="true">⌕</span>
+                        <input type="search" name="buscar_funcion" value="{{ busquedas.funcion }}"
+                               placeholder="Buscar por película, sala, fecha o número"
+                               aria-label="Buscar por función">
+                    </label>
+                </form>
+
+                {% for funcion in ocupacion_por_funcion %}
                 <div class="stat-row function-row">
-                    <span>Función {{ funcion.funcion_id }}</span>
+                    <span>
+                        Función {{ funcion.funcion_id }} - {{ funcion.pelicula_titulo|default("-", true) }}
+                        <small class="stat-detalle">{{ funcion.sala_nombre|default("-", true) }} · {{ funcion.fecha_texto }}</small>
+                    </span>
                     <span>
                         {{ funcion.butacas_vendidas }} / {{ funcion.capacidad }}
-                        ({{ funcion.porcentaje }}%)
+                        ({{ pct(funcion.porcentaje) }})
+                        {{ barra(funcion.porcentaje) }}
                     </span>
                 </div>
                 {% else %}
                 <div class="stat-row function-row">
-                    <span>No hay datos de ocupación por función.</span>
+                    <span>{% if busquedas.funcion %}Ninguna función coincide con "{{ busquedas.funcion }}".{% else %}No hay datos de ocupación por función.{% endif %}</span>
                 </div>
                 {% endfor %}
-                <div class="stat-footer">
-                    <span>5 funciones listadas</span>
-                    <span class="stat-pages">‹ &nbsp; 1 &nbsp; ›</span>
-                </div>
+
+                {% if busquedas.funcion %}
+                {{ pie(encontrados.funciones ~ " de " ~ totales.funciones ~ " funciones listadas", paginacion_funciones) }}
+                {% else %}
+                {{ pie(totales.funciones ~ " funciones listadas", paginacion_funciones) }}
+                {% endif %}
             </div>
         </details>
 
@@ -119,7 +249,7 @@
                 <h2>Distribución por franja horaria</h2>
             </summary>
             <div class="stat-card schedule-card">
-                <div class="stat-table-head">Ventas por franja · Últimos 7 días</div>
+                <div class="stat-table-head">Ventas por franja · {{ periodo }}</div>
                 {% set franjas = franjas_horarias|default([], true) %}
                 {% set max_entradas = franjas|map(attribute="entradas_vendidas")|max|default(0) %}
 
@@ -158,17 +288,21 @@
                 <div class="stat-table-head cancellation-head">
                     <span>Función</span><span>Fecha de cancelación</span><span>Motivo</span>
                 </div>
-                {% for i in range(1, 5) %}
+                {% for compra in compras_canceladas %}
                 <div class="stat-row cancellation-row">
-                    <span>Función {{ i }}</span>
-                    <span>Fecha de cancelación</span>
-                    <span>Motivo de cancelación</span>
+                    <span>
+                        Función {{ compra.funcion_id }} - {{ compra.pelicula_titulo|default("-", true) }}
+                        <small class="stat-detalle">Compra {{ compra.compra_id }} · {{ compra.cantidad_entradas }} entradas · función del {{ compra.funcion_fecha_texto }}</small>
+                    </span>
+                    <span>{{ compra.cancelacion_texto }}</span>
+                    <span>{{ compra.motivo }}</span>
+                </div>
+                {% else %}
+                <div class="stat-row cancellation-row">
+                    <span>No hubo cancelaciones en este período.</span>
                 </div>
                 {% endfor %}
-                <div class="stat-footer">
-                    <span>4 cancelaciones listadas</span>
-                    <span class="stat-pages">‹ &nbsp; 1 &nbsp; ›</span>
-                </div>
+                {{ pie(totales.cancelaciones ~ " cancelaciones listadas", paginacion_cancelaciones) }}
             </div>
         </details>
     </div>

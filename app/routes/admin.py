@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime, time, timedelta
 from functools import wraps
 from zoneinfo import ZoneInfo
 
@@ -702,54 +702,259 @@ def servicios():
         error_servicios=error_servicios,
     )
 
+ZONA_ARGENTINA = ZoneInfo("America/Argentina/Buenos_Aires")
+POR_PAGINA_ESTADISTICAS = 10
+PARAMETROS_ESTADISTICAS = (
+    "desde", "hasta", "buscar_genero", "buscar_pelicula", "buscar_funcion",
+)
+PARAMETROS_PAGINA = ("pagina_peliculas", "pagina_funciones", "pagina_cancelaciones")
+
+
+def _leer_fecha(texto):
+    try:
+        return date.fromisoformat(texto) if texto else None
+    except ValueError:
+        return None
+
+
+def _formatear_fecha(texto_iso):
+    try:
+        return datetime.fromisoformat(texto_iso).strftime("%d/%m %H:%M")
+    except (TypeError, ValueError):
+        return texto_iso or "-"
+
+
+def _normalizar_estadisticas(datos):
+    if not isinstance(datos, dict):
+        raise ValueError("Respuesta inválida")
+
+    resultado = {}
+    for clave in (
+        "ocupacion_por_funcion", "ocupacion_por_pelicula",
+        "ventas_por_genero", "franjas_horarias", "funciones_canceladas",
+        "compras_canceladas",
+    ):
+        valor = datos.get(clave, [])
+        if not isinstance(valor, list):
+            raise ValueError(f"{clave} inválido")
+        resultado[clave] = valor
+
+    for funcion in resultado["ocupacion_por_funcion"] + resultado["funciones_canceladas"]:
+        funcion["fecha_texto"] = _formatear_fecha(funcion.get("fecha_hora"))
+
+    for compra in resultado["compras_canceladas"]:
+        compra["funcion_fecha_texto"] = _formatear_fecha(compra.get("funcion_fecha_hora"))
+        compra["cancelacion_texto"] = _formatear_fecha(compra.get("fecha_cancelacion"))
+
+    resumen = datos.get("resumen")
+    resultado["resumen"] = resumen if isinstance(resumen, dict) else {}
+    resultado["resumen"].setdefault("compras_canceladas", datos.get("cancelaciones", 0))
+    return resultado
+
+
+def _filtrar(lista, texto, campos):
+    texto = texto.strip().lower()
+    if not texto:
+        return lista
+
+    resultado = []
+    for item in lista:
+        valores = " ".join(str(item.get(campo) or "") for campo in campos).lower()
+        if texto in valores:
+            resultado.append(item)
+    return resultado
+
+
+def _paginar(lista, nombre_parametro, parametros):
+    total_paginas = max(1, (len(lista) + POR_PAGINA_ESTADISTICAS - 1) // POR_PAGINA_ESTADISTICAS)
+
+    try:
+        pagina = int(request.args.get(nombre_parametro, 1))
+    except ValueError:
+        pagina = 1
+    pagina = min(max(pagina, 1), total_paginas)
+
+    # Se conservan los filtros y la página de las otras tablas.
+    base = dict(parametros)
+    for clave in PARAMETROS_PAGINA:
+        if clave != nombre_parametro and request.args.get(clave):
+            base[clave] = request.args.get(clave)
+
+    anterior = None
+    siguiente = None
+    if pagina > 1:
+        base[nombre_parametro] = pagina - 1
+        anterior = url_for("admin.estadisticas", **base)
+    if pagina < total_paginas:
+        base[nombre_parametro] = pagina + 1
+        siguiente = url_for("admin.estadisticas", **base)
+
+    inicio = (pagina - 1) * POR_PAGINA_ESTADISTICAS
+    paginacion = {
+        "pagina": pagina,
+        "total_paginas": total_paginas,
+        "anterior": anterior,
+        "siguiente": siguiente,
+    }
+    return lista[inicio:inicio + POR_PAGINA_ESTADISTICAS], paginacion
+
 
 @admin_bp.get("/estadisticas")
 @admin_required
 def estadisticas():
 
-    error_estadisticas = False
-    ocupacion_por_funcion = []
-    ocupacion_por_pelicula = []
-    ventas_por_genero = []
-    franjas_horarias = []
-    cancelaciones = 0
+    token = session["access_token"]
+    hoy = date.today()
+    errores = []
 
-    token = session.get("access_token")
-    
+    desde = _leer_fecha(request.args.get("desde", "").strip())
+    hasta = _leer_fecha(request.args.get("hasta", "").strip())
+
+    # La API exige desde y hasta juntos: si falta uno, se completa.
+    if desde and not hasta:
+        hasta = hoy
+    if hasta and not desde:
+        desde = date(2000, 1, 1)
+    if desde and hasta and desde > hasta:
+        errores.append("La fecha 'desde' no puede ser posterior a 'hasta'.")
+        desde = None
+        hasta = None
+
+    datos = {
+        "resumen": {},
+        "ocupacion_por_funcion": [],
+        "ocupacion_por_pelicula": [],
+        "ventas_por_genero": [],
+        "franjas_horarias": [],
+        "funciones_canceladas": [],
+        "compras_canceladas": [],
+    }
+
     try:
 
         if not token:
             return redirect(url_for("auth.login"))
+
+        
+        params = {}
+        if desde and hasta:
+            params["desde"] = datetime.combine(
+                desde, time.min, tzinfo=ZONA_ARGENTINA
+            ).isoformat()
+            params["hasta"] = datetime.combine(
+                hasta, time(23, 59, 59), tzinfo=ZONA_ARGENTINA
+            ).isoformat()
     
         respuesta = api_get(
             "/admin/estadisticas",
-            headers={"Authorization": f"Bearer {token}"}
+            headers={"Authorization": f"Bearer {token}"},
+            params=params,
             )
 
-        
+        if respuesta.status_code == 401:
+            # Token vencido o inválido: hay que volver a iniciar sesión.
+            return redirect(url_for("auth.login"))
+        if respuesta.status_code == 200:
+            datos.update(_normalizar_estadisticas(respuesta.json()))
+        else:
+            errores.extend(obtener_errores_api(respuesta))
+
+
         respuesta.raise_for_status()
 
-        estadisticas = respuesta.json()
-
-        ocupacion_por_funcion = estadisticas["ocupacion_por_funcion"]
-        ocupacion_por_pelicula = estadisticas["ocupacion_por_pelicula"]
-        ventas_por_genero = estadisticas["ventas_por_genero"]
-        franjas_horarias = estadisticas["franjas_horarias"]
-        cancelaciones = estadisticas["cancelaciones"]
-        error_estadisticas = False
-
-        
     except requests.RequestException:
-        error_estadisticas = True
+        errores.append("No fue posible conectar con la API. Intentá nuevamente.")
+    except (ValueError, KeyError, TypeError):
+        errores.append("La API devolvió estadísticas con un formato inválido.")
 
+        parametros = {}
+    for clave in PARAMETROS_ESTADISTICAS:
+        valor = request.args.get(clave, "").strip()
+        if valor:
+            parametros[clave] = valor
+    if desde and hasta:
+        parametros["desde"] = desde.isoformat()
+        parametros["hasta"] = hasta.isoformat()
+    else:
+        parametros.pop("desde", None)
+        parametros.pop("hasta", None)
+
+    busquedas = {
+        "genero": parametros.get("buscar_genero", ""),
+        "pelicula": parametros.get("buscar_pelicula", ""),
+        "funcion": parametros.get("buscar_funcion", ""),
+    }
+
+    generos = _filtrar(datos["ventas_por_genero"], busquedas["genero"], ("genero",))
+    peliculas = _filtrar(
+        datos["ocupacion_por_pelicula"], busquedas["pelicula"], ("titulo", "genero"),
+    )
+    funciones = _filtrar(
+        datos["ocupacion_por_funcion"], busquedas["funcion"],
+        ("funcion_id", "pelicula_titulo", "sala_nombre", "fecha_texto"),
+    )
+
+    peliculas_pagina, paginacion_peliculas = _paginar(peliculas, "pagina_peliculas", parametros)
+    funciones_pagina, paginacion_funciones = _paginar(funciones, "pagina_funciones", parametros)
+    cancelaciones_pagina, paginacion_cancelaciones = _paginar(
+        datos["compras_canceladas"], "pagina_cancelaciones", parametros,
+    )
+
+    # Atajos de rango de fechas.
+    rangos = [
+        ("Últimos 7 días", hoy - timedelta(days=6), hoy),
+        ("Últimos 30 días", hoy - timedelta(days=29), hoy),
+        ("Este mes", hoy.replace(day=1), hoy),
+    ]
+    atajos = []
+    for etiqueta, inicio, fin in rangos:
+        atajos.append({
+            "etiqueta": etiqueta,
+            "url": url_for(
+                "admin.estadisticas", desde=inicio.isoformat(), hasta=fin.isoformat()
+            ),
+            "activo": desde == inicio and hasta == fin,
+        })
+    atajos.append({
+        "etiqueta": "Todo",
+        "url": url_for("admin.estadisticas"),
+        "activo": desde is None,
+    })
+
+    if desde and hasta:
+        periodo = f"{desde:%d/%m/%Y} al {hasta:%d/%m/%Y}"
+    else:
+        periodo = "Todo el historial"
+    
     return render_template(
         "administrador/estadisticas.html",
-        ocupacion_por_funcion = ocupacion_por_funcion,
-        ocupacion_por_pelicula = ocupacion_por_pelicula,
-        ventas_por_genero = ventas_por_genero,
-        franjas_horarias = franjas_horarias,
-        cancelaciones = cancelaciones,
-        error_estadisticas = error_estadisticas
+        resumen=datos["resumen"],
+        ventas_por_genero=generos,
+        ocupacion_por_pelicula=peliculas_pagina,
+        ocupacion_por_funcion=funciones_pagina,
+        franjas_horarias=datos["franjas_horarias"],
+        compras_canceladas=cancelaciones_pagina,
+        totales={
+            "generos": len(datos["ventas_por_genero"]),
+            "peliculas": len(datos["ocupacion_por_pelicula"]),
+            "funciones": len(datos["ocupacion_por_funcion"]),
+            "cancelaciones": len(datos["compras_canceladas"]),
+        },
+        encontrados={
+            "generos": len(generos),
+            "peliculas": len(peliculas),
+            "funciones": len(funciones),
+        },
+        paginacion_peliculas=paginacion_peliculas,
+        paginacion_funciones=paginacion_funciones,
+        paginacion_cancelaciones=paginacion_cancelaciones,
+        busquedas=busquedas,
+        parametros=parametros,
+        desde=desde.isoformat() if desde else "",
+        hasta=hasta.isoformat() if hasta else "",
+        periodo=periodo,
+        atajos=atajos,
+        errores=errores,
         )
 
 
